@@ -1,0 +1,65 @@
+import request from "@/utils/request";
+
+// 条件查询运单列表
+export function getList(data){
+    return request({
+        url: "/operation/carriageManage/queryCarriageInfos",
+        method: "post",
+        data: data
+    })
+}
+
+
+// 运营修改运输信息(仅可以修改司机和车辆信息)
+export function updateTransport(data){
+    return request({
+        url: "/operation/carriageManage/updateTransport",
+        method: 'post',
+        data:data
+    })
+}
+
+// 运单跟踪(返回地图坐标)
+export function carriageTraces(data){
+    return request({
+        url: "/operation/carriageManage/carriageTraces",
+        method: "post",
+        data: data
+    })
+}
+
+// 查看运单的附件信息
+export function queryCarriageAttachment(data){
+    return request({
+        url: "/operation/carriageAudit/queryCarriageAttachment",
+        method: "post",
+        data: data
+    })
+}
+
+//查看运单的结算信息
+export function queryCarriageSettlementInfo(data){
+    return request({
+        url: "/operation/carriageAudit/queryCarriageSettlementInfo",
+        method: "post",
+        data: data
+    })
+}
+//查看运费收款人(默认司机)信息
+export function queryFreightGathering(data){
+    return request({
+        url: "/operation/carriageAudit/queryFreightGathering",
+        method: "post",
+        data: data
+    })
+}
+
+//查看车船信息
+export function queryVehicle(data){
+    return request({
+        url: "/operation/carriageAudit/queryVehicle",
+        method: "post",
+        data: data
+    })
+}
+//

@@ -1,0 +1,38 @@
+import request from "@/utils/request";
+
+// 获取用户的钱包信息
+export function getList(data) {
+  return request({
+    url: "operation/usersPurse/queryUsersPurseInfo",
+    method: "post",
+    data: data
+  });
+}
+
+/**充值 */
+export function clientAccountTopUp(data) {
+  return request({
+    url: "operation/usersPurse/clientAccountTopUp",
+    method: "post",
+    data: data
+  });
+}
+
+/**扣款 */
+export function clientDeductions(data){
+  return request({
+    url: "operation/usersPurse/clientDeductions",
+    method: "post",
+    data: data
+  })
+}
+
+/** 银行卡管理*/
+export function queryBankCardInfo(data){
+  return request({
+    url: "operation/usersPurse/queryBankCardInfo",
+    method: "post",
+    data: data
+  })
+}
+

@@ -1,0 +1,33 @@
+import request from "@/utils/request";
+
+//查看车辆列表
+export function getList() {
+  return request({
+    url: "/operation/vehicleManage/queryVehicleInfo",
+    method: "get",
+    data: {}
+  });
+}
+
+// 新建车辆
+export function addCar(data){
+  return request({
+    url: "",
+    method: "POST",
+    headers:{"content-type":"application/x-www-form-urlencoded"},
+    data:qs.stringify(data)
+  })
+}
+
+
+// 公共文件上传
+export function commonFile(data){
+  return request({
+    url: "/operation/file/uploadFile",
+    method: "POST",
+    headers:{"content-type":"application/x-www-form-urlencoded"},
+    // data:qs.stringify(data)
+  })
+}
+
+

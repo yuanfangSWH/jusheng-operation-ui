@@ -1,0 +1,228 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex justify-start">
+      <el-button type="primary" @click="goAdd">新建</el-button>
+      <el-button class="mr5" type="warning">导出</el-button>
+      <el-date-picker
+        class="mr5"
+        v-model="startTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="选择创建起始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        v-model="endTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="选择创建结束日期"
+      >
+      </el-date-picker>
+      <el-input
+        class="search mr5"
+        v-model="clientContacts"
+        placeholder="请输入客户名称"
+      ></el-input>
+      <el-input
+        class="search mr5"
+        v-model="contractNumber"
+        placeholder="请输入合同编号"
+      ></el-input>
+      <el-button type="primary" @click="getList">查询</el-button>
+      <el-button type="danger" @click="empty">清空</el-button>
+    </div>
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column prop="date" label="序号" type="index"></el-table-column>
+      <el-table-column
+        prop="companyName"
+        width="150px"
+        label="客户名称"
+      ></el-table-column>
+      <el-table-column
+        prop="companyShortName"
+        label="客户简称"
+      ></el-table-column>
+      <el-table-column
+        prop="clientContacts"
+        label="客户联系人"
+        width="150px"
+      ></el-table-column>
+      <el-table-column
+        prop="clientContactsPhone"
+        label="联系电话"
+      ></el-table-column>
+      <el-table-column
+        prop="contactAddress"
+        label="联系地址"
+        width="150px"
+      ></el-table-column>
+      <el-table-column
+        prop="clientDeveloper"
+        label="客户开发人"
+      ></el-table-column>
+      <el-table-column prop="date" label="结算方式">
+        <template slot-scope="scope">
+          <span v-if="scope.closeType == 0">即时结算</span>
+          <span v-else-if="scope.closeType == 1">预付结算</span>
+          <span v-else>其他账期</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="billDate" label="账期"></el-table-column>
+      <el-table-column
+        prop="contractStartTime"
+        label="合同起始日期"
+      ></el-table-column>
+      <el-table-column
+        prop="contractEndTime"
+        label="合同结束日期"
+      ></el-table-column>
+      <el-table-column
+        prop="createBy"
+        label="创建人"
+        width="150px"
+      ></el-table-column>
+      <el-table-column
+        prop="date"
+        label="创建人所属企业"
+        width="150px"
+      ></el-table-column>
+      <el-table-column prop="createTime" label="创建时间"></el-table-column>
+      <el-table-column prop="date" label="操作" fixed="right" width="200px">
+        <template slot-scope="data">
+          <span
+            class="operate mr10"
+            style="color: #409eff"
+            @click="editorData(data.row)"
+            >编辑</span
+          ><span
+            class="operate mr10"
+            style="color: #f56c6c"
+            @click="deleteData(data.row)"
+            >删除</span
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!-- 分页器 -->
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageSize"
+        :limit="pageNum"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+  </div>
+</template>
+
+<script>
+import { getList, deleteShipperClient } from "@/api/member/client";
+import Pagination from "@/components/Pagination";
+export default {
+  data () {
+    return {
+      //数据列表
+      tableData: [],
+      clientContacts: "",
+      contractNumber: "",
+      startTime: "",
+      endTime: "",
+      //页码
+      pageNum: 1,
+      //数量
+      pageSize: 10,
+      //总数据数量
+      total: 0,
+      rules: {
+        xx: [
+          { required: true, message: "请输入手机号", trigger: "blur" }
+        ],
+      },
+    };
+  },
+  created () {
+    this.getList();
+  },
+
+  methods: {
+    //清空
+    empty () {
+      this.clientContacts = "";
+      this.contractNumber = "";
+      this.startTime = "";
+      this.endTime = "";
+      this.getList();
+    },
+    //分页
+    pagination (val) {
+      this.pageSize = val.page;
+      this.pageNum = val.limit;
+      this.getList();
+    },
+    //客户列表
+    getList () {
+      getList({ clientContacts: this.clientContacts, contractNumber: this.contractNumber, startTime: this.startTime, pageNum: this.pageNum, pageSize: this.pageSize }).then((res) => {
+        if (res.code == 200) {
+          this.tableData = res.rows;
+          this.total = res.total
+        }
+      });
+    },
+
+    //新建
+    goAdd () {
+      this.$router.push({ path: "/member/client/add" })
+    },
+    //修改
+    editorData (row) {
+      this.$router.push({ path: "/member/client/edit", query: { shipperCode: row.shipperCode } })
+    },
+    //删除
+    deleteData (row) {
+      deleteShipperClient({ shipperCode: row.shipperCode }).then((res) => {
+        if (res.code == 200) {
+          this.$message({
+            message: '删除成功',
+            type: 'success',
+            duration: 3000
+          });
+          this.getList();
+        }
+      });
+    },
+  },
+  components: {
+    Pagination,
+  }
+};
+</script>
+
+<style scoped>
+.app-container {
+  width: 100%;
+}
+.fontSize {
+  font-size: 10px;
+}
+
+.searchBtn {
+  /* width: 50px; */
+  display: flex;
+  height: 33px;
+}
+
+label.el-form-item__label {
+  font-weight: 400;
+}
+
+.flex {
+  display: flex;
+}
+</style>
+
+
+

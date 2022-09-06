@@ -1,0 +1,138 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex transposition justify-end">
+      <el-select clearable size="small mr5" value="">
+        <el-option value="1" label="计划提货时间"></el-option>
+        <el-option value="1" label="实际提货时间"></el-option>
+        <el-option value="" label="计划到货时间"></el-option>
+        <el-option value="1" label="实际到货时间"></el-option>
+        <el-option value="1" label="运单创建时间  "></el-option>
+      </el-select>
+
+      <el-date-picker
+        class="mr10"
+        size="small"
+        v-model="time"
+        type="daterange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期"
+      >
+      </el-date-picker>
+
+      <el-select clearable size="small" class="mr5" v-model="key" multiple>
+        <el-option value="" label="车牌号"></el-option>
+        <el-option value="1" label="运单编号"></el-option>
+        <el-option value="2" label="托运人"></el-option>
+        <el-option value="1" label="收货方名称"></el-option>
+        <el-option value="2" label="货物名称"></el-option>
+        <el-option value="1" label="司机手机号"></el-option>
+      </el-select>
+      <el-input class="search mr5" size="small" clearable></el-input>
+      <el-button size="small" type="primary" plain>查询</el-button>
+    </div>
+
+    <div class="mb20 flex transposition justify-between">
+      <div>
+        <el-button size="small" type="primary" plain>审核通过</el-button>
+        <el-button size="small" type="danger" plain>审核不通过</el-button>
+      </div>
+      <div>
+        <el-select clearable size="small mr10" value="" placeholder="运单状态">
+          <el-option value="" label="全部"></el-option>
+          <el-option value="1" label="已接单"></el-option>
+          <el-option value="1" label="发车中"></el-option>
+          <el-option value="1" label="已到达"></el-option>
+          <el-option value="1" label="已签收"></el-option>
+          <el-option value="1" label="已关闭"></el-option>
+          <el-option value="1" label="新建"></el-option>
+        </el-select>
+
+        <el-select clearable size="small mr10" value="" placeholder="支付状态">
+          <el-option value="1" label="内部审核中"></el-option>
+          <el-option value="1" label="平台审核中"></el-option>
+          <el-option value="" label="财务打款中"></el-option>
+          <el-option value="1" label="已打款"></el-option>
+          <el-option value="1" label="审核不通过"></el-option>
+          <el-option value="1" label="打款失败"></el-option>
+        </el-select>
+
+        <el-select
+          clearable
+          size="small mr10"
+          value=""
+          placeholder="资料审核状态"
+        >
+          <el-option value="1" label="未完成上传"></el-option>
+          <el-option value="1" label="待审核"></el-option>
+          <el-option value="" label="审核通过"></el-option>
+          <el-option value="1" label="审核不通过"></el-option>
+          <el-option value="1" label="无需审核"></el-option>
+        </el-select>
+      </div>
+    </div>
+
+    <el-table height="600px" :data="tableData" style="width: 100%">
+      <el-table-column type="selection"></el-table-column>
+      <el-table-column prop="date" label="序号"></el-table-column>
+      <el-table-column prop="date" label="运单号"></el-table-column>
+      <el-table-column prop="date" label="是否开票"></el-table-column>
+      <el-table-column prop="date" label="运输方式"></el-table-column>
+      <el-table-column prop="date" label="调车方式"></el-table-column>
+      <el-table-column prop="date" label="运单状态"></el-table-column>
+      <el-table-column prop="date" label="资料审核状态"></el-table-column>
+      <el-table-column prop="date" label="托运人"></el-table-column>
+      <el-table-column prop="date" label="货物名称"></el-table-column>
+      <el-table-column prop="date" label="装货地点"></el-table-column>
+      <el-table-column prop="date" label="卸货地点"></el-table-column>
+      <el-table-column prop="date" label="收货人"></el-table-column>
+      <el-table-column prop="date" label="收款人"></el-table-column>
+      <el-table-column prop="date" label="司机"></el-table-column>
+      <el-table-column prop="date" label="车船号"></el-table-column>
+      <el-table-column prop="date" label="计划装货时间"></el-table-column>
+      <el-table-column prop="date" label="实际提货时间"></el-table-column>
+      <el-table-column prop="date" label="计划到货时间"></el-table-column>
+      <el-table-column prop="date" label="实际到货时间"></el-table-column>
+      <el-table-column prop="date" label="计价单位"></el-table-column>
+      <el-table-column prop="date" label="计划装货量"></el-table-column>
+      <el-table-column prop="date" label="实发装货量"></el-table-column>
+      <el-table-column prop="date" label="实收量"></el-table-column>
+      <el-table-column prop="date" label="单价"></el-table-column>
+      <el-table-column prop="date" label="司机运费"></el-table-column>
+      <el-table-column prop="date" label="含税运费"></el-table-column>
+      <el-table-column prop="date" label="已支付运费"></el-table-column>
+      <el-table-column prop="date" label="支付状态"></el-table-column>
+      <el-table-column prop="date" label="运单创建人"></el-table-column>
+      <el-table-column prop="date" label="运单创建时间"></el-table-column>
+      <el-table-column prop="date" label="操作" fixed="right" width="200px">
+        <template>
+          <span class="operate mr10" @click="goInfo">审核</span>
+          <!--          <span class="operate">删除</span>-->
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+      tableData: [
+        { date: '1111' }
+      ],
+      time: [],
+      key: []
+    }
+  },
+  methods: {
+    goInfo () {
+      this.$router.push("/business/datas/info")
+    }
+  }
+}
+</script>
+
+<style scoped>
+</style>
+

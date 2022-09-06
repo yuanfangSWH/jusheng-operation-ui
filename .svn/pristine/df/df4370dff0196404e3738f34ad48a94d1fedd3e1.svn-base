@@ -1,0 +1,144 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex justify-end">
+      <el-input
+        class="search mr5"
+        size="small"
+        placeholder="客户名称"
+        v-model="queryInfo.shipperFullName"
+      ></el-input>
+      <el-button size="small" type="primary" plain @click="queryBlacklists"
+        >查询</el-button
+      >
+    </div>
+
+    <div class="mb20">
+      <el-button size="small" type="primary" @click="add" plain
+        >添加黑名单</el-button
+      >
+    </div>
+
+    <el-table
+      :data="tableData"
+      style="width: 100%"
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column type="selection" label="序号"></el-table-column>
+      <el-table-column type="index" label="序号"></el-table-column>
+      <el-table-column
+        prop="shipperFullName"
+        label="客户名称"
+      ></el-table-column>
+      <!-- <el-table-column prop="date" label="操作人" ></el-table-column> -->
+      <el-table-column prop="iserialId" label="是否为黑名单">
+        <template slot-scope="data">
+          <span v-if="data.row.iserialId == 1">是</span>
+          <span v-if="data.row.iserialId == 0">否</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="isDlacklistTime"
+        label="为黑名单的时间"
+      ></el-table-column>
+      <el-table-column label="操作" fixed="right" width="200px">
+        <template slot-scope="data">
+          <span class="operate mr10" @click="releaseBlacklist(data.row)"
+            >释放</span
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!--    新增黑名单-->
+    <el-dialog
+      title="新增黑名单客户"
+      :visible.sync="dialogVisible"
+      width="50%"
+      center
+    >
+      <el-form
+        ref="form"
+        :model="form"
+        :rules="rules"
+        label-width="150px"
+        inline
+      >
+        <el-form-item label="客户名称" prop="companyName">
+          <el-input v-model="queryInfo.shipperFullName"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="blackList">拉黑已选择客户</el-button>
+        <el-button type="primary" @click="dialogVisible = false"
+          >关 闭</el-button
+        >
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import { queryBlacklists, releaseBlacklist } from "@/api/business/rebate"
+export default {
+  data () {
+    return {
+      tableData: [],
+      dialogVisible: false,
+      form: {},
+      rules: [],
+      // 条件查询参数
+      queryInfo: {
+        shipperFullName: "", //托运人全称
+      },
+      row: [], //当前行数据
+    }
+  },
+  created () {
+    this.queryBlacklists()
+  },
+
+  methods: {
+    // 黑名单列表
+    queryBlacklists () {
+      queryBlacklists(this.queryInfo).then(res => {
+        if (res.code == 200) {
+          this.tableData = res.rows
+        }
+      })
+    },
+
+    // 批量修改黑名单
+    releaseBlacklist (row) {
+      releaseBlacklist({ sceneBlacklist: row.sceneBlacklist }).then(res => {
+        console.log(res)
+      })
+    },
+
+    handleSelectionChange (row) {
+      this.row = row
+    },
+
+    // 添加黑名单
+    add () {
+      this.dialogVisible = true;
+    },
+
+    // 添加黑名单确定按钮
+    blackList () {
+      let data = this.row
+      console.log(data)
+      releaseBlacklist({ sceneBlacklist: data.sceneBlacklist }).then(res => {
+        console.log(res)
+      })
+    },
+
+    // 查询
+
+
+  }
+}
+</script>
+
+<style scoped>
+</style>
+

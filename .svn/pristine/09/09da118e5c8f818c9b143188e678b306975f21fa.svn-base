@@ -1,0 +1,72 @@
+<template>
+  <div class="app-container">
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column prop="fileType" label="文件类型"></el-table-column>
+      <el-table-column prop="remark" label="描述信息"></el-table-column>
+      <el-table-column prop="createBy" label="操作人"></el-table-column>
+      <el-table-column prop="createTime" label="操作时间"></el-table-column>
+      <el-table-column label="操作">
+        <template>
+          <span class="operate mr10">查看</span>
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageSize"
+        :limit="pageNum"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+  </div>
+</template>
+
+<script>
+
+import { queryCarriageAttachment } from '@/api/transform/waybill'
+import Pagination from "@/components/Pagination";
+export default {
+  components: {
+    Pagination
+  },
+  data () {
+    return {
+      form: {},
+      tableData: [],
+      //页码
+      pageSize: 1,
+      //数量
+      pageNum: 10,
+      //总数据量
+      total: 0,
+    }
+  },
+  mounted () {
+    this.queryCarriageAttachment();
+  },
+  methods: {
+    // 附件列表
+    queryCarriageAttachment () {
+      let data = {
+        pageSize: this.pageSize,
+        pageNum: this.pageNum,
+      }
+      queryCarriageAttachment(data).then(res => {
+        if (res.code == 200) {
+          this.tableData = res.rows
+          this.total = res.total
+        }
+      })
+    },
+  }
+}
+</script>
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+</style>

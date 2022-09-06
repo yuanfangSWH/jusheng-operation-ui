@@ -1,0 +1,39 @@
+import request from "@/utils/request";
+import qs from "qs";
+//qs.stringify()
+
+// 查询列表
+export function getList(data) {
+  return request({
+    url: "operation/paymentAudit/queryPayments",
+    method: "post",
+    data: data
+  });
+}
+
+// 添加支付凭证
+export function setCredentials(data) {
+  return request({
+    url: "operation/FinancialRemittance/uploadPaymentCredentials",
+    method: "post",
+    data: data
+  });
+}
+//运营回退付款申请单
+export function setRefund(data) {
+    return request({
+      url: "operation/paymentAudit/financeFallbackPayment",
+      method: "post",
+      data: data
+    });
+  }
+//批量审核付款申请单
+export function setState(data) {
+    return request({
+      url: "operation/FinancialRemittance/uploadPaymentCredentials",
+      method: "post",
+      data: data
+    });
+  }
+
+  //批量处理上传凭证

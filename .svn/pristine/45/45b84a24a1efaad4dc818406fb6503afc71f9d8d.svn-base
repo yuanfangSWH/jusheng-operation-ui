@@ -1,0 +1,101 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex justify-end">
+      <el-date-picker
+        class="mr10"
+        size="small"
+        v-model="time"
+        type="daterange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期">
+      </el-date-picker>
+
+      <el-select size="small mr5" value="">
+        <el-option value="" label="客户名称"></el-option>
+        <el-option value="1" label="合同编号"></el-option>
+      </el-select>
+      <el-input class="search mr5" size="small"></el-input>
+      <el-button size="small" type="primary" plain>查询</el-button>
+    </div>
+    <div class="mb20">
+      <el-button size="small" type="primary" @click="goAdd" plain>新建</el-button>
+      <el-button size="small" type="danger" plain>删除</el-button>
+      <el-button size="small" type="warning" plain>导出</el-button>
+    </div>
+    <el-table
+      :data="tableData"
+      style="width: 100%">
+      <el-table-column type="selection" ></el-table-column>
+      <el-table-column prop="date" label="序号" ></el-table-column>
+      <el-table-column prop="date" label="客户名称" ></el-table-column>
+      <el-table-column prop="date" label="客户简称" ></el-table-column>
+      <el-table-column prop="date" label="客户联系人" ></el-table-column>
+      <el-table-column prop="date" label="联系电话" ></el-table-column>
+      <el-table-column prop="date" label="联系地址" ></el-table-column>
+      <el-table-column prop="date" label="客户开发人" ></el-table-column>
+      <el-table-column prop="date" label="结算方式" ></el-table-column>
+      <el-table-column prop="date" label="账期" ></el-table-column>
+      <el-table-column prop="date" label="合同起始日期" ></el-table-column>
+      <el-table-column prop="date" label="合同结束日期" ></el-table-column>
+      <el-table-column prop="date" label="创建人" ></el-table-column>
+      <el-table-column prop="date" label="创建人所属企业" ></el-table-column>
+      <el-table-column prop="date" label="创建时间" ></el-table-column>
+      <el-table-column prop="date" label="操作" fixed="right" width="200px">
+        <template slot-scope="data">
+          <span class="operate mr10" @click="goAdd()">编辑</span>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+</template>
+
+<script>
+import { getList } from '../../../api/member/client'
+export default {
+  data(){
+    return {
+      time:[],
+      // tableData: [{
+      //   date: '2016-05-02',
+      //   name: '王小虎',
+      //   address: '上海市普陀区金沙江路 1518 弄'
+      // }, {
+      //   date: '2016-05-04',
+      //   name: '王小虎',
+      //   address: '上海市普陀区金沙江路 1517 弄'
+      // }, {
+      //   date: '2016-05-01',
+      //   name: '王小虎',
+      //   address: '上海市普陀区金沙江路 1519 弄'
+      // }, {
+      //   date: '2016-05-03',
+      //   name: '王小虎',
+      //   address: '上海市普陀区金沙江路 1516 弄'
+      // }]
+      tableData:[],
+    }
+  },
+  created () {
+    this.getList()
+  },
+  methods:{
+    goAdd(){
+      this.$router.push('/member/client/edit')
+    },
+    getList(){
+      getList().then(res=>{
+        // this.tableData
+        console.log(res)
+        if(res.code == 200){
+          this.tableData = res.rows
+        }
+      })
+    }
+  }
+}
+</script>
+
+<style scoped>
+
+</style>

@@ -1,0 +1,60 @@
+import request from "@/utils/request";
+
+// 公共上传文件
+export function upload(data) {
+  return request({
+    url: "/operation/file/uploadFile",
+    method: "post",
+    headers:{"Content-Type":"multipart/form-data"},
+    data: data
+  });
+}
+
+//下载文件
+export function downloadFile(data) {
+    return request({
+      url: "/operation//file/downloadFile",
+      method: "post",
+      headers:{"Content-Type":"multipart/form-data"},
+      data: data
+    });
+  }
+
+//上传文件删除
+export function deleteFile(data) {
+    return request({
+      url: "/operation/file/deleteFile",
+      method: "post",
+      data: data
+    });
+  }
+
+  //驾驶证(正副页)ocr识别,并上传驾驶证照片
+  export function DLCardOCRAndUpload(data) {
+    return request({
+      url: "/operation/file/DLCardOCRAndUpload",
+      headers:{"Content-Type":"multipart/form-data"},
+      method: "post",
+      data: data
+    });
+  }
+
+  //身份证(正副页)ocr识别,并上传身份证照片
+  export function IDCardOCRAndUpload(data) {
+    return request({
+      url: "/operation/file/IDCardOCRAndUpload",
+      headers:{"Content-Type":"multipart/form-data"},
+      method: "post",
+      data: data
+    });
+  }
+
+  //行驶证(正副页)ocr识别,并上传行驶证照片
+  export function VDLCardOCRAndUpload(data) {
+    return request({
+      url: "/operation/file/VDLCardOCRAndUpload",
+      headers:{"Content-Type":"multipart/form-data"},
+      method: "post",
+      data: data
+    });
+  }

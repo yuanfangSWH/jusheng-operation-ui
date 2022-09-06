@@ -1,0 +1,112 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex justify-end">
+      <el-select size="small mr5" value="">
+        <el-option value="" label="已启用"></el-option>
+        <el-option value="1" label="已停用"></el-option>
+        <el-option value="1" label="待审核"></el-option>
+      </el-select>
+
+      <el-date-picker
+        class="mr10"
+        size="small"
+        v-model="time"
+        type="daterange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期">
+      </el-date-picker>
+
+      <el-select size="small mr5" value="">
+        <el-option value="" label="司机姓名"></el-option>
+        <el-option value="1" label="手机号"></el-option>
+      </el-select>
+      <el-input class="search mr5" size="small"></el-input>
+      <el-button size="small" type="primary" plain>查询</el-button>
+    </div>
+
+    <div class="mb20">
+      <el-button size="small" type="primary" @click="goAdd" plain>新建</el-button>
+      <el-button size="small" type="danger" plain>删除</el-button>
+      <el-button size="small" type="warning" plain>导出</el-button>
+    </div>
+
+    <el-table
+      :data="tableData"
+      style="width: 100%">
+      <el-table-column type="selection" ></el-table-column>
+      <el-table-column prop="id" label="序号" ></el-table-column>
+      <el-table-column prop="name" label="司机姓名" ></el-table-column>
+      <el-table-column prop="phone" label="手机号" ></el-table-column>
+      <el-table-column prop="idCardNumber" label="身份证号" ></el-table-column>
+      <el-table-column prop="auditStatus" label="审核状态" width="100px">
+        <template slot-scope="data">
+          <span v-if="data.row.auditStatus == 0 ">待审核</span>
+          <span v-if="data.row.auditStatus == 1 ">审核通过</span>
+          <span v-if="data.row.auditStatus == 2 ">审核不通过</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="date" label="身份证状态" ></el-table-column>
+      <el-table-column prop="date" label="驾驶证状态" ></el-table-column>
+      <el-table-column prop="date" label="道路运输从业资格证状态" ></el-table-column>
+      <el-table-column prop="date" label="身份证正面" ></el-table-column>
+      <el-table-column prop="date" label="身份证反面" ></el-table-column>
+      <el-table-column prop="date" label="驾驶证" ></el-table-column>
+      <el-table-column prop="date" label="道路运输从业资格证" ></el-table-column>
+      <el-table-column prop="date" label="代收协议" ></el-table-column>
+      <el-table-column prop="vehicleNumber" label="关联车辆" ></el-table-column>
+      <el-table-column prop="driverId" label="关联收款人" ></el-table-column>
+      <el-table-column prop="date" label="信用分" ></el-table-column>
+      <el-table-column prop="date" label="审核方式" ></el-table-column>
+      <el-table-column prop="createBy" label="创建人" ></el-table-column>
+      <el-table-column prop="createTime" label="创建时间" ></el-table-column>
+      <el-table-column prop="date" label="操作" fixed="right" width="200px">
+        <template slot-scope="data">
+          <span class="operate mr10" @click="goEdit">编辑</span>
+          <span class="operate">审批</span>
+        </template>
+      </el-table-column>
+    </el-table>
+    <Pagination :total="total"></Pagination>
+  </div>
+</template>
+
+<script>
+import { getList } from "@/api/member/driver";
+import Pagination from "@/components/Pagination/index"
+export default {
+  data(){
+    return {
+      tableData:[],
+      total:0,
+      time:[]
+    }
+  },
+  created() {
+    this.getList();
+  },
+  components:{
+    Pagination
+  },
+  methods: {
+    getList(){
+      getList().then(res => {
+        console.log(res)
+        this.tableData = res.rows;
+        this.total = res.total
+      })
+    },
+    goAdd(){
+      this.$router.push("/member/driver/add")
+    },
+    goEdit(){
+      this.$router.push("/member/driver/edit")
+    }
+  }
+}
+</script>
+
+<style scoped>
+
+</style>
+

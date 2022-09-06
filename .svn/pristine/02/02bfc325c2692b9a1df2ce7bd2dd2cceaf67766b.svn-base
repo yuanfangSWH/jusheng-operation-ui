@@ -1,0 +1,113 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex justify-end">
+
+      <el-button size="small" class="mr10" type="warning" plain>导出</el-button>
+
+      <el-select size="small mr10" value="" placeholder="状态" clearable>
+        <el-option value="2" label="未处理"></el-option>
+        <el-option value="1" label="已处理"></el-option>
+      </el-select>
+      <el-select size="small mr10" value="" placeholder="身份" clearable>
+        <el-option value="2" label="司机"></el-option>
+        <el-option value="1" label="托运人"></el-option>
+      </el-select>
+
+      <el-input class="search mr5" size="small" placeholder="手机号"></el-input>
+      <el-button size="small" type="primary" plain>查询</el-button>
+    </div>
+
+    <div class="mb20">
+      <el-button size="small" type="primary" @click="goInfo" plain>发布公告</el-button>
+    </div>
+    <el-table
+      :data="tableData"
+      style="width: 100%">
+      <el-table-column prop="date" label="序号" ></el-table-column>
+      <el-table-column prop="date" label="公告标题" ></el-table-column>
+      <el-table-column prop="date" label="公告内容" ></el-table-column>
+      <el-table-column prop="date" label="公告范围" ></el-table-column>
+      <el-table-column prop="date" label="状态" ></el-table-column>
+      <el-table-column prop="date" label="操作" fixed="right" width="200px">
+        <template slot-scope="data">
+          <span class="operate mr10" @click="goInfo">编辑</span>
+        </template>
+      </el-table-column>
+    </el-table>
+
+<!--    增发-->
+    <el-dialog
+      title="发布公告"
+      :visible.sync="dialogVisible1"
+      width="50%"
+      center
+    >
+      <el-form ref="form" :model="form" :rules="rules" label-position="top">
+        <el-form-item label="公告标题" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+        </el-form-item>
+        <el-form-item label="公告内容" prop="companyName">
+          <el-input v-model="form.companyName" type="textarea" :rows="9"></el-input>
+        </el-form-item>
+        <el-form-item label="设置公告范围(至少勾选—个终端，勾选的终端可正常查看公告信息)" prop="companyName">
+            <el-radio-group v-model="radio">
+              <el-radio :label="0">托运人端</el-radio>
+              <el-radio :label="1">承运人端</el-radio>
+            </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="设置公告状态(设为上线状态方可被托运人或承运人查看)" prop="companyName">
+          <el-radio-group v-model="radio">
+            <el-radio :label="0">上线</el-radio>
+            <el-radio :label="1">下线</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible1 = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible1 = false">确 定</el-button>
+      </span>
+    </el-dialog>
+
+
+  </div>
+</template>
+
+<script>
+import { getList } from '../../../api/business/invoice';
+export default {
+  data(){
+    return {
+      tableData:[{
+        date:'111'
+      }],
+      time:[],
+      dialogVisible: false,
+      dialogVisible1: false,
+      dialogVisible2: false,
+      form:{},
+    }
+  },
+  methods: {
+    goInfo(){
+      this.dialogVisible1 = true;
+    },
+
+
+    // 条件查询系统公告列表
+    getList(){
+      getList().then(res => {
+        
+        console.log(res)
+      })
+    }
+  }
+}
+</script>
+
+<style scoped>
+
+</style>
+

@@ -1,0 +1,134 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex transposition justify-end">
+      <el-select size="small mr10" v-model="sceneName" placeholder="发放场景">
+        <el-option :value="0" label="用油返利"></el-option>
+        <el-option :value="1" label="服务费返利"></el-option>
+        <el-option :value="2" label="推荐客户"></el-option>
+        <el-option :value="3" label="促销活动"></el-option>
+        <el-option :value="4" label="其它"></el-option>
+      </el-select>
+
+      <el-input
+        class="search mr5"
+        size="small"
+        v-model="shipperFullName"
+        placeholder="客户名称"
+      ></el-input>
+      <el-button type="primary" @click="query">查询</el-button>
+      <el-button type="danger" @click="empty">清空</el-button>
+    </div>
+
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column label="序号" type="index"></el-table-column>
+      <el-table-column prop="number" label="返利编号"></el-table-column>
+      <el-table-column
+        prop="shipperFullName"
+        label="发放客户"
+      ></el-table-column>
+      <el-table-column prop="userId" label="发放客户ID"></el-table-column>
+      <el-table-column prop="remark" label="说明"></el-table-column>
+      <el-table-column prop="sceneName" label="发放场景">
+        <template slot-scope="scope">
+          <span v-if="scope.row.sceneName == 0">用油返利</span>
+          <span v-if="scope.row.sceneName == 1">服务费返利</span>
+          <span v-if="scope.row.sceneName == 2">推荐客户</span>
+          <span v-if="scope.row.sceneName == 3">促销活动</span>
+          <span v-if="scope.row.sceneName == 4">其他</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="type" label="返利类型">
+        <template slot-scope="scope">
+          <span v-if="scope.row.type == 0">满减券</span>
+          <span v-if="scope.row.type == 1">抵扣券</span>
+          <span v-if="scope.row.type == 2">折扣券</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="createTime" label="记录创建日期"></el-table-column>
+      <el-table-column prop="startTime" label="生效日期"></el-table-column>
+      <el-table-column prop="endTime" label="结束日期"></el-table-column>
+      <el-table-column prop="status" label="状态">
+        <template slot-scope="scope">
+          <span v-if="scope.row.status == 0">已领用</span>
+          <span v-if="scope.row.status == 1">已使用</span>
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageSize"
+        :limit="pageNum"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+  </div>
+</template>
+
+<script>
+import { queryFlRecords } from "@/api/business/rebate"
+import Pagination from "@/components/Pagination";
+export default {
+  components: {
+    Pagination
+  },
+  data () {
+    return {
+      tableData: [],
+      //页码
+      pageSize: 10,
+      //数量
+      pageNum: 1,
+      //总数据量
+      total: 0,
+      sceneName: null,
+      shipperFullName: ""
+    }
+  },
+
+  created () {
+    this.getList()
+  },
+
+  methods: {
+    //条件查询返利记录
+    getList () {
+      let data = {
+        sceneName: this.sceneName,
+        shipperFullName: this.shipperFullName
+      }
+      queryFlRecords(data, {
+        pageSize: this.pageSize,
+        pageNum: this.pageNum
+      }).then(res => {
+        if (res.code == 200) {
+          this.tableData = res.rows
+          this.total = res.total
+        }
+      })
+    },
+    query () {
+      this.pageSize = 1;
+      this.getList();
+    },
+    //清空
+    empty () {
+      this.sceneName = ""
+      this.shipperFullName = ""
+      this.pageSize = 1;
+      this.pageNum = 10;
+      this.getList();
+    },
+    //分页
+    pagination (val) {
+      this.pageSize = val.page;
+      this.pageNum = val.limit;
+      this.getList();
+    },
+  }
+}
+</script>
+
+<style scoped>
+</style>
+

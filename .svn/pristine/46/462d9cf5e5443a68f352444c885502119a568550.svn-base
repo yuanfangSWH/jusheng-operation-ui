@@ -1,0 +1,104 @@
+<template>
+  <div class="app-container">
+    <el-table
+      height="600px"
+      max-height="600px"
+      :data="tableData"
+      style="width: 100%"
+    >
+      <el-table-column prop="fileType" label="文件类型">
+        <template slot-scope="data">
+          <span v-if="data.row.fileType == 0">发车上报</span>
+          <span v-else-if="data.row.fileType == 1">在途上报</span>
+          <span v-else-if="data.row.fileType == 2">签收上报</span>
+          <span v-else-if="data.row.fileType == 3">合同</span>
+          <span v-else-if="data.row.fileType == 4">其它</span>
+          <span v-else-if="data.row.fileType == 5">开户许可证</span>
+          <span v-else-if="data.row.fileType == 6">营业执照</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="fileExplain" label="描述信息"></el-table-column>
+      <el-table-column prop="createBy" label="操作人"></el-table-column>
+      <el-table-column prop="createTime" label="操作时间"></el-table-column>
+      <el-table-column label="操作">
+        <template slot-scope="data">
+          <span class="operate mr10" @click="detailsIMG(data.row)">查看</span>
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageNum"
+        :limit="pageSize"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+    <el-dialog :visible.sync="dialogIMG" :append-to-body="true">
+      <viewer>
+        <img style="width: 100%" :src="dialogImageUrl" />
+      </viewer>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+
+import { queryCarriageAttachment } from '@/api/transform/waybill'
+import Pagination from "@/components/Pagination";
+export default {
+  components: {
+    Pagination
+  },
+  data () {
+    return {
+      form: {},
+      tableData: [],
+      //页码
+      pageSize: 10,
+      //数量
+      pageNum: 1,
+      //总数据量
+      total: 0,
+      dialogIMG: false,
+      dialogImageUrl: ""
+    }
+  },
+  mounted () {
+    this.queryCarriageAttachment();
+  },
+  methods: {
+    //查看
+    detailsIMG (data) {
+      this.dialogIMG = true;
+      this.dialogImageUrl = data.fileUrl;
+    },
+    // 附件列表
+    queryCarriageAttachment () {
+      let data = {
+        carriageId: this.$store.state.waybill.carriageId
+      }
+      queryCarriageAttachment(data, { pageSize: this.pageSize, pageNum: this.pageNum }).then(res => {
+        if (res.code == 200) {
+          this.tableData = res.rows
+          this.total = res.total
+        }
+      })
+    },
+    //分页
+    pagination (val) {
+      this.pageSize = val.limit;
+      this.pageNum = val.page;
+      this.getList();
+    },
+  }
+}
+</script>
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+</style>

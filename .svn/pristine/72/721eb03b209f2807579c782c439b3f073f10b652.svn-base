@@ -1,0 +1,313 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex justify-end">
+      <el-button class="mr10" type="warning" @click="handleExport"
+        >导出</el-button
+      >
+      <el-input
+        class="mr5"
+        v-model="queryParams.nickName"
+        placeholder="请输入收款人姓名"
+        clearable
+        @keyup.enter.native="handleQuery"
+      />
+      <el-input
+        class="mr5"
+        v-model="queryParams.carNum"
+        placeholder="请输入银行卡卡号"
+        clearable
+        @keyup.enter.native="handleQuery"
+      />
+      <el-button type="primary" @click="handleQuery">查询</el-button>
+      <el-button type="danger" @click="empty">清空</el-button>
+    </div>
+    <div class="mb20">
+      <el-button type="primary" @click="handleAdd">新增</el-button>
+    </div>
+    <el-table v-loading="loading" :data="userList">
+      <el-table-column
+        prop="bankNo"
+        label="序号"
+        type="index"
+      ></el-table-column>
+      <el-table-column prop="kaihuName" label="收款人姓名"></el-table-column>
+      <el-table-column prop="userId" label="所属用户"></el-table-column>
+      <el-table-column prop="accountBank" label="身份证号"></el-table-column>
+      <el-table-column prop="payeePhone" label="收款人电话"></el-table-column>
+      <el-table-column prop="accountBank" label="银行卡号"></el-table-column>
+      <el-table-column prop="kaihuBank" label="开户银行"></el-table-column>
+      <el-table-column prop="createBy" label="创建人"></el-table-column>
+      <el-table-column prop="createTime" label="创建时间"></el-table-column>
+      <el-table-column prop="updateTime" label="更新时间"></el-table-column>
+      <el-table-column label="备注" align="center" prop="remark" />
+      <el-table-column
+        label="操作"
+        align="center"
+        class-name="small-padding fixed-width"
+      >
+        <template slot-scope="scope">
+          <el-button
+            type="text"
+            icon="el-icon-edit"
+            @click="handleUpdate(scope.row)"
+            >修改</el-button
+          >
+          <el-button
+            type="text"
+            icon="el-icon-delete"
+            @click="handleDelete(scope.row)"
+            >删除</el-button
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!-- 分页器 -->
+    <div class="paging_css">
+      <Pagination
+        :total="userList.length"
+        :page="queryParams.pageSize"
+        :limit="queryParams.pageNum"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+
+    <!-- 添加或修改用户信息对话框 -->
+    <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+        <el-input v-model="userName"></el-input>
+        <el-button type="primary" @click="searchUser">查询用户</el-button>
+        <el-form-item label="托运人手机姓名" prop="companyName">
+          <el-input readonly disabled v-model="clientName"></el-input>
+        </el-form-item>
+        <el-form-item label="收款人姓名" prop="companyName">
+          <el-input v-model="form.kaihuName"></el-input>
+        </el-form-item>
+        <el-form-item label="银行卡号">
+          <el-input v-model="form.accountBank"></el-input>
+        </el-form-item>
+        <el-form-item label="身份证号">
+          <el-input v-model="form.idCardNumber"></el-input>
+        </el-form-item>
+        <el-form-item label="开户银行">
+          <el-input v-model="form.kaihuBank"></el-input>
+        </el-form-item>
+        <el-form-item label="收款人电话">
+          <el-input v-model="form.payeePhone"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import {
+  listUser,
+  getUser,
+  delUser,
+  addUser,
+  updateUser,
+  exportUser,
+  getUserId,
+  getList,
+} from "../../../api/member/payee";
+// 引入分页器
+import Pagination from "@/components/Pagination";
+
+export default {
+  name: "User",
+  components: {
+    Pagination,
+  },
+  data () {
+    return {
+      // 遮罩层
+      loading: true,
+      // 总条数
+      total: 0,
+      // 用户信息表格数据
+      userList: [],
+      // 弹出层标题
+      title: "",
+      // 是否显示弹出层
+      open: false,
+      //添加收款人 查詢條件
+      userName: null,
+      //查詢結果
+      clientName: "",
+      // 查询参数
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        userName: null,
+        nickName: null,
+        carNum: null,
+      },
+      // 表单参数
+      form: {
+        payeeId: "",
+        kaihuName: "", //收款人姓名
+        accountBank: "", //身份证号
+        payeePhone: "", //收款人电话
+        accountBank: "", //银行卡号
+        kaihuBank: "", //开户银行
+        userId: "",
+      },
+
+      // 表单校验
+      rules: {
+        // 用户名
+        userName: [
+          { required: true, message: "用户账号不能为空", trigger: "blur" },
+        ],
+      },
+    };
+  },
+  created () {
+    this.getList();
+  },
+  methods: {
+    /** 查询用户信息列表 */
+    getList () {
+      this.loading = true;
+      getList(this.queryParams).then((response) => {
+        this.userList = response.rows;
+        this.total = response.total;
+        this.loading = false;
+      });
+    },
+    // 取消按钮
+    cancel () {
+      this.open = false;
+      this.reset();
+    },
+    // 表单重置
+    reset () {
+      this.form = {
+        payeeId: "",
+        kaihuName: "", //收款人姓名
+        accountBank: "", //身份证号
+        payeePhone: "", //收款人电话
+        accountBank: "", //银行卡号
+        kaihuBank: "", //开户银行
+        userId: "",
+      };
+      this.resetForm("form");
+    },
+    //查询
+    handleQuery () {
+      this.queryParams.pageNum = 1;
+      this.getList();
+    },
+    /** 重置按钮操作 */
+    resetQuery () {
+      this.queryParams = {
+        pageNum: 1,
+        pageSize: 10,
+        userName: null,
+        nickName: null,
+        carNum: null,
+      }
+      this.getList();
+    },
+
+    // 获取UserId(新建收款人的时候要先查询，因为是运营端)
+    searchUser () {
+      this.form.userId = null;
+      this.clientName = "";
+      console.log(this.userName);
+      getUserId(this.userName).then((res) => {
+        if (res.code === 200) {
+          this.$message.success(res.msg);
+          this.form.userId = res.data.userId;
+          this.clientName = res.data.phonenumber + res.data.nickName;
+        } else {
+          this.$message.error(res.msg);
+        }
+      });
+    },
+
+    /** 新增按钮操作 */
+    handleAdd () {
+      this.reset();
+      this.open = true;
+      this.title = "添加用户信息";
+    },
+    /** 修改按钮操作 */
+    handleUpdate (row) {
+      this.reset();
+      const userId = row.userId || this.ids;
+      getUser(userId).then((response) => {
+        this.form = response.data;
+        this.open = true;
+        this.title = "修改用户信息";
+      });
+    },
+    /** 提交按钮 */
+    submitForm () {
+      this.$refs["form"].validate((valid) => {
+        if (valid) {
+          if (this.form.payeeId != null && this.form.payeeId != "") {
+            updateUser(this.form).then((response) => {
+              this.msgSuccess("修改成功");
+              this.open = false;
+              this.getList();
+            });
+          } else {
+            if (this.form.userId == "") {
+              this.$message.error("请先查询");
+              return;
+            }
+
+            addUser(this.form).then((response) => {
+              this.msgSuccess("新增成功");
+              this.open = false;
+              this.getList();
+            });
+          }
+        }
+      });
+    },
+    /** 删除按钮操作 */
+    handleDelete (row) {
+      const userIds = row.userId || this.ids;
+      this.$confirm(
+        '是否确认删除用户信息编号为"' + userIds + '"的数据项?',
+        "警告",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      )
+        .then(function () {
+          return delUser(userIds);
+        })
+        .then(() => {
+          this.getList();
+          this.msgSuccess("删除成功");
+        });
+    },
+    /** 导出按钮操作 */
+    handleExport () {
+      const queryParams = this.queryParams;
+      this.download(
+        "/operation/clientPayee/exportClientPayee",
+        { ...this.queryParams },
+        `payee_${new Date().getTime()}.xlsx`
+      );
+    },
+    //分页
+    pagination (val) {
+      console.log(val)
+      this.queryParams.pageSize = val.page;
+      this.queryParams.pageNum = val.limit;
+      this.getList();
+    },
+  },
+};
+</script>

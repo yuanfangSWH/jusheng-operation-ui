@@ -1,0 +1,287 @@
+<template>
+  <div class="app-container">
+    <!-- tab页签区域 -->
+    <el-tabs v-model="activeName">
+      <!-- 基础信息面板 -->
+      <el-tab-pane label="基础信息" name="1">
+        <el-form
+          ref="form"
+          :model="form"
+          :rules="rules"
+          label-width="150px"
+          inline
+        >
+          <!-- 基础信息 -->
+          <div class="mb20">
+            <el-divider content-position="left">
+              <span class="weight">基础信息</span>
+            </el-divider>
+          </div>
+          <el-form-item label="公司名称" prop="companyName">
+            <el-input v-model="form.companyName"></el-input>
+          </el-form-item>
+          <el-form-item label="公司简称" prop="companyShortName">
+            <el-input v-model="form.companyShortName"></el-input>
+          </el-form-item>
+          <el-form-item label="法定代表人" prop="legalPersonName">
+            <el-input v-model="form.legalPersonName"></el-input>
+          </el-form-item>
+          <el-form-item label="成立时间">
+            <el-input v-model="form.setUpTime"></el-input>
+          </el-form-item>
+          <el-form-item label="注册资本">
+            <el-input v-model="form.registerMoney"></el-input>
+          </el-form-item>
+          <el-form-item label="主营业务">
+            <el-input v-model="form.mainBusiness"></el-input>
+          </el-form-item>
+          <el-form-item label="客户联系人" prop="clientContacts">
+            <el-input v-model="form.clientContacts"></el-input>
+          </el-form-item>
+          <el-form-item label="客户联系电话" prop="clientContactsPhone">
+            <el-input v-model="form.clientContactsPhone"></el-input>
+          </el-form-item>
+          <el-form-item label="联系地址">
+            <el-input v-model="form.contactAddress"></el-input>
+          </el-form-item>
+          <el-form-item label="客户开发人" prop="clientDeveloper">
+            <el-input v-model="form.clientDeveloper"></el-input>
+          </el-form-item>
+          <!-- 合同信息 -->
+          <div class="mb20">
+            <el-divider content-position="left">
+              <span class="weight">合同信息</span>
+            </el-divider>
+          </div>
+          <el-form-item label="合同编号">
+            <el-input v-model="form.contractNumber"></el-input>
+          </el-form-item>
+          <el-form-item label="合同类型">
+            <el-input v-model="form.contractType"></el-input>
+          </el-form-item>
+          <el-form-item label="结算方式">
+            <el-select
+              size="small mr5"
+              value=""
+              class="select"
+              v-model="form.closeType"
+            >
+              <el-option value="0" label="即时结算"></el-option>
+              <el-option value="1" label="预付结算"></el-option>
+              <el-option value="2" label="其他账期"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="开票时间节点">
+            <el-input v-model="form.makeOutTimeNodes"></el-input>
+          </el-form-item>
+          <el-form-item label="保证金（元）">
+            <el-input v-model="form.earnestMoney"></el-input>
+          </el-form-item>
+          <el-form-item label="归档时间">
+            <el-input v-model="form.pigeonholeTime"></el-input>
+          </el-form-item>
+          <el-form-item label="账期（天）">
+            <el-input v-model="form.billDate"></el-input>
+          </el-form-item>
+          <el-form-item label="合同开始时间">
+            <el-input v-model="form.contractStartTime"></el-input>
+          </el-form-item>
+          <el-form-item label="合同结束时间">
+            <el-input v-model="form.contractEndTime"></el-input>
+          </el-form-item>
+          <!-- 开票信息 -->
+          <div class="mb20">
+            <el-divider content-position="left">
+              <span class="weight">开票信息</span>
+            </el-divider>
+          </div>
+          <el-form-item label="开户银行">
+            <el-input v-model="form.kaihuBank"></el-input>
+          </el-form-item>
+          <el-form-item label="银行账户">
+            <el-input v-model="form.accountBank"></el-input>
+          </el-form-item>
+          <el-form-item label="开票单位地址">
+            <el-input v-model="form.name"></el-input>
+          </el-form-item>
+          <el-form-item label="统一社会信用代码">
+            <el-input v-model="form.cods"></el-input>
+          </el-form-item>
+          <el-form-item label="邮寄地址">
+            <el-input v-model="form.mailAddress"></el-input>
+          </el-form-item>
+          <el-form-item label="收件人">
+            <el-input v-model="form.recipients"></el-input>
+          </el-form-item>
+          <el-form-item label="联系电话">
+            <el-input v-model="form.recipientsPhone"></el-input>
+          </el-form-item>
+          <!-- 其他信息 -->
+          <div class="mb20">
+            <el-divider content-position="left">
+              <span class="weight">其它信息</span>
+            </el-divider>
+          </div>
+          <el-form-item label="备注">
+            <el-input v-model="form.name" type="textarea" :rows="5"></el-input>
+          </el-form-item>
+          <div>
+            <el-form-item label="">
+              <el-button type="primary" @click="saveShipperClient()"
+                >提交</el-button
+              >
+            </el-form-item>
+          </div>
+        </el-form>
+      </el-tab-pane>
+      <!-- 附件信息面板 字段未对-->
+      <el-tab-pane label="附件信息" name="2">
+        <div class="mb20">
+          <el-button>上传附件</el-button>
+        </div>
+        <!-- ---------------------- -->
+        <el-table style="width: 100%" :data="attachment">
+          <el-table-column prop="date" label="文件名"></el-table-column>
+          <el-table-column prop="date" label="文件类型"></el-table-column>
+          <el-table-column prop="date" label="描述信息"></el-table-column>
+          <el-table-column prop="date" label="操作人"></el-table-column>
+          <el-table-column prop="date" label="操作时间"></el-table-column>
+          <el-table-column prop="date" label="操作">
+            <template slot-scope="data">
+              <div>
+                <span
+                  class="operate mr10"
+                  style="color: #409eff"
+                  @click="detailsData(data.row)"
+                  >查看</span
+                ><span
+                  class="operate mr10"
+                  style="color: #f56c6c"
+                  @click="deleteData(data.row)"
+                  >删除</span
+                >
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+        <!-- ---------------------------->
+      </el-tab-pane>
+    </el-tabs>
+  </div>
+</template>
+
+<script>
+import { saveShipperClient } from "@/api/member/client";
+
+export default {
+  data () {
+    return {
+      activeName: "1",
+      form: {
+        companyName: "", //公司名称
+        companyShortName: "", //公司简称
+        legalPersonName: "", //法定代表人
+        setUpTime: "", //成立时间
+        registerMoney: "", //注册资本
+        mainBusiness: "", //主营业务
+        clientNontacts: "", //客户联系人
+        clientContactsPhone: "", //客户联系电话
+        contactAddress: "", //联系地址
+        clientDeveloper: "", //客户开发人
+        contractNumber: "", //合同编号
+        contractType: "", //合同类型
+        closeType: "", //结算方式
+        makeOutTimeNodes: "", //开票时间节点
+        earnestMoney: "", //保证金
+        pigeonholeTime: "", //归档时间
+        billDate: "", //账期
+        contractStartTime: "", //合同开始时间
+        contractEndTime: "", //合同结束时间
+        kaihuBank: "", //开户银行
+        accountBank: "", //银行账户
+        makeOutUnitAddress: "", //开票单位地址
+        cods: "", //统一社会信用代码
+        mailAddress: "", //邮寄地址
+        recipients: "", //收件人
+        recipientsPhone: "", // 联系电话
+      },
+      rules: {},
+      //附件数据
+      attachment: [],
+    };
+  },
+  mounted () {
+
+  },
+  methods: {
+    //添加
+    saveShipperClient () {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          let data = {
+            companyName: this.form.companyName,
+            legalPersonName: this.form.legalPersonName,
+            setUpTime: this.form.setUpTime,
+            registerMoney: this.form.registerMoney,
+            mainBusiness: this.form.mainBusiness,
+            clientNontacts: this.form.clientNontacts,
+            clientContactsPhone: this.form.clientContactsPhone,
+            contactAddress: this.form.contactAddress,
+            clientDeveloper: this.form.clientDeveloper,
+            contractNumber: this.form.contractNumber,
+            contractType: this.form.contractType,
+            closeType: this.form.closeType,
+            makeOutTimeNodes: this.form.makeOutTimeNodes,
+            earnestMoney: this.form.earnestMoney,
+            pigeonholeTime: this.form.pigeonholeTime,
+            billDate: this.form.billDate,
+            contractStartTime: this.form.contractStartTime,
+            contractEndTime: this.form.contractEndTime,
+            kaihuBank: this.form.kaihuBank,
+            accountBank: this.form.accountBank,
+            makeOutUnitAddress: this.form.makeOutUnitAddress,
+            cods: this.form.cods,
+            mailAddress: this.form.mailAddress,
+            recipients: this.form.recipients,
+            recipientsPhone: this.form.recipientsPhone,
+          }
+          saveShipperClient(data).then((res) => {
+            if (res.code == 200) {
+              this.$message({
+                message: '添加成功',
+                type: 'success',
+                duration: 3000
+              });
+            }
+          });
+        }
+      });
+    },
+    //删除附件
+    deleteData () {
+
+    },
+    //查看附件
+    detailsData (row) {
+      selectAccessory({ shipperClientId: row.shipperClientId }).then((res) => {
+        if (res.code == 200) {
+          console.log(res.rows)
+        }
+      });
+    }
+  },
+};
+</script>
+
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+
+.mb20 {
+  margin-bottom: 40px;
+}
+</style>

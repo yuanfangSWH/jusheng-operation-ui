@@ -1,0 +1,349 @@
+<template>
+  <div class="app-container">
+    <el-form ref="form" :model="form" label-width="150px" inline>
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">身份信息</span>
+        </el-divider>
+      </div>
+      <el-row>
+        <el-col :span="6"
+          ><el-form-item label="姓名" prop="name">
+            {{ form.name }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="性别" prop="sex">
+            <span v-if="form.sex == 1">男</span>
+            <span v-else-if="form.sex == 0">女</span>
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="注册手机号" prop="phone">
+            {{ form.phone }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="身份证号" prop="idCardNumber">
+            {{ form.idCardNumber }}
+          </el-form-item></el-col
+        >
+      </el-row>
+      <el-row>
+        <el-col :span="6"
+          ><el-form-item label="身份地址" prop="idCardAddress">
+            {{ form.idCardAddress }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="身份证签发机关" prop="idCardOffice">
+            {{ form.idCardOffice }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="关联收款人" prop="chauffeurId">
+            {{ form.chauffeurId }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"></el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="6"
+          ><el-form-item
+            label="身份证有效开始时间"
+            prop="idCardPeriodStartTime"
+          >
+            {{ form.idCardPeriodStartTime }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="身份证有效结束日期" prop="idCardPeriodEndTime">
+            {{ form.idCardPeriodEndTime }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"></el-col>
+        <el-col :span="6"></el-col>
+      </el-row>
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">驾驶证信息</span>
+        </el-divider>
+      </div>
+      <el-row>
+        <el-col :span="6"
+          ><el-form-item label="驾驶证号" prop="drivingNumber">
+            {{ form.drivingNumber }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="准驾车型" prop="vehicleType">
+            {{ form.vehicleType }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="驾驶证有效开始日期" prop="drivingStartTime">
+            {{ form.drivingStartTime }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6">
+          <el-form-item label="驾驶证有效结束日期" prop="drivingEndTime">
+            {{ form.drivingEndTime }}
+          </el-form-item></el-col
+        >
+      </el-row>
+
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">从业资格证信息</span>
+        </el-divider>
+      </div>
+      <el-row>
+        <el-col :span="6">
+          <el-form-item label="从业资格证号" prop="qualifiedNumber">
+            {{ form.qualifiedNumber }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item
+            label="资格证有效开始日期"
+            prop="qualifiedPeriodStartTime"
+          >
+            {{ form.qualifiedPeriodStartTime }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6">
+          <el-form-item
+            label="资格证有效结束日期"
+            prop="qualifiedPeriodEndTime"
+          >
+            {{ form.qualifiedPeriodEndTime }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"></el-col>
+      </el-row>
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">证件照片列表</span>
+        </el-divider>
+      </div>
+      <div class="imgdiv">
+        <div class="liemg">
+          <div class="imgBox">
+            <div class="youshang" v-for="(item, key) in urls" :key="key">
+              <el-image
+                class="imgs"
+                :src="item.url"
+                lazy
+                fit="cover"
+                @click="getImg(key)"
+              ></el-image>
+              <div class="biatwcss">{{ item.name }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="xianshu">
+          <el-carousel
+            ref="slideCarousel"
+            height="560px"
+            indicator-position="none"
+            arrow="always"
+            :autoplay="false"
+          >
+            <el-carousel-item v-for="(item, key) in urls" :key="key">
+              <div style="width: 100%">
+                <el-image
+                  style="width: 100%; height: 500px"
+                  fit="contain"
+                  :src="item.url"
+                ></el-image>
+                <div class="textmiaos">{{ item.name }}</div>
+              </div>
+            </el-carousel-item>
+          </el-carousel>
+        </div>
+      </div>
+    </el-form>
+    <div class="flex justify-center">
+      <el-button
+        @click="
+          () => {
+            this.$router.go(-1);
+          }
+        "
+        >返回</el-button
+      >
+    </div>
+  </div>
+</template>
+
+<script>
+import { queryDriverById } from '@/api/member/driver'
+export default {
+  data () {
+    return {
+      form: {
+        chauffeurId: "",
+        name: "",
+        sex: 1,
+        phone: "",
+        idCardNumber: "",
+        idCardAddress: "",
+        idCardOffice: "",
+        drivingNumber: "",
+        vehicleType: "",
+        drivingStartTime: "",
+        drivingEndTime: "",
+        qualifiedNumber: "",
+        qualifiedPeriodStartTime: "",
+        qualifiedPeriodEndTime: "",
+        auditStatus: 0,
+        //身份证头像面
+        idCardPerson: "",
+        //身份证国徽面
+        idCardBadge: "",
+        //驾驶证正本
+        drivingPerson: "",
+        //驾驶证副本
+        drivingBadge: "",
+        //从业资格证
+        cyCertificate: "",
+      },
+      //图片数据
+      urls: []
+    }
+  },
+  mounted () {
+    this.form.chauffeurId = this.$route.query.chauffeurId
+    this.queryDriverById();
+  },
+  methods: {
+    //切换图片
+    getImg (key) {
+      this.$refs.slideCarousel.setActiveItem(key)
+    },
+    //详情
+    queryDriverById () {
+      queryDriverById({ chauffeurId: this.form.chauffeurId }).then((res) => {
+        if (res.code == 200) {
+          this.form.name = res.data.name
+          this.form.sex = res.data.sex
+          this.form.phone = res.data.phone
+          this.form.idCardNumber = res.data.idCardNumber
+          this.form.idCardAddress = res.data.idCardAddress
+          this.form.idCardOffice = res.data.idCardOffice
+          this.form.idCardPeriodStartTime = res.data.idCardPeriodStartTime
+          this.form.idCardPeriodEndTime = res.data.idCardPeriodEndTime
+          this.form.drivingNumber = res.data.drivingNumber
+          this.form.vehicleType = res.data.vehicleType
+          this.form.drivingStartTime = res.data.drivingStartTime
+          this.form.drivingEndTime = res.data.drivingEndTime
+          this.form.qualifiedNumber = res.data.qualifiedNumber
+          this.form.qualifiedPeriodStartTime = res.data.qualifiedPeriodStartTime
+          this.form.qualifiedPeriodEndTime = res.data.qualifiedPeriodEndTime
+          this.form.auditStatus = res.data.auditStatus
+          //图片数据
+          this.form.idCardPerson = res.data.idCardPerson
+          this.form.idCardBadge = res.data.idCardBadge
+          this.form.drivingPerson = res.data.drivingPerson
+          this.form.drivingBadge = res.data.drivingBadge
+          this.form.cyCertificate = res.data.cyCertificate
+          //处理图片
+          if (this.form?.idCardPerson) {
+            this.urls.push({
+              name: '身份证头像面',
+              value: 'idCardPerson',
+              url: this.form.idCardPerson
+            })
+          }
+          if (this.form?.idCardBadge) {
+            this.urls.push({
+              name: '身份证国徽面',
+              value: 'idCardBadge',
+              url: this.form.idCardBadge
+            })
+          }
+          if (this.form?.drivingPerson) {
+            this.urls.push({
+              name: '驾驶证正本',
+              value: 'drivingPerson',
+              url: this.form.drivingPerson
+            })
+          }
+          if (this.form?.drivingBadge) {
+            this.urls.push({
+              name: '驾驶证副本',
+              value: 'drivingBadge',
+              url: this.form.drivingBadge
+            })
+          }
+          if (this.form?.cyCertificate) {
+            this.urls.push({
+              name: '从业资格证',
+              value: 'cyCertificate',
+              url: this.form.cyCertificate
+            })
+          }
+        }
+      });
+    },
+  }
+}
+</script>
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+.liemg {
+  margin-left: 40px;
+  margin-right: 40px;
+}
+.xianshu {
+  flex: 1;
+  margin-right: 40rpx;
+}
+.imgBox {
+  width: 220px;
+  height: 500px;
+  overflow: auto;
+}
+.imgs {
+  width: 200px;
+  height: 200px;
+}
+.imgdiv {
+  display: flex;
+  width: 100%;
+}
+.textmiaos {
+  width: 100%;
+  height: 20px;
+  text-align: center;
+  font-size: 16px;
+  color: rgb(71, 71, 71);
+  line-height: 20px;
+}
+.annscc {
+  display: flex;
+  width: 100%;
+}
+.youshang {
+  width: 200px;
+  height: 200px;
+  position: relative;
+  cursor: pointer;
+}
+.biatwcss {
+  width: 100%;
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  text-align: center;
+  height: 30px;
+  line-height: 30px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+}
+</style>

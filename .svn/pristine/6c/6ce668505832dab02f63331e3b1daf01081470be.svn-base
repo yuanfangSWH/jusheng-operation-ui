@@ -1,0 +1,528 @@
+<template>
+  <div class="app-container">
+    <!-- 头部条件查询 -->
+    <div class="mb20 flex transposition justify-end">
+      <el-date-picker
+        class="mr5"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd 00:00:00"
+        v-model="startTime"
+        type="date"
+        placeholder="选择创建起始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd 23:59:00"
+        v-model="endTime"
+        type="date"
+        placeholder="选择创建结束日期"
+      >
+      </el-date-picker>
+      <el-select
+        clearable
+        size="small mr10"
+        v-model="sceneType"
+        placeholder="返利类型"
+      >
+        <el-option value="0" label="满减券"></el-option>
+        <el-option value="1" label="折扣券"></el-option>
+        <el-option value="2" label="抵扣券"></el-option>
+        <el-option value="3" label="现金券"></el-option>
+        <el-option value="4" label="其它"></el-option>
+      </el-select>
+      <el-select
+        clearable
+        size="small mr10"
+        v-model="sceneName"
+        placeholder="发放场景"
+      >
+        <el-option value="0" label="用油返利"></el-option>
+        <el-option value="1" label="服务费返利"></el-option>
+        <el-option value="2" label="推荐客户"></el-option>
+        <el-option value="3" label="促销活动"></el-option>
+        <el-option value="4" label="其它"></el-option>
+      </el-select>
+      <el-select
+        clearable
+        size="small mr10"
+        v-model="isEnd"
+        placeholder="结束状态"
+      >
+        <el-option value="0" label="未结束"></el-option>
+        <el-option value="1" label="已结束"></el-option>
+      </el-select>
+      <el-button type="primary" @click="query">查询</el-button>
+      <el-button type="danger" @click="empty">清空</el-button>
+    </div>
+
+    <div class="mb20">
+      <div>
+        <el-button type="primary" @click="dialogVisible = true"
+          >新建返利场景</el-button
+        >
+        <el-button type="warning" @click="goBlack">黑名单</el-button>
+        <el-button type="warning" @click="goAnnal">返利记录</el-button>
+      </div>
+    </div>
+
+    <el-table height="600px" :data="tableData" style="width: 100%">
+      <el-table-column label="序号" type="index"></el-table-column>
+      <el-table-column prop="couponId" label="返利ID"></el-table-column>
+      <el-table-column prop="sceneName" label="发放场景">
+        <template slot-scope="scope">
+          <span v-if="scope.row.sceneName == 0">用油返利</span>
+          <span v-else-if="scope.row.sceneName == 1">服务费返利</span>
+          <span v-else-if="scope.row.sceneName == 2">推荐客户</span>
+          <span v-else-if="scope.row.sceneName == 3">促销活动</span>
+          <span v-else-if="scope.row.sceneName == 4">其他</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="sceneType" label="返利类型">
+        <template slot-scope="scope">
+          <span v-if="scope.row.sceneType == 0">满减券</span>
+          <span v-else-if="scope.row.sceneType == 1">折扣券</span>
+          <span v-else-if="scope.row.sceneType == 2">抵扣券</span>
+          <span v-else-if="scope.row.sceneType == 3">现金券</span>
+          <span v-else-if="scope.row.sceneType == 4">其他</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="sceneCash" label="返利金额(元)"></el-table-column>
+      <el-table-column label="剩余/发行量">
+        <template slot-scope="data">
+          {{ data.row.sceneRemaining }}/{{ data.row.sceneCirculation }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="sceneUse" label="使用量"></el-table-column>
+      <el-table-column
+        prop="effectiveStartTime"
+        label="有效开始时间"
+      ></el-table-column>
+      <el-table-column
+        prop="effectiveEndTime"
+        label="有效结束时间"
+      ></el-table-column>
+      <el-table-column prop="createBy" label="创建人"></el-table-column>
+      <el-table-column prop="createTime" label="创建时间"></el-table-column>
+      <el-table-column prop="isEnd" label="结束状态">
+        <template slot-scope="scope">
+          <span v-if="scope.row.isEnd == 0" style="color: #67c23a">未结束</span>
+          <span v-else-if="scope.row.isEnd == 1" style="color: #f56c6c"
+            >已结束</span
+          >
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" fixed="right" width="200px">
+        <template slot-scope="data">
+          <span
+            class="operate mr10"
+            style="color: #409eff"
+            @click="increase(data.row)"
+            >增发</span
+          >
+          <span
+            class="operate mr10"
+            style="color: #67c23a"
+            @click="hair(data.row)"
+            >发放</span
+          >
+          <span
+            class="operate mr10"
+            style="color: #f56c6c"
+            @click="endCoupon(data.row)"
+            >结束</span
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageNum"
+        :limit="pageSize"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+
+    <!-- 发放记录-->
+    <el-dialog title="新建返利场景" :visible.sync="dialogVisible" width="50%">
+      <el-form
+        ref="form"
+        :model="form"
+        :rules="rules"
+        label-width="150px"
+        inline
+      >
+        <div class="mb20">
+          <el-divider content-position="left">
+            <span class="weight">基础信息</span>
+          </el-divider>
+        </div>
+        <el-form-item label="场景名称" prop="sceneName">
+          <el-select
+            clearable
+            size="small mr10"
+            v-model="form.sceneName"
+            placeholder="发放场景"
+          >
+            <el-option :value="0" label="用油返利"></el-option>
+            <el-option :value="1" label="服务费返利"></el-option>
+            <el-option :value="2" label="推荐客户"></el-option>
+            <el-option :value="3" label="促销活动"></el-option>
+            <el-option :value="4" label="其它"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="返利类型" prop="sceneType">
+          <el-select
+            clearable
+            size="small mr10"
+            v-model="form.sceneType"
+            placeholder="返利类型"
+          >
+            <el-option :value="0" label="满减券"></el-option>
+            <el-option :value="1" label="折扣券"></el-option>
+            <el-option :value="2" label="抵扣券"></el-option>
+            <el-option :value="3" label="现金券"></el-option>
+            <el-option :value="4" label="其它"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="返利金额(元)">
+          <el-input v-model="form.sceneCash" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="发行量">
+          <el-input v-model="form.sceneCirculation" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="有效期">
+          <el-date-picker
+            format="yyyy 年 MM 月 dd 日"
+            value-format="yyyy-MM-dd"
+            v-model="form.effectiveStartTime"
+            type="date"
+            placeholder="选择起始日期"
+          >
+          </el-date-picker>
+          -
+          <el-date-picker
+            class="mr5"
+            format="yyyy 年 MM 月 dd 日"
+            value-format="yyyy-MM-dd"
+            v-model="form.effectiveEndTime"
+            type="date"
+            placeholder="选择结束日期"
+          >
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input
+            type="textarea"
+            :autosize="{ minRows: 2, maxRows: 4 }"
+            placeholder="请输入备注内容"
+            v-model="form.sceneRemark"
+          >
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveCoupon">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!--    增发-->
+    <el-dialog title="增发" :visible.sync="dialogVisible1" width="24%" center>
+      <el-form
+        ref="form1"
+        :model="form1"
+        :rules="rules1"
+        label-width="100px"
+        inline
+      >
+        <p style="margin-left: 18px">
+          当前发行总量：{{ form1.sceneCirculation }} 张
+        </p>
+
+        <el-form-item label="新增发行量" prop="circulationNum">
+          <el-input v-model="form1.circulationNum" clearable></el-input> 张
+        </el-form-item>
+        <p style="margin-left: 18px">更新后总发行量：{{ increaseNum }} 张</p>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible1 = false">取 消</el-button>
+        <el-button type="primary" @click="increaseCouponNum">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!--    发放-->
+    <el-dialog title="发放" :visible.sync="dialogVisible2" width="30%" center>
+      <el-form
+        ref="form2"
+        :model="form2"
+        :rules="rules2"
+        label-width="150px"
+        inline
+      >
+        <el-form-item label="客户名称" prop="shipperUserId_data">
+          <el-select
+            clearable
+            v-model="form2.shipperUserId_data"
+            multiple
+            filterable
+            remote
+            reserve-keyword
+            placeholder="请输入客户名称"
+            :remote-method="remoteMethod"
+            :loading="loading"
+          >
+            <el-option
+              v-for="item in options"
+              :key="item.shipperUserId"
+              :label="item.shipperFullName"
+              :value="item.shipperUserId"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="发放数量" prop="giveNum">
+          <el-input v-model="form2.giveNum" clearable></el-input> 张
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2 = false">取 消</el-button>
+        <el-button type="primary" @click="giveCoupon"
+          >发放至已选择客户</el-button
+        >
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import { getList, saveCoupon, increaseCouponNum, giveCoupon, endCoupon, queryGiveCouponClientInfo } from "@/api/business/rebate";
+import Pagination from "@/components/Pagination";
+export default {
+  components: {
+    Pagination
+  },
+  data () {
+    return {
+      numberData: "",
+      tableData: [],
+      dialogVisible: false,
+      dialogVisible1: false,
+      dialogVisible2: false,
+      form: {
+        sceneName: 0,
+        sceneType: 0,
+        sceneCash: "",
+        sceneCirculation: "",
+        effectiveStartTime: "",
+        effectiveEndTime: "",
+        sceneRemark: "",
+      },
+      form1: {
+        couponId: "",
+        sceneCirculation: 0,
+        circulationNum: 0
+      },
+      form2: {
+        couponId: "",
+        shipperUserId: "",
+        shipperUserId_data: "",
+        giveNum: 0
+      },
+      rules: {},
+      rules1: {},
+      rules2: {},
+      sceneName: "",
+      isEnd: "",
+      sceneType: "",
+      startTime: "",
+      endTime: "",
+      //页码
+      pageSize: 10,
+      //数量
+      pageNum: 1,
+      //总数据量
+      total: 0,
+      loading: false,
+      timeID: "",
+      options: []
+    }
+  },
+  computed: {
+    increaseNum: function () {
+      return Number(this.form1.sceneCirculation) + Number(this.form1.circulationNum)
+    }
+  },
+  mounted () {
+    this.getList()
+  },
+  methods: {
+    query () {
+      this.pageNum = 1;
+      this.getList();
+    },
+    //列表
+    getList () {
+      let data = {
+        sceneName: this.sceneName,
+        isEnd: this.isEnd,
+        sceneType: this.sceneType,
+        startTime: this.startTime,
+        endTime: this.endTime
+      }
+      getList(data, {
+        pageSize: this.pageSize,
+        pageNum: this.pageNum
+      }).then(res => {
+        if (res.code == 200) {
+          this.tableData = res.rows
+          this.total = res.total
+        }
+      })
+    },
+    //清空
+    empty () {
+      this.sceneName = ""
+      this.isEnd = ""
+      this.sceneType = ""
+      this.startTime = ""
+      this.endTime = ""
+      this.pageSize = 10;
+      this.pageNum = 1;
+      this.getList();
+    },
+    //分页
+    pagination (val) {
+      this.pageSize = val.limit;
+      this.pageNum = val.page;
+      this.getList();
+    },
+    //新建
+    saveCoupon () {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          saveCoupon(this.form).then(res => {
+            if (res.code == 200) {
+              this.dialogVisible = false;
+              this.$refs.form.resetFields();
+              this.$message({
+                message: '新建成功',
+                type: 'success',
+                duration: 3000
+              });
+              this.getList();
+            }
+          })
+        }
+      })
+    },
+    //增发弹框
+    increase (data) {
+      this.form1.couponId = data.couponId;
+      this.form1.sceneCirculation = data.sceneCirculation;
+      this.dialogVisible1 = true;
+    },
+    //增发
+    increaseCouponNum () {
+      this.$refs.form1.validate((valid) => {
+        if (valid) {
+          this.form1.circulationNum = Number(this.form1.circulationNum);
+          increaseCouponNum(this.form1).then(res => {
+            if (res.code == 200) {
+              this.dialogVisible1 = false;
+              this.$refs.form1.resetFields();
+              this.$message({
+                message: '增发成功',
+                type: 'success',
+                duration: 3000
+              });
+              this.getList();
+            }
+          })
+        }
+      })
+    },
+    //发放弹框
+    hair (data) {
+      this.form2.couponId = data.couponId;
+      this.form2.shipperUserId_data = "";
+      this.form2.shipperUserId = "";
+      this.dialogVisible2 = true;
+    },
+    //客户数据
+    remoteMethod (query) {
+      if (query !== '') {
+        this.loading = true;
+        clearTimeout(this.timeID)
+        this.timeID = setTimeout(() => {
+          queryGiveCouponClientInfo({ shipperFullName: query }).then((res) => {
+            if (res.code == 200) {
+              this.loading = false;
+              this.options = res.data;
+            }
+          });
+        }, 1500)
+      } else {
+        this.options = [];
+      }
+    },
+    //发放
+    giveCoupon () {
+      this.$refs.form2.validate((valid) => {
+        if (valid) {
+          this.form2.giveNum = Number(this.form2.giveNum);
+          this.form2.shipperUserId = String(this.form2.shipperUserId_data);
+          giveCoupon(this.form2).then(res => {
+            if (res.code == 200) {
+              this.dialogVisible2 = false;
+              this.$refs.form2.resetFields();
+              this.$message({
+                message: '发放成功',
+                type: 'success',
+                duration: 3000
+              });
+              this.getList();
+            }
+          })
+        }
+      })
+    },
+    //结束
+    endCoupon (data) {
+      this.$confirm('是否结束这个' + data.couponId + "卷的发放", '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        endCoupon({ couponId: data.couponId }).then((res) => {
+          if (res.code == 200) {
+            this.getList();
+            this.$message({
+              message: '结束成功',
+              type: 'success',
+              duration: 3000
+            });
+          }
+        })
+      })
+    },
+    goAnnal () {
+      this.$router.push('/business/rebate/annal')
+    },
+    goBlack () {
+      this.$router.push('/business/rebate/black')
+    }
+  }
+}
+</script>
+
+<style scoped>
+.el-input {
+  width: 300px !important;
+  min-width: 300px !important;
+}
+</style>
+

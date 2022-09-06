@@ -1,0 +1,258 @@
+<template>
+  <div class="app-container">
+    <div class="flex justify-between mb20">
+      <div class="flex">
+        <div style="margin-right: 30px">
+          <span class="mr10">运单编号：{{ form.carriageId }}</span>
+          <span></span>
+        </div>
+        <div style="margin-right: 30px">
+          <span class="mr10">司机：{{ form.chauffeur }}</span>
+          <span></span>
+        </div>
+        <div style="margin-right: 30px">
+          <span class="mr10">车辆：{{ form.vehicleNumber }}</span>
+          <span></span>
+        </div>
+      </div>
+      <div>
+        <el-button type="primary" @click="vehiclePositioning"
+          >车辆最新位置查询</el-button
+        >
+      </div>
+    </div>
+    <div class="flex justify-between mb20">
+      <div class="flex">
+        <div style="margin-right: 30px">
+          <span class="mr10"
+            >运单起运时间、地点：{{ form.departureTime }}、{{
+              form.deliverContactsProvince + form.deliverContactsAddress
+            }}</span
+          >
+          <span></span>
+        </div>
+      </div>
+    </div>
+    <div class="flex justify-between mb20">
+      <div class="flex">
+        <div style="margin-right: 30px">
+          <span class="mr10"
+            >运单到达时间、地点：{{ form.timeOfArrival }}、{{
+              form.takeContactsProvince + form.takeContactsAddress
+            }}</span
+          >
+          <span></span>
+        </div>
+      </div>
+    </div>
+    <div class="kairq">
+      <el-date-picker
+        class="mr5"
+        value-format="yyyy-MM-dd HH:mm:00"
+        v-model="startTime"
+        type="datetime"
+        placeholder="选择车辆位置开始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        value-format="yyyy-MM-dd HH:mm:00"
+        v-model="endTime"
+        type="datetime"
+        placeholder="选择车辆位置结束日期"
+      >
+      </el-date-picker>
+      <el-button type="primary" @click="carriageTracesByTime"
+        >位置查询</el-button
+      >
+    </div>
+    <div class="amap-wrapper">
+      <amap ref="myMap" :center="center" :zoom="zoom" @complete="mapLoading">
+        <amap-marker ref="myMarker" :position="position" />
+        <amap-text
+          :position="position"
+          :text="text"
+          :dom-style="{
+            color: '#f00',
+          }"
+        />
+        <amap-polyline :stroke-weight="8" :path="path" />
+      </amap>
+    </div>
+  </div>
+</template>
+
+<script>
+
+import { carriageTraces, vehiclePositioning, carriageTracesByTime } from '@/api/transform/waybill'
+import Amap from '@amap/amap-vue/lib/amap';
+import AmapMarker from '@amap/amap-vue/lib/marker';
+import AmapText from '@amap/amap-vue/lib/text';
+import AmapPolyline from '@amap/amap-vue/lib/polyline';
+import { wgsToGc } from '@/utils/transformation'
+export default {
+  components: {
+    Amap,
+    AmapMarker,
+    AmapText,
+    AmapPolyline
+  },
+  props: {
+    form: Object
+  },
+  data () {
+    return {
+      text: "请点击上方查询按钮",
+      //地图坐标
+      center: [121.455703, 31.247253],
+      //地图缩放等级
+      zoom: 15,
+      //标记地址
+      position: [121.455703, 31.247253],
+      //折线地址
+      path: [],
+      //异步请求得到的位置数据
+      locationData: {},
+      startTime: "",
+      endTime: ""
+    }
+  },
+  methods: {
+    //时间查询
+    carriageTracesByTime () {
+      var i = this.datePD(this.startTime, this.endTime);
+      if (i == 4) {
+        this.$message({
+          message: '请选择时间！',
+          type: 'warning',
+          duration: 3000
+        });
+      } else if (i == 3) {
+        this.$message({
+          message: '开始时间不能大于结束时间！',
+          type: 'warning',
+          duration: 3000
+        });
+      } else if (i == 2) {
+        this.$message({
+          message: '时间相差不能大于24个小时！',
+          type: 'warning',
+          duration: 3000
+        });
+      } else if (i == 1) {
+        carriageTracesByTime({ carriageId: this.$store.state.waybill.carriageId, startTime: this.startTime, endTime: this.endTime }).then((res) => {
+          if (res.code == 200) {
+            this.locationData = res.data.carriageLocationInfo;
+            if (this.locationData.location != "" && this.locationData.location) {
+              this.text = "货车目前位置"
+              var map1 = wgsToGc((this.locationData.location[0].longitude / 600000), (this.locationData.location[0].latitude / 600000));
+              this.center = [map1[0], map1[1]];
+              this.position = [map1[0], map1[1]];
+              //坐标数组
+              var path = [];
+              var map2 = [];
+              for (let i of this.locationData.location) {
+                map2 = wgsToGc((i.longitude / 600000), (i.latitude / 600000));
+                path.push([map2[0], map2[1]]);
+              }
+              this.path = path;
+            } else {
+              this.center = [121.455703, 31.247253];
+              this.position = [121.455703, 31.247253];
+            }
+          }
+        });
+      }
+    },
+    //位置查询
+    vehiclePositioning () {
+      vehiclePositioning({ carriageId: this.$store.state.waybill.carriageId, vehicleNumber: this.form.vehicleNumber }).then((res) => {
+        if (res.code == 200) {
+          this.text = "货车最新位置"
+          var map1 = wgsToGc((res.data.longitude / 600000), (res.data.latitude / 600000));
+          this.center = [map1[0], map1[1]]
+          this.position = this.center
+          this.path.push(this.center)
+        }
+      });
+    },
+    //地图初始化
+    mapLoading () {
+      //初始化地图坐标位置(废弃)
+      //   carriageTraces({ carriageId: this.$store.state.waybill.carriageId }).then((res) => {
+      //     if (res.code == 200) {
+      //       this.locationData = res.data.carriageLocationInfo;
+      //       if (this.locationData.location != "" && this.locationData.location) {
+      //         this.text = "货车目前位置"
+      //         var map1 = wgsToGc((this.locationData.location[0].longitude / 600000), (this.locationData.location[0].latitude / 600000));
+      //         this.center = [map1[0], map1[1]];
+      //         this.position = [map1[0], map1[1]];
+      //         //坐标数组
+      //         var path = [];
+      //         var map2 = [];
+      //         for (let i of this.locationData.location) {
+      //           map2 = wgsToGc((i.longitude / 600000), (i.latitude / 600000));
+      //           path.push([map2[0], map2[1]]);
+      //         }
+      //         this.path = path;
+      //       } else {
+      //         this.center = [121.455703, 31.247253];
+      //         this.position = [121.455703, 31.247253];
+      //       }
+      //     }
+      //   });
+    },
+    //日期相差时间段判断
+    datePD (time1, time2) {
+      if (time1 == "" || time2 == "" || String(time1) == "null" || String(time2) == "null") {
+        return 4;
+      }
+      //判断开始时间是否大于结束日期
+      if (time1 > time2) {
+        return 3;
+      }
+
+      //截取字符串，得到日期部分"2009-12-02",用split把字符串分隔成数组
+      var begin1 = time1.substr(0, 10).split("-");
+      var end1 = time2.substr(0, 10).split("-");
+
+      //将拆分的数组重新组合，并实例成化新的日期对象
+      var date1 = new Date(begin1[1] + - + begin1[2] + - + begin1[0]);
+      var date2 = new Date(end1[1] + - + end1[2] + - + end1[0]);
+
+      //得到两个日期之间的差值m，以分钟为单位
+      //Math.abs(date2-date1)计算出以毫秒为单位的差值
+      //Math.abs(date2-date1)/1000得到以秒为单位的差值
+      //Math.abs(date2-date1)/1000/60得到以分钟为单位的差值
+      var m = parseInt(Math.abs(date2 - date1) / 1000 / 60);
+
+      //小时数和分钟数相加得到总的分钟数
+      //time1.substr(11,2)截取字符串得到时间的小时数
+      //parseInt(time1.substr(11,2))*60把小时数转化成为分钟
+      var min1 = parseInt(time1.substr(11, 2)) * 60 + parseInt(time1.substr(14, 2));
+      var min2 = parseInt(time2.substr(11, 2)) * 60 + parseInt(time2.substr(14, 2));
+
+      //两个分钟数相减得到时间部分的差值，以分钟为单位
+      var n = min2 - min1;
+
+      //将日期和时间两个部分计算出来的差值相加，即得到两个时间相减后的分钟数
+      var minutes = m + n;
+      if (minutes > 1440) {
+        return 2
+      } else {
+        return 1
+      }
+    },
+  }
+}
+</script>
+
+<style scoped>
+.amap-wrapper {
+  width: 100%;
+  height: 700px;
+}
+.kairq {
+  margin-bottom: 10px;
+}
+</style>

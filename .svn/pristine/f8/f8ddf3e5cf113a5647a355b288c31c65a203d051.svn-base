@@ -1,0 +1,260 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex justify-end">
+      <el-button class="mr10" type="warning">导出</el-button>
+
+      <el-select
+        size="small mr10"
+        placeholder="状态"
+        v-model="state_value"
+        clearable
+      >
+        <el-option
+          v-for="item in state"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        >
+        </el-option>
+      </el-select>
+      <el-select
+        size="small mr10"
+        placeholder="身份"
+        v-model="identity_value"
+        clearable
+      >
+        <el-option
+          v-for="item in identity"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        >
+        </el-option>
+      </el-select>
+
+      <el-input
+        class="search mr5"
+        size="small mr10"
+        placeholder="手机号"
+        v-model="phone"
+      >
+      </el-input>
+      <el-button type="primary" @click="query">查询</el-button>
+      <el-button type="danger" @click="empty">清空</el-button>
+    </div>
+
+    <el-table :data="tableData" style="width: 100%" class="el-table-css">
+      <el-table-column prop="feedbackId" label="序号"></el-table-column>
+      <el-table-column prop="userId" label="咨询/投诉人"></el-table-column>
+      <el-table-column prop="userType" label="身份"></el-table-column>
+      <el-table-column prop="userPhone" label="手机号码"></el-table-column>
+      <el-table-column
+        prop="feedbackContent"
+        label="反馈内容"
+      ></el-table-column>
+      <el-table-column prop="feedbackTime" label="反馈时间"></el-table-column>
+      <el-table-column
+        prop="dealWithContent"
+        label="处理内容"
+      ></el-table-column>
+      <el-table-column label="处理状态">
+        <template slot-scope="data">
+          <span
+            v-if="data.row.dealWithState == 0"
+            @click="goInfo(data.row)"
+            style="color: #f56c6c; cursor: pointer"
+            >未处理</span
+          >
+          <span v-if="data.row.dealWithState == 1" style="color: #67c23a"
+            >已处理</span
+          >
+          <span v-else style="color: ##909399">未知</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="dealWithBy" label="处理人"></el-table-column>
+      <el-table-column prop="dealWithTime" label="处理时间"></el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="tableData.length"
+        :page="pageSize"
+        :limit="pageNum"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+    <!--    处理弹框-->
+    <el-dialog
+      title="处理咨询/投诉"
+      :visible.sync="dialogVisible1"
+      width="50%"
+      center
+    >
+      <el-form ref="form" :model="form" :rules="rules" label-width="150px">
+        <div class="flex">
+          <el-form-item label="咨询/投诉人">
+            {{ form.dealWithBy }}
+          </el-form-item>
+          <el-form-item label="身份" v-if="form.userType === 0">
+            <span>托运人</span>
+          </el-form-item>
+          <el-form-item label="身份" v-else>
+            <span>司机</span>
+          </el-form-item>
+          <el-form-item label="手机号">
+            {{ form.userPhone }}
+          </el-form-item>
+        </div>
+
+        <el-form-item label="反馈内容">
+          <el-input
+            type="textarea"
+            :autosize="{ minRows: 2, maxRows: 4 }"
+            disabled
+            v-model="form.feedbackContent"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="反馈时间">
+          {{ form.feedbackTime }}
+        </el-form-item>
+
+        <el-form-item label="处理回复" prop="dealWithContent">
+          <el-input
+            type="textarea"
+            :autosize="{ minRows: 2, maxRows: 4 }"
+            placeholder="请输入回复"
+            v-model="dealWithContent"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible1 = false">取 消</el-button>
+        <el-button type="primary" @click="setEditor">确 定</el-button>
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import { getList, setEditor } from "@/api/feedback/complaint.js";
+import { phoneCheck } from "@/utils/check.js";
+import Pagination from "@/components/Pagination";
+export default {
+  components: {
+    Pagination,
+  },
+  data () {
+    return {
+      //回复
+      dealWithContent: "",
+      state: [
+        {
+          value: 0,
+          label: "未处理",
+        },
+        {
+          value: 1,
+          label: "已处理",
+        },
+      ],
+      //状态
+      state_value: "",
+      identity: [
+        {
+          value: 0,
+          label: "托运人",
+        },
+        {
+          value: 1,
+          label: "司机",
+        },
+      ],
+      //身份
+      identity_value: "",
+      //手机号
+      phone: "",
+      //列表数据
+      tableData: [],
+      //弹框是否显示
+      dialogVisible1: false,
+      //弹框数据
+      form: [],
+      //表单验证
+      rules: {
+        dealWithContent: [
+          { required: true, message: "请输入回复", trigger: "blur" },
+        ],
+      },
+      //页码
+      pageSize: 1,
+      //数量
+      pageNum: 10,
+    };
+  },
+  mounted () {
+    this.getList();
+  },
+  methods: {
+    //分页
+    pagination (val) {
+      this.pageSize = val.page;
+      this.pageNum = val.limit;
+      this.getList();
+    },
+    //清空
+    empty () {
+      this.state_value = "";
+      this.identity_value = "";
+      this.phone = "";
+      this.getList();
+    },
+    //查询
+    query () {
+      if (this.phone == "" || phoneCheck(this.phone)) {
+        this.getList();
+      }
+    },
+    //弹框
+    goInfo (row) {
+      getList({ feedbackId: row.feedbackId }).then((res) => {
+        if (res.code == 200) {
+          this.form = res.rows[0];
+          this.dialogVisible1 = true;
+        }
+      });
+    },
+    //列表
+    getList () {
+      getList({
+        userType: this.identity_value,
+        dealWithState: this.state_value,
+        userPhone: this.phone,
+        pageSize: this.pageSize,
+        pageNum: this.pageNum,
+      }).then((res) => {
+        if (res.code == 200) {
+          this.tableData = res.rows;
+        }
+      });
+    },
+    //处理
+    setEditor () {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          setEditor({
+            dealWithContent: this.dealWithContent,
+            feedbackId: this.form.feedbackId,
+          }).then((res) => {
+            if (res.code == 200) {
+              this.dealWithContent = "";
+              this.dialogVisible1 = false;
+            }
+          });
+        }
+      });
+    },
+  },
+};
+</script>
+
+<style scoped>
+</style>

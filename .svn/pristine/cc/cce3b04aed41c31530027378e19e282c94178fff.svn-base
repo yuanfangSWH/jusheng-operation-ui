@@ -1,0 +1,73 @@
+<template>
+  <div class="app-container">
+    <el-tabs type="border-card">
+      <el-tab-pane label="基础信息">
+        <Basic :form="form"></Basic>
+      </el-tab-pane>
+      <el-tab-pane label="运单跟踪">
+        <Track :form="form"></Track>
+      </el-tab-pane>
+      <el-tab-pane label="附件信息">
+        <Settlement></Settlement>
+      </el-tab-pane>
+      <el-tab-pane label="结算信息">
+        <Annex :form="form"></Annex>
+      </el-tab-pane>
+      <el-tab-pane label="加油记录">
+        <GasUp :form="form"></GasUp>
+      </el-tab-pane>
+      <el-tab-pane label="操作日志">
+        <!-- <Operating></Operating> -->
+      </el-tab-pane>
+    </el-tabs>
+  </div>
+</template>
+
+<script>
+import Basic from './basic/index'
+import Track from './track/index'
+import Settlement from './settlement/index'
+import Annex from './annex/index'
+import GasUp from './gasUp/index'
+import Operating from './operating/index'
+
+import { getList } from '@/api/transform/waybill'
+export default {
+  components: {
+    Basic,
+    Track,
+    Settlement,
+    Annex,
+    GasUp,
+    Operating
+  },
+  data () {
+    return {
+      form: {},
+    }
+  },
+  mounted () {
+    this.getList();
+  },
+  methods: {
+    getList () {
+      let data = {
+        carriageId: this.$store.state.waybill.carriageId
+      }
+      getList(data).then((res) => {
+        if (res.code == 200) {
+          this.form = res.rows[0];
+        }
+      });
+    },
+  }
+}
+</script>
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+</style>

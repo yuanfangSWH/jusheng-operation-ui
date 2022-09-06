@@ -1,0 +1,460 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex transposition justify-end">
+      <el-button class="mr10" type="warning" @click="exportClientPayee"
+        >导出</el-button
+      >
+      <el-input
+        class="search mr10"
+        v-model="queryParams.kaihuName"
+        placeholder="请输入收款人姓名"
+        clearable
+        @keyup.enter.native="query"
+      />
+      <el-input
+        class="search mr10"
+        v-model="queryParams.payeePhone"
+        placeholder="请输入收款人电话"
+        clearable
+        @keyup.enter.native="query"
+      />
+      <el-input
+        class="search mr10"
+        v-model="queryParams.accountBank"
+        placeholder="请输入银行卡卡号"
+        clearable
+        @keyup.enter.native="query"
+      />
+      <el-button type="primary" @click="query">查询</el-button>
+      <el-button type="danger" @click="resetQuery">清空</el-button>
+    </div>
+    <div class="mb20 flex transposition justify-end">
+      <el-date-picker
+        class="mr5"
+        v-model="queryParams.startTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd 00:00:00"
+        type="date"
+        placeholder="选择创建起始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        v-model="queryParams.endTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd 23:59:00"
+        type="date"
+        placeholder="选择创建结束日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        v-model="queryParams.updateTimeStartTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd 00:00:00"
+        type="date"
+        placeholder="选择最后修改起始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        v-model="queryParams.updateTimeEndTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd 23:59:00"
+        type="date"
+        placeholder="选择最后修改结束日期"
+      >
+      </el-date-picker>
+    </div>
+    <div class="mb20">
+      <el-button type="primary" @click="handleAdd">新增</el-button>
+    </div>
+    <el-table height="600px" max-height="600px" :data="tableData">
+      <el-table-column
+        prop="bankNo"
+        label="序号"
+        type="index"
+      ></el-table-column>
+      <el-table-column prop="kaihuName" label="收款人姓名">
+        <template slot-scope="data">
+          <span
+            style="cursor: pointer; color: #67c23a"
+            @click="datail(data.row)"
+            >{{ data.row.kaihuName }}</span
+          >
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="shipperFullName"
+        label="所属企业"
+      ></el-table-column>
+      <el-table-column prop="idCardNumber" label="身份证号"></el-table-column>
+      <el-table-column prop="payeePhone" label="收款人电话"></el-table-column>
+      <el-table-column prop="accountBank" label="银行卡号"></el-table-column>
+      <el-table-column prop="kaihuBank" label="开户银行"></el-table-column>
+      <el-table-column prop="createTime" label="创建时间"></el-table-column>
+      <el-table-column prop="updateTime" label="更新时间"></el-table-column>
+      <el-table-column
+        label="操作"
+        align="center"
+        class-name="small-padding fixed-width"
+      >
+        <template slot-scope="data">
+          <span
+            class="operate mr10"
+            style="color: #409eff"
+            @click="handleUpdate(data.row)"
+            >修改</span
+          >
+          <span
+            class="operate mr10"
+            style="color: #67c23a"
+            @click="datail(data.row)"
+            >详情</span
+          >
+          <span
+            class="operate mr10"
+            style="color: #f56c6c"
+            @click="handleDelete(data.row)"
+            >删除</span
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!-- 分页器 -->
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageNum"
+        :limit="pageSize"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+
+    <!-- 添加或修改用户信息对话框 -->
+    <el-dialog
+      :title="state == 1 ? '添加收款人' : '修改收款人'"
+      :visible.sync="dialogVisible"
+      width="500px"
+      append-to-body
+    >
+      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+        <el-form-item label="开户人姓名" prop="kaihuName">
+          <el-input
+            class="search"
+            v-model="form.kaihuName"
+            clearable
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="银行卡号" prop="accountBank">
+          <el-input
+            class="search"
+            v-model="form.accountBank"
+            clearable
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="身份证号" prop="idCardNumber">
+          <el-input
+            class="search"
+            v-model="form.idCardNumber"
+            clearable
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="开户银行" prop="kaihuBank">
+          <el-input
+            class="search"
+            v-model="form.kaihuBank"
+            clearable
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="收款人电话" prop="payeePhone">
+          <el-input
+            class="search"
+            v-model="form.payeePhone"
+            clearable
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="关联人身份" prop="identity">
+          <el-select
+            clearable
+            size="small mr10"
+            v-model="form.identity"
+            placeholder="选择关联人身份"
+          >
+            <el-option :value="1" label="企业"></el-option>
+            <el-option :value="0" label="个人"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="关联人" prop="userId">
+          <el-autocomplete
+            v-model="form.shipperFullName"
+            :fetch-suggestions="querySearchAsync"
+            placeholder="手机号搜索"
+            @select="handleSelect"
+          ></el-autocomplete>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="dialogVisible = false">取 消</el-button>
+      </div>
+    </el-dialog>
+    <!-- 详情 -->
+    <el-dialog
+      title="收款人详情"
+      :visible.sync="dialogVisible1"
+      width="500px"
+      append-to-body
+    >
+      <el-form ref="form1" :model="form1" label-width="120px">
+        <el-form-item label="开户人姓名" prop="kaihuName">
+          {{ form1.kaihuName }}
+        </el-form-item>
+        <el-form-item label="银行卡号" prop="accountBank">
+          {{ form1.accountBank }}
+        </el-form-item>
+        <el-form-item label="身份证号" prop="idCardNumber">
+          {{ form1.idCardNumber }}
+        </el-form-item>
+        <el-form-item label="开户银行" prop="kaihuBank">
+          {{ form1.kaihuBank }}
+        </el-form-item>
+        <el-form-item label="收款人电话" prop="payeePhone">
+          {{ form1.payeePhone }}
+        </el-form-item>
+        <el-form-item label="关联人身份" prop="identity">
+          <span v-if="form1.identity == 1">企业</span>
+          <span v-else>企业</span>
+        </el-form-item>
+        <el-form-item label="关联人" prop="shipperFullName">
+          {{ form1.shipperFullName }}
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import {
+  getList,
+  removePayee,
+  addPayee,
+  updatePayee,
+  queryPayeeById,
+  queryAffiliatedPerson,
+  exportClientPayee
+} from "@/api/member/payee";
+import Pagination from "@/components/Pagination";
+
+export default {
+  components: {
+    Pagination,
+  },
+  data () {
+    return {
+      timeID: "",
+      state: 1,
+      pageNum: 1,
+      pageSize: 10,
+      // 总条数
+      total: 0,
+      // 用户信息表格数据
+      tableData: [],
+      // 是否显示弹出层
+      dialogVisible: false,
+      dialogVisible1: false,
+      // 查询参数
+      queryParams: {
+        kaihuName: "",
+        payeePhone: "",
+        accountBank: "",
+        startTime: "",
+        endTime: "",
+        updateTimeStartTime: "",
+        updateTimeEndTime: ""
+      },
+      // 表单参数
+      form: {
+        identity: 1,
+        shipperFullName: "",
+        userId: "",
+        kaihuName: "", //收款人姓名
+        idCardNumber: "", //身份证号
+        payeePhone: "", //收款人电话
+        accountBank: "", //银行卡号
+        kaihuBank: "", //开户银行
+      },
+      form1: {},
+      // 表单校验
+      rules: {
+        kaihuName: [
+          { required: true, message: "开户人姓名不能为空", trigger: "blur" },
+        ],
+        accountBank: [
+          { required: true, message: "银行卡号不能为空", trigger: "blur" },
+        ],
+        idCardNumber: [
+          { required: true, message: "身份证号不能为空", trigger: "blur" },
+        ],
+        kaihuBank: [
+          { required: true, message: "开户银行不能为空", trigger: "blur" },
+        ],
+        payeePhone: [
+          { required: true, message: "收款人电话不能为空", trigger: "blur" },
+        ],
+        identity: [
+          { required: true, message: "关联人身份不能为空", trigger: "blur" },
+        ],
+      },
+    };
+  },
+  mounted () {
+    this.getList();
+  },
+  methods: {
+    //列表
+    getList () {
+      getList(this.queryParams, { pageSize: this.pageSize, pageNum: this.pageNum }).then((res) => {
+        if (res.code == 200) {
+          this.tableData = res.rows
+          this.total = res.total
+        }
+      });
+    },
+    //查询
+    query () {
+      this.pageNum = 1;
+      this.getList();
+    },
+    //清空
+    resetQuery () {
+      this.queryParams = {
+        kaihuName: "",
+        payeePhone: "",
+        accountBank: "",
+        startTime: "",
+        endTime: "",
+        updateTimeStartTime: "",
+        updateTimeEndTime: ""
+      }
+      this.pageNum = 1
+      this.pageSize = 10
+      this.getList();
+    },
+    //关联人数据1
+    handleSelect (item) {
+      this.form.userId = item.userId;
+    },
+    //关联人数据2
+    querySearchAsync (queryString, cb) {
+      clearTimeout(this.timeID)
+      this.timeID = setTimeout(() => {
+        queryAffiliatedPerson({ shipperFullName: queryString, identity: this.form.identity }).then((res) => {
+          if (res.code == 200) {
+            var results = [];
+            for (var i of res.data) {
+              results.push({
+                value: i.shipperFullName,
+                userId: i.userId
+              })
+            }
+            cb(results);
+          }
+        });
+      }, 1500)
+    },
+    //新增弹框
+    handleAdd () {
+      this.dialogVisible = true;
+      this.state = 1
+    },
+    //详情
+    datail (row) {
+      queryPayeeById({ payeeId: row.payeeId }).then((res) => {
+        if (res.code == 200) {
+          this.form1 = res.data
+          this.dialogVisible1 = true;
+        }
+      });
+    },
+    //修改弹框
+    handleUpdate (row) {
+      queryPayeeById({ payeeId: row.payeeId }).then((res) => {
+        if (res.code == 200) {
+          this.form = res.data
+          this.dialogVisible = true;
+          this.state = 2
+        }
+      });
+    },
+    //提交按钮
+    submitForm () {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          if (this.state == 1) {
+            addPayee(this.form).then((res) => {
+              if (res.code == 200) {
+                this.$message({
+                  message: '新增成功',
+                  type: 'success',
+                  duration: 3000
+                });
+                this.$refs.form.resetFields();
+                this.dialogVisible = false;
+                this.getList();
+              }
+            });
+          } else {
+            //没有修改保存接口
+            updatePayee(this.form).then((res) => {
+              if (res.code == 200) {
+                this.$message({
+                  message: '修改成功',
+                  type: 'success',
+                  duration: 3000
+                });
+                this.$refs.form.resetFields();
+                this.dialogVisible = false;
+                this.getList();
+              }
+            });
+          }
+        }
+      });
+    },
+    //删除
+    handleDelete (data) {
+      this.$confirm('删除收款人ID为' + data.payeeId + "的数据", '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        removePayee({ payeeId: data.payeeId }).then((res) => {
+          if (res.code == 200) {
+            this.getList();
+            this.$message({
+              message: '删除成功',
+              type: 'success',
+              duration: 3000
+            });
+          }
+        })
+      })
+    },
+    //导出
+    exportClientPayee () {
+      exportClientPayee({}).then(res => {
+        //通用下载方法
+        this.downloadData(res)
+      })
+    },
+    //分页
+    pagination (val) {
+      this.pageSize = val.limit;
+      this.pageNum = val.page;
+      this.getList();
+    },
+  },
+};
+</script>

@@ -1,0 +1,239 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex transposition justify-end">
+      <el-date-picker
+        class="mr5"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        v-model="startTime"
+        type="date"
+        placeholder="开票申请起始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        v-model="endTime"
+        type="date"
+        placeholder="开票申请结束日期"
+      >
+      </el-date-picker>
+      <!-- <el-select
+        size="small mr10"
+        placeholder="开票状态"
+        v-model="auditStatus"
+      >
+        <el-option :value="0" label="待开票"></el-option>
+        <el-option :value="1" label="已开票"></el-option>
+      </el-select> -->
+      <el-input
+        class="search mr5"
+        placeholder="请输入托运人"
+        v-model="shipperName"
+        clearable
+      ></el-input>
+      <el-button type="primary" @click="query">查询</el-button>
+      <el-button type="danger" @click="clear">清空</el-button>
+    </div>
+
+    <div class="mb20">
+      <div>
+        <el-button type="danger" @click="fallbackInvoice">退回</el-button>
+        <!-- <el-button type="warning">导出</el-button> -->
+      </div>
+    </div>
+    <!-- table表格区域 -->
+    <el-table
+      :data="tableData"
+      style="width: 100%"
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column type="selection"></el-table-column>
+      <el-table-column label="序号" type="index"></el-table-column>
+      <el-table-column prop="applyCode" label="申请单编号"></el-table-column>
+      <el-table-column prop="shipperFullName" label="托运人"></el-table-column>
+      <el-table-column
+        prop="companyName"
+        label="业务管理公司"
+      ></el-table-column>
+      <el-table-column prop="totalFreight" label="含管理费开票总金额">
+      </el-table-column>
+      <el-table-column prop="createTime" label="申请时间"></el-table-column>
+      <el-table-column prop="createBy" label="申请人"></el-table-column>
+      <el-table-column prop="invoiceDetail" label="发票图片">
+        <template slot-scope="data">
+          <span
+            class="operate mr10"
+            style="color: #409eff"
+            @click="detailsIMG(data.row.invoiceDetail)"
+            >查看</span
+          >
+        </template>
+      </el-table-column>
+      <el-table-column prop="waybillNumber" label="运单数"></el-table-column>
+
+      <el-table-column prop="remark" label="发票备注"></el-table-column>
+      <el-table-column prop="invoiceStatus" label="开票状态">
+        <template slot-scope="data">
+          <span v-if="data.row.invoiceStatus == 0">未开</span>
+          <span v-if="data.row.invoiceStatus == 1">已开</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" fixed="right" width="200px">
+        <template slot-scope="data">
+          <span
+            class="operate mr10"
+            style="color: #e6a23c"
+            @click="goInvoice(data.row)"
+            >发票管理</span
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageNum"
+        :limit="pageSize"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+    <!-- 查看 -->
+    <el-dialog :visible.sync="dialogIMG" :append-to-body="true">
+      <img width="100%" :src="dialogImageUrl" alt="" />
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import { fallbackInvoice, getList } from "@/api/finance/invoice";
+import Pagination from "@/components/Pagination";
+export default {
+  components: {
+    Pagination
+  },
+  data () {
+    return {
+      shipperName: "",
+      startTime: "",
+      endTime: "",
+      tableData: [],
+      //页码
+      pageSize: 10,
+      //数量
+      pageNum: 1,
+      //总数据量
+      total: 0,
+      dialogIMG: false,
+      dialogImageUrl: "",
+      multipleSelection: [],
+    };
+  },
+  created () {
+    this.getList();
+  },
+  methods: {
+    //导出(文档没有接口)
+    exportCarriage () {
+      exportCarriage({}).then(res => {
+        //通用下载方法
+        this.downloadData(res)
+      })
+    },
+    //发票管理
+    goInvoice (row) {
+      this.$router.push({
+        path: "/finance/invoice/infoii",
+        query: {
+          applyCode: row.applyCode
+        }
+      });
+    },
+    query () {
+      this.pageNum = 1;
+      this.getList();
+    },
+    //条件查询发票申请列表
+    getList () {
+      let data = {
+        shipperName: this.shipperName,
+        startTime: this.startTime,
+        endTime: this.endTime
+      }
+      getList(data, {
+        pageSize: this.pageSize,
+        pageNum: this.pageNum
+      }).then((res) => {
+        if (res.code == 200) {
+          this.tableData = res.rows;
+          this.total = res.total;
+        }
+      });
+    },
+    //分页
+    pagination (val) {
+      this.pageSize = val.limit;
+      this.pageNum = val.page;
+      this.getList();
+    },
+    // 清空按钮
+    clear () {
+      this.shipperName = ""
+      this.startTime = ""
+      this.endTime = ""
+      this.getList()
+    },
+    detailsIMG (row) {
+      this.dialogIMG = true;
+      this.dialogImageUrl = row;
+    },
+    // 多选框选中数据
+    handleSelectionChange (val) {
+      this.multipleSelection = val.map((item) => item.applyCode);
+    },
+
+    //发票回退至审核状态
+    fallbackInvoice () {
+      if (this.multipleSelection.length <= 0) {
+        this.$message({
+          message: "请勾选需要回退的数据",
+          type: "warning",
+          duration: 2000,
+        });
+        return;
+      }
+      if (this.multipleSelection.length > 1) {
+        this.$message({
+          message: "发票退回不支持批量操作，请勾选单条数据",
+          type: "warning",
+          duration: 2000,
+        });
+        return;
+      }
+      this.$confirm('确定将该条数据回退吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        fallbackInvoice({ applyCode: String(this.multipleSelection) }).then((res) => {
+          if (res.code == 200) {
+            this.getList()
+            this.$message({
+              message: '回退成功',
+              type: 'success',
+              duration: 3000
+            });
+          }
+        })
+      })
+    },
+
+
+  },
+};
+</script>
+
+<style scoped>
+</style>
+

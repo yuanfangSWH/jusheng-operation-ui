@@ -1,0 +1,224 @@
+<template>
+  <div class="app-container">
+    <div class="mb20">
+      <el-divider content-position="left">
+        <span class="weight">基础信息</span>
+      </el-divider>
+    </div>
+    <el-row class="my40">
+      <el-col :span="6">
+        <span class="mr20 label">运单编号</span>
+        <span class="val"></span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">运单状态</span>
+        <span class="val"></span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">签收时间</span>
+        <span class="val"></span>
+      </el-col>
+    </el-row>
+    <el-row class="my40">
+      <el-col :span="6">
+        <span class="mr20 label">托运人</span>
+        <span class="val">aaa</span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">运输类型</span>
+        <span class="val"></span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">是否开票</span>
+        <span class="val"></span>
+      </el-col>
+    </el-row>
+    <el-row class="my40">
+      <el-col :span="6">
+        <span class="mr20 label">承运司机</span>
+        <span class="val">aaa</span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">承运车辆</span>
+        <span class="val"></span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">运费收款人</span>
+        <span class="val"></span>
+      </el-col>
+    </el-row>
+
+    <div class="mb20">
+      <el-divider content-position="left">
+        <span class="weight">货物信息</span>
+      </el-divider>
+    </div>
+
+    <el-row class="my40">
+      <el-col :span="6">
+        <span class="mr20 label">计划提货时间</span>
+        <span class="val">aaa</span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">发货联系人</span>
+        <span class="val"></span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">计划提货时间</span>
+        <span class="val"></span>
+      </el-col>
+    </el-row>
+    <el-row class="my40">
+      <el-col :span="6">
+        <span class="mr20 label">收货联系人</span>
+        <span class="val">aaa</span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">到货地</span>
+        <span class="val"></span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">计划到货时间</span>
+        <span class="val"></span>
+      </el-col>
+    </el-row>
+    <el-row class="my40">
+      <el-col :span="6">
+        <span class="mr20 label">货物名称</span>
+        <span class="val">aaa</span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">实际提货时间</span>
+        <span class="val"></span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">实际到货时间</span>
+        <span class="val"></span>
+      </el-col>
+    </el-row>
+    <el-row class="my40">
+      <el-col :span="12">
+        <span class="mr20 label">装货量</span>
+        <span class="val">aaa</span>
+      </el-col>
+    </el-row>
+    <el-row class="my40">
+      <el-col :span="12">
+        <span class="mr20 label">单价</span>
+        <span class="val">aaa</span>
+      </el-col>
+      <el-col :span="8">
+        <span class="mr20 label">结算运费(不含管理费)</span>
+        <span class="val"></span>
+      </el-col>
+    </el-row>
+
+    <div class="mb20">
+      <el-divider content-position="left">
+        <span class="weight">收发货凭证</span>
+      </el-divider>
+    </div>
+
+    <div style="margin: 80px 0">
+      <div class="flex justify-center mb20 imgBox">
+        <el-image fit="contain" :src="url"></el-image>
+      </div>
+      <div class="flex justify-between">
+        <el-image
+          fit="contain"
+          v-for="url in urls"
+          :key="url"
+          :src="url"
+          @click="getImg(url)"
+          class="imgs"
+        ></el-image>
+      </div>
+    </div>
+    <el-divider content-position="left">
+      <span class="weight"></span>
+    </el-divider>
+
+    <el-row class="ma20">
+      <el-col :span="12">
+        <span class="mr20 label">审核结果</span>
+        <span class="val">
+          <el-radio-group v-model="radio">
+            <el-radio :label="0">审核通过</el-radio>
+            <el-radio :label="1">审核不通过</el-radio>
+          </el-radio-group>
+        </span>
+      </el-col>
+    </el-row>
+
+    <div class="flex justify-center">
+      <!-- <el-button size="small" type="primary" @click="" plain>提交</el-button>
+      <el-button size="small" @click="" plain>取消</el-button> -->
+    </div>
+  </div>
+</template>
+
+<script>
+import ImageUpload from '../../../../components/ImageUpload/index'
+
+export default {
+  data () {
+    return {
+      form: {
+        name: [],
+      },
+      urls: [
+        'https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg',
+        'https://fuss10.elemecdn.com/1/34/19aa98b1fcb2781c4fba33d850549jpeg.jpeg',
+        'https://fuss10.elemecdn.com/0/6f/e35ff375812e6b0020b6b4e8f9583jpeg.jpeg',
+        'https://fuss10.elemecdn.com/9/bb/e27858e973f5d7d3904835f46abbdjpeg.jpeg'
+      ],
+      url: 'https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg',
+      rules: {
+        companyName: [
+          { required: true, message: '不能为空' }
+        ]
+      }
+    }
+  },
+  components: {
+    ImageUpload
+  },
+  methods: {
+    submitForm (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          alert('submit!');
+        } else {
+          return false;
+        }
+      });
+    },
+
+    getImg (url) {
+      this.url = url;
+    }
+
+  }
+}
+</script>
+
+<style scoped>
+.label {
+  color: #333;
+  display: inline-block;
+  width: 160px;
+  text-align: right;
+}
+.val {
+  color: #999;
+}
+.imgBox {
+  height: 500px;
+  min-width: 600px;
+  width: 100%;
+}
+
+.imgs {
+  height: 150px;
+}
+</style>

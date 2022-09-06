@@ -1,0 +1,130 @@
+import request from "@/utils/request";
+import qs from "qs";
+//列表
+export function getList(data) {
+  return request({
+    url: "/operation/clientPayee/queryPayees",
+    method: "post",
+    // data:qs.stringify(data)
+    data: data
+  });
+}
+
+//添加
+export function addPayee(data) {
+    return request({
+      url: "/operation/clientPayee/saveClientPayee",
+      method: "post",
+      headers:{"content-type":"application/x-www-form-urlencoded"},
+      data:qs.stringify(data)
+    });
+  }
+
+// 查看收款人信息接口
+export function lookPayee(id) {
+    return request({
+      url: "/operation/clientPayee/queryPayeeById",
+      method: "post",
+    //   headers:{"content-type":"application/x-www-form-urlencoded"},
+    //   data:qs.stringify(data),
+    params: {"payeeId": id}
+    // });
+    // data: data
+  })
+}
+
+// 删除收款人接口
+export function removePayee(id) {
+  return request({
+    url: "/operation/clientPayee/deletePayee",
+    method: "post",
+    params: {"payeeId": id}
+  })
+}
+
+//条件查询收款人列表
+export function conditionPayee(data) {
+  return request({
+    url: "/operation/clientPayee/queryPayees",
+    method: "post",
+    data:qs.stringify(data)
+  });
+}
+
+
+// 修改收款人信息(附带审核)
+
+// 条件导出用户收款人
+export function derivePayee(data){
+  return request({
+    url: "/operation/clientPayee/exportClientPayee",
+    method: "post",
+    headers:{"content-type":"application/x-www-form-urlencoded"},
+    data: qs.stringify(data)
+  })
+}
+
+
+// -------------------------------------------------------------------------------------
+
+
+// 查询用户信息列表
+export function listUser(query) {
+  return request({
+    url: "/operation/clientPayee/queryPayees",
+    method: 'POST',
+    params: query
+  })
+}
+
+// 查询用户信息详细
+export function getUser(userId) {
+  return request({
+    url: 'operation/finance/user/' + userId,
+    method: 'get'
+  })
+}
+
+// 新增用户信息
+export function addUser(data) {
+  return request({
+    url: "/operation/clientPayee/saveClientPayee",
+    method: 'post',
+    data: data
+  })
+}
+
+// 修改收款人信息
+export function updateUser(data) {
+  return request({
+    url: '/operation/clientPayee/updatePayee',
+    method: 'POST',
+    data: data
+  })
+}
+
+// 删除用户信息
+export function delUser(userId) {
+  return request({
+    url: 'operation/finance/user/' + userId,
+    method: 'delete'
+  })
+}
+
+// 导出用户信息
+export function exportUser(query) {
+  return request({
+    url: "/operation/clientPayee/exportClientPayee",
+    method: 'GET',
+    params: query
+  })
+}
+// 先获取用户Id
+export function getUserId(userName) {
+  return request({
+    url: "/operation/getUser/getUserId",
+
+    method: "post",
+  params: {"userName":userName}
+  });
+}

@@ -1,0 +1,98 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex transposition justify-end">
+      <el-select size="small mr10" value="" placeholder="">
+        <el-option value="1" label="运单创建时间"></el-option>
+        <el-option value="1" label="提交开票时间"></el-option>
+        <el-option value="1" label="运单开始时间"></el-option>
+        <el-option value="1" label="运单结束时间"></el-option>
+      </el-select>
+      <el-date-picker
+        class="mr10"
+        size="small"
+        v-model="time"
+        type="daterange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期"
+      >
+      </el-date-picker>
+
+      <el-select size="small mr10" value="" placeholder="ETC开票状态">
+        <el-option value="1" label="待开票"></el-option>
+        <el-option value="1" label="上报中"></el-option>
+        <el-option value="1" label="开票中"></el-option>
+        <el-option value="1" label="开票完成"></el-option>
+        <el-option value="1" label="开票失败"></el-option>
+        <el-option value="1" label="无开票金额"></el-option>
+      </el-select>
+
+      <el-select size="small mr10" value="" placeholder="业务管理公司">
+        <el-option value="1" label="待开票"></el-option>
+        <el-option value="1" label="无开票金额"></el-option>
+      </el-select>
+
+      <el-select size="small mr5" value="">
+        <el-option value="2" label="车牌号"></el-option>
+        <el-option value="1" label="运单编号"></el-option>
+        <el-option value="2" label="司机手机号"></el-option>
+        <el-option value="1" label="托运人名称"></el-option>
+      </el-select>
+      <el-input class="search mr5" size="small" clearable></el-input>
+      <el-button size="small" type="primary" plain>查询</el-button>
+    </div>
+
+    <div class="mb20">
+      <div>
+        <el-button size="small" type="primary" @click="goInfo" plain
+          >新建</el-button
+        >
+        <el-button size="small" type="danger" plain>删除</el-button>
+        <el-button size="small" type="warning" plain>导出</el-button>
+      </div>
+    </div>
+
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column type="selection"></el-table-column>
+      <el-table-column prop="date" label="运单编号"></el-table-column>
+      <el-table-column prop="date" label="车牌号"></el-table-column>
+      <el-table-column prop="date" label="承运司机"></el-table-column>
+      <el-table-column prop="date" label="托运人"></el-table-column>
+      <el-table-column prop="date" label="税额"></el-table-column>
+      <el-table-column prop="date" label="价税合计(含不征税)"></el-table-column>
+      <el-table-column prop="date" label="运单开始时间"></el-table-column>
+      <el-table-column prop="date" label="运单结束时间"></el-table-column>
+      <el-table-column prop="date" label="提交开票时间"></el-table-column>
+      <el-table-column prop="date" label="扣费次数"></el-table-column>
+      <el-table-column prop="date" label="业务管理公司"></el-table-column>
+      <el-table-column prop="date" label="备注"></el-table-column>
+      <el-table-column prop="date" label="操作" fixed="right" width="200px">
+        <template>
+          <span class="operate mr10" @click="goInvoice">发票管理</span>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+</template>
+
+<script>
+export default {
+  // ETC发票管理
+  data () {
+    return {
+      tableData: [{ date: '111' }],
+      time: []
+    }
+  },
+  methods: {
+    goInvoice () {
+      this.$router.push("/finance/invoice/info")
+    }
+
+  }
+}
+</script>
+
+<style scoped>
+</style>
+

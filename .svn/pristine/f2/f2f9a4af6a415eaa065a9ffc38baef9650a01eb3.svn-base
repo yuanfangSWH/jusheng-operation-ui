@@ -1,0 +1,195 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex justify-end">
+      <el-date-picker
+        class="mr10"
+        size="small"
+        v-model="queryHead.startTime"
+        type="daterange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期"
+      >
+      </el-date-picker>
+
+      <el-select
+        size="small mr10"
+        value=""
+        placeholder="开票状态"
+        v-model="queryHead.state"
+      >
+        <el-option value="0" label="待开票"></el-option>
+        <el-option value="1" label="已开票"></el-option>
+      </el-select>
+
+      <el-select size="small mr5" value="" v-model="queryHead.shipperName">
+        <el-option value="0" label="托运人"></el-option>
+        <el-option value="1" label="发票申请单编号"></el-option>
+        <el-option value="2" label="申请人"></el-option>
+        <el-option value="3" label="发票号码"></el-option>
+        <el-option value="4" label="发票代码"></el-option>
+      </el-select>
+      <el-input
+        class="search mr5"
+        size="small"
+        v-model="queryHead.ipt"
+      ></el-input>
+      <el-button size="small" type="primary" plain @click="getList"
+        >查询</el-button
+      >
+      <el-button size="small" type="primary" plain @click="clear"
+        >清空</el-button
+      >
+    </div>
+
+    <div class="mb20">
+      <div>
+        <el-button size="small" type="primary" plain @click="back"
+          >退回</el-button
+        >
+        <el-button size="small" type="warning" plain>导出</el-button>
+
+      </div>
+    </div>
+    <!-- table表格区域 -->
+    <el-table
+      :data="tableData"
+      style="width: 100%"
+      @selection-change="change"
+    >
+      <el-table-column type="selection"></el-table-column>
+      <el-table-column label="序号" type="index"></el-table-column>
+      <el-table-column prop="applyCode" label="申请单编号"></el-table-column>
+      <el-table-column prop="shipperName" label="托运人"></el-table-column>
+      <el-table-column
+        prop="settleCompany"
+        label="业务管理公司"
+      ></el-table-column>
+      <el-table-column
+        prop="invoiceTotalMoney"
+        label="含管理费开票总金额"
+      ></el-table-column>
+      <!-- <el-table-column prop="date" label="申请时间" ></el-table-column> -->
+      <el-table-column prop="createBy" label="申请人"></el-table-column>
+      <el-table-column prop="waybillNumber" label="运单数"></el-table-column>
+
+      <el-table-column prop="remark" label="发票备注"></el-table-column>
+      <el-table-column prop="auditStatus" label="审核状态">
+        <template slot-scope="data">
+          <span v-if="data.row.auditStatus == 1">审核中</span>
+          <span v-if="data.row.auditStatus == 2">审核通过</span>
+          <span v-if="data.row.auditStatus == 3">审核不通过</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="invoiceStatus" label="开票状态">
+        <template slot-scope="data">
+          <span v-if="data.row.invoiceStatus == 0">未开</span>
+          <span v-if="data.row.invoiceStatus == 1">已开</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" fixed="right" width="200px">
+        <template slot-scope="data">
+          <span class="operate mr10" @click="goInvoice(data.row)">发票管理</span>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+</template>
+
+<script>
+import { fallbackInvoice, getList } from "../../../api/finance/invoice";
+export default {
+  data() {
+    return {
+      tableData: [
+        // {data: '111'}
+      ],
+
+
+      // 非单个禁用
+      single: true,
+      // 非多个禁用
+      multiple: true,
+
+      // 回退按钮参数
+      ids: [],
+      // queryInfo: {
+      //   applyCode: "",
+      // },
+
+      // 头部查询按钮参数
+      queryHead: {
+        startTime: [],
+        state: "", //开票状态
+        shipperName: "", //托运人
+        ipt: "", //输入框
+      },
+    };
+  },
+  created() {
+    this.getList();
+  },
+  methods: {
+    // goInvoice(row) {
+    //   // console.log(row)
+    //   this.$router.push({
+    //     name: "infoii",
+    //     params: row
+    //   });
+    // },
+
+   goInvoice(row) {
+      this.$router.push({path:"/finance/invoice/infoii", 
+        query:{
+        applyCode:row.applyCode
+        }});
+    },
+
+    // 条件查询发票申请列表（与发票审核一致）
+    getList() {
+      getList(this.queryHead).then((res) => {
+        console.log(res);
+        if (res.code == 200) {
+          this.tableData = res.rows;
+          //this.queryInfo.applyCode = res.rows.applyCode;
+          if (!this.tableData || this.tableData.length <= 0) {
+            this.$message.error("查询为空");
+          }
+        }
+      });
+    },
+
+    // 清空按钮
+    clear() {
+      this.queryHead = {
+        startTime: [],
+        state: "", //开票状态
+        shipperName: "", //托运人
+        ipt: "", //输入框
+      };
+    },
+
+    // 多选框选中数据
+    change(selection) {
+      console.log(selection);
+      this.ids = selection.map((item) => item.applyCode);
+      this.single = selection.length !== 1;
+      this.multiple = !selection.length;
+    },
+
+     // 1,发票回退至审核状态
+    back() {
+      // let applyCode =
+      fallbackInvoice(this.ids.toString()).then((res) => {
+        this.getList()
+      });
+    },
+
+    
+  },
+};
+</script>
+
+<style scoped>
+</style>
+

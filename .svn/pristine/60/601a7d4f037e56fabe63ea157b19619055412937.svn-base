@@ -1,0 +1,190 @@
+<template>
+  <div class="app-container">
+    <!-- 头部查询模块 -->
+    <div class="mb20 flex transposition justify-end">
+      <el-button class="mr5" type="warning">导出</el-button>
+      <el-button class="mr5" type="warning">导入</el-button>
+      <el-date-picker
+        class="mr5"
+        v-model="startTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="选择创建起始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        v-model="endTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="选择创建结束日期"
+      >
+      </el-date-picker>
+      <el-select clearable class="mr20" placeholder="订单状态">
+        <el-option value="0" label="全部"></el-option>
+        <el-option value="1" label="新建"></el-option>
+        <el-option value="1" label="运输中"></el-option>
+        <el-option value="1" label="已完成"></el-option>
+        <el-option value="1" label="已删除"></el-option>
+        <el-option value="1" label="待报价"></el-option>
+      </el-select>
+      <el-select clearable class="mr20" placeholder="运输类型">
+        <el-option value="0" label="全部"></el-option>
+        <el-option value="1" label="公路运输"></el-option>
+        <el-option value="1" label="水路运输"></el-option>
+      </el-select>
+      <el-button type="primary" @click="query">查询</el-button>
+      <el-button type="danger" @click="empty">清空</el-button>
+    </div>
+    <div class="mb20 flex transposition justify-end">
+      <el-input
+        class="search mr5"
+        v-model="phone"
+        placeholder="请输入装货地点"
+        clearable
+      ></el-input>
+      <el-input
+        class="search mr5"
+        v-model="phone"
+        placeholder="请输入卸货地点"
+        clearable
+      ></el-input>
+      <el-input
+        class="search mr5"
+        v-model="phone"
+        placeholder="请输入客户名称"
+        clearable
+      ></el-input>
+      <el-input
+        class="search mr5"
+        v-model="phone"
+        placeholder="请输入订单号"
+        clearable
+      ></el-input>
+    </div>
+    <div class="mb20">
+      <el-button type="primary">批量完成订单</el-button>
+      <el-button type="danger">批量删除订单</el-button>
+    </div>
+
+    <!-- 表格区域 -->
+    <el-table
+      :data="tableData"
+      style="width: 100%"
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column type="selection"></el-table-column>
+      <el-table-column label="序号" type="index"></el-table-column>
+      <el-table-column prop="date" label="订单号"></el-table-column>
+      <el-table-column prop="date" label="订单状态"></el-table-column>
+      <el-table-column prop="date" label="客户名称"></el-table-column>
+      <el-table-column prop="date" label="托运人"></el-table-column>
+      <el-table-column
+        prop="date"
+        label="运输类型"
+        width="120"
+      ></el-table-column>
+      <el-table-column
+        prop="date"
+        label="调车方式"
+        width="120"
+      ></el-table-column>
+      <el-table-column
+        prop="date"
+        label="计划提货时间"
+        width="120"
+      ></el-table-column>
+      <el-table-column prop="date" label="货物名称"></el-table-column>
+      <el-table-column
+        prop="date"
+        label="装货地点"
+        width="120"
+      ></el-table-column>
+      <el-table-column prop="date" label="卸货地点"></el-table-column>
+      <el-table-column prop="date" label="发货联系人"></el-table-column>
+      <el-table-column prop="date" label="发货联系人电话"></el-table-column>
+      <el-table-column prop="date" label="卸货联系人"></el-table-column>
+      <el-table-column
+        prop="date"
+        label="卸货联系人电话"
+        width="120"
+      ></el-table-column>
+      <el-table-column prop="date" label="付款方式"></el-table-column>
+      <el-table-column prop="date" label="总运费（元）"></el-table-column>
+      <el-table-column prop="date" label="计价方式"></el-table-column>
+      <el-table-column prop="date" label="计划配载量"></el-table-column>
+      <el-table-column
+        prop="date"
+        label="剩余配载量"
+        width="120"
+      ></el-table-column>
+      <el-table-column prop="date" label="是否长期货源"></el-table-column>
+      <el-table-column prop="date" label="创建人"></el-table-column>
+      <el-table-column prop="date" label="创建时间"></el-table-column>
+      <el-table-column label="操作" fixed="right" width="200px">
+        <template slot-scope="data">
+          <span class="operate mr10" @click="goInfo(data.row)">编辑</span>
+          <span class="operate mr10" @click="goInfo(data.row)">完成</span>
+          <span class="operate mr10" @click="goInfo(data.row)">删除</span>
+          <span class="operate" @click="goInfo(data.row)">调度派车</span>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!--  -->
+    <el-dialog title="请选择运输方式" :visible.sync="isShow" width="30%" center>
+      <div class="flex justify-around">
+        <!--        <el-button type="primary" >公路运输</el-button>-->
+        <!--        <el-button type="primary" >水路运输</el-button>-->
+        <!--        <el-button type="primary"  disabled>集装箱运输（暂未开放）</el-button>-->
+        <el-radio-group v-model="radio">
+          <el-radio :label="1">公路运输</el-radio>
+          <el-radio :label="2">水路运输</el-radio>
+          <el-radio :label="3" disabled>集装箱运输（暂未开放）</el-radio>
+        </el-radio-group>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="isShow = false">取 消</el-button>
+        <el-button type="primary" @click="goDispatch">确 定</el-button>
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+      tableData: [
+        { date: '1111' }
+      ],
+      radio: 1,
+      isShow: false,
+      time: []
+    }
+  },
+  methods: {
+    goDispatch () {
+      this.isShow = false;
+      let radio = this.radio
+      if (radio == 1) {
+        this.$router.push('/transport/dispatch/index');
+      } else {
+        this.$router.push('/transport/dispatch/index');
+      }
+    },
+    goInfo () {
+      this.$router.push('/transport/order/info')
+    }
+  },
+
+  // 订单管理 他们说先不管
+  // 
+}
+</script>
+
+<style scoped>
+</style>
+

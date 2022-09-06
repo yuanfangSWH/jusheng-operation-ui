@@ -1,0 +1,198 @@
+<template>
+  <div class="app-container">
+    <!-- 头部搜索模块 -->
+    <el-row class="el-row-border">
+      <el-col>
+        <el-form>
+          <el-form-item>
+            <el-select>
+              <el-option>托运人</el-option>
+              <el-option>123</el-option>
+            </el-select>
+            <el-input placeholder="请输入内容" size="small"></el-input>
+          </el-form-item>
+        </el-form>
+      </el-col>
+      <el-col>456</el-col>
+      <el-col>789</el-col>
+    </el-row>
+
+    <el-row class="el-row-border">
+      <el-col class="el-col-left">
+        <el-form ref="form" label-width="100px" class="search-header">
+          <el-form-item label="车牌号" class="carnumber" size="medium">
+            <el-input></el-input>
+          </el-form-item>
+          <el-form-item label="司机手机号" size="medium">
+            <el-input></el-input>
+          </el-form-item>
+          <el-form-item class="carnumber" label="资料审核状态">
+            <el-select
+              size="small mr10"
+              value=""
+              placeholder="请选择"
+              clearable
+            >
+              <el-option value="0" label="待审核"></el-option>
+              <el-option value="1" label="审核中"></el-option>
+              <el-option value="2" label="审核通过"></el-option>
+              <el-option value="3" label="审核不通过"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </el-col>
+      <el-col class="el-col-right">
+        <el-row>
+          <!-- 计划提货时间 -->
+          <el-select size="small mr10" placeholder="计划提货时间">
+            <el-option value="" label="计划提货时间"></el-option>
+            <el-option value="" label="实际提货时间"></el-option>
+            <el-option
+              value="planAttrivalTime"
+              label="计划到货时间"
+            ></el-option>
+            <el-option value="" label="实际到货时间"></el-option>
+            <el-option value="" label="创建时间"></el-option>
+            <el-option value="1" label="签收时间"></el-option>
+            <el-option value="1" label="付款申请时间"></el-option>
+          </el-select>
+          <!-- 起止时间 -->
+          <el-date-picker
+            class="mr10 el-date-picker"
+            size="small"
+            type="daterange"
+            range-separator="至"
+            value-format="yyyy-MM-dd"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+          >
+          </el-date-picker>
+        </el-row>
+        <el-row>
+          <!-- 运单状态 -->
+          <el-select size="small mr10" placeholder="运单状态" class="mar_r">
+            <el-option value="1" label="已提交"></el-option>
+            <el-option value="2" label="已分配承运人"></el-option>
+            <el-option value="3" label="已接单"></el-option>
+            <el-option value="4" label="提货中"></el-option>
+            <el-option value="5" label="发车中"></el-option>
+            <el-option value="6" label="已到达"></el-option>
+            <el-option value="7" label="卸货中"></el-option>
+            <el-option value="8" label="已签收"></el-option>
+            <el-option value="9" label="已作废"></el-option>
+          </el-select>
+          <!-- 支付状态 -->
+          <el-select
+            size="small mr10"
+            value=""
+            placeholder="支付状态"
+          >
+            <!-- <el-option value="" label="请选择"></el-option> -->
+            <el-option value="0" label="已结清"></el-option>
+            <el-option value="1" label="未结清"></el-option>
+          </el-select>
+        </el-row>
+        <el-row>
+            <el-button type="primary" class="clearBtn" size="mini">清空</el-button>
+            <el-button type="primary" class="searchBtn" size="mini" @click="getList">查询</el-button>
+        </el-row>
+      </el-col>
+    </el-row>
+
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column type="selection"></el-table-column>
+      <el-table-column prop="date" label="序号"></el-table-column>
+      <el-table-column prop="date" label="开票申请单编号"></el-table-column>
+      <el-table-column prop="date" label="托运人"></el-table-column>
+      <el-table-column prop="date" label="业务管理公司"></el-table-column>
+      <el-table-column prop="date" label="含管理费总运费"></el-table-column>
+      <el-table-column prop="date" label="申请时间"></el-table-column>
+      <el-table-column prop="date" label="申请人"></el-table-column>
+      <el-table-column prop="date" label="发票图片"></el-table-column>
+      <el-table-column prop="date" label="运单数"></el-table-column>
+      <el-table-column prop="date" label="发票备注"></el-table-column>
+      <el-table-column prop="date" label="审核状态"></el-table-column>
+      <el-table-column prop="date" label="操作" fixed="right" width="200px">
+        <template >
+          <span class="operate mr10" @click="goInfo">审核</span>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      tableData: [{ date: "1111" }],
+      time: [],
+    };
+  },
+  methods: {
+    goInfo() {
+      this.$router.push("/business/invoice/info");
+    },
+  },
+};
+</script>
+
+<style scoped>
+.search {
+  transition: all 3s linear;
+}
+
+.el-date-picker {
+  width: 300px;
+}
+
+.el-row-border {
+  border: 1px solid #ccc;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.el-row-border>.el-col:nth-child(1),
+.el-row-border>.el-col:nth-child(2) {
+  flex: 2;
+}
+
+.el-row-border>.el-col:nth-child(3){
+  flex: 1;
+}
+
+.el-col-left {
+  width: 40%;
+}
+
+.el-col-right {
+  width: 60%;
+}
+
+.mar_r {
+  margin-right: 100px;
+}
+
+.searchBtn {
+  position: absolute;
+  bottom: 0;
+  right: 30px;
+}
+
+.clearBtn {
+  position: absolute;
+  bottom: 0;
+  right: 120px;
+}
+
+.red {
+  color: red !important;
+}
+
+.w100 {
+  width: 100px;
+}
+</style>
+

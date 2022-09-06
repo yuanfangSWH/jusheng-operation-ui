@@ -1,0 +1,302 @@
+<template>
+  <div class="app-container">
+    <el-form ref="form" :model="form" :rules="rules" label-width="150px" inline>
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">基础信息</span>
+        </el-divider>
+      </div>
+      <el-form-item label="车牌号" prop="vehicleNumber">
+        <el-input v-model="form.vehicleNumber"></el-input>
+      </el-form-item>
+      <el-form-item label="车辆颜色" prop="vehicleColor">
+        <el-input v-model="form.vehicleColor"></el-input>
+      </el-form-item>
+      <el-form-item label="外廓尺寸(mm)" prop="vehicleSize">
+        <el-input v-model="form.vehicleSize"></el-input>
+      </el-form-item>
+      <el-form-item label="车辆总质量类型" prop="qualityType">
+        <span v-if="form.qualityType == 1">12吨以下</span>
+        <span v-else-if="form.qualityType == 0">12吨及以上</span>
+      </el-form-item>
+      <el-form-item label="整备质量(kg)" prop="tonnage">
+        <el-input v-model="form.tonnage"></el-input>
+      </el-form-item>
+      <el-form-item label="核定载质量(kg)" prop="hzdQuality">
+        <el-input v-model="form.hzdQuality"></el-input>
+      </el-form-item>
+      <el-form-item label="车辆分类" prop="vehicleType">
+        <el-input v-model="form.vehicleType"></el-input>
+      </el-form-item>
+      <el-form-item label="牌照类型" prop="vehicleNumberType">
+        <span v-if="form.vehicleNumberType == 0">大型汽车号牌</span>
+        <span v-else-if="form.vehicleNumberType == 1">小型汽车号牌</span>
+        <span v-else-if="form.vehicleNumberType == 2">其他号牌</span>
+      </el-form-item>
+      <el-form-item label="车辆所有人" prop="master">
+        <el-input v-model="form.master"></el-input>
+      </el-form-item>
+      <el-form-item label="车辆识别代码" prop="vehicleCode">
+        <el-input v-model="form.vehicleCode"></el-input>
+      </el-form-item>
+      <el-form-item label="车轴数(含悬浮轴)" prop="axleAmount">
+        <el-input v-model="form.axleAmount"></el-input>
+      </el-form-item>
+      <el-form-item label="使用性质" prop="nature">
+        <el-input v-model="form.nature"></el-input>
+      </el-form-item>
+      <el-form-item label="能源类型" prop="energyType">
+        <el-input v-model="form.energyType"></el-input>
+      </el-form-item>
+
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">证照信息</span>
+        </el-divider>
+      </div>
+
+      <el-form-item label="车辆行驶证档案编号" prop="licenseNumber">
+        <el-input v-model="form.licenseNumber"></el-input>
+      </el-form-item>
+      <el-form-item label="行驶证发证机关" prop="licenseAward">
+        <el-input v-model="form.licenseAward"></el-input>
+      </el-form-item>
+
+      <el-form-item label="车辆行驶证注册日期" prop="licenseLoginTime">
+        <el-input v-model="form.licenseLoginTime"></el-input>
+      </el-form-item>
+      <el-form-item label="行驶证发证日期" prop="licenseAwardTime">
+        <el-input v-model="form.licenseAwardTime"></el-input>
+      </el-form-item>
+      <el-form-item label="行驶证到期日期" prop="licenseExpirationTime">
+        <el-input v-model="form.licenseExpirationTime"></el-input>
+      </el-form-item>
+      <el-form-item label="道路运输证字号" prop="dlysNumber">
+        <el-input v-model="form.dlysNumber"></el-input>
+      </el-form-item>
+      <el-form-item label="道路运输证到期日期" prop="dlysExpirationTime">
+        <el-input v-model="form.dlysExpirationTime"></el-input>
+      </el-form-item>
+
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">业户信息</span>
+        </el-divider>
+      </div>
+
+      <el-form-item label="业户名称" prop="yhName">
+        <el-input v-model="form.yhName"></el-input>
+      </el-form-item>
+      <el-form-item label="业户类型" prop="yhType">
+        <span v-if="form.yhType == 1">企业</span>
+        <span v-else-if="form.yhType == 0">个人</span>
+      </el-form-item>
+      <el-form-item
+        label="业户社会信用代码 / 身份证"
+        prop="yhIdCard"
+        label-width="200px"
+      >
+        <el-input v-model="form.yhIdCard"></el-input>
+      </el-form-item>
+      <el-form-item label="经营许可证号" prop="businessCertificate">
+        <el-input v-model="form.businessCertificate"></el-input>
+      </el-form-item>
+      <el-form-item label="所属辖区" prop="belongingTo">
+        <el-input v-model="form.belongingTo"></el-input>
+      </el-form-item>
+
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">证件照片列表</span>
+        </el-divider>
+      </div>
+      <div class="imgdiv">
+        <div class="liemg">
+          <div class="imgBox">
+            <el-image
+              class="imgs"
+              v-for="(item, key) in urls"
+              :key="key"
+              :src="item.url"
+              lazy
+              @click="getImg(key)"
+            ></el-image>
+          </div>
+        </div>
+        <div class="xianshu">
+          <el-carousel
+            ref="slideCarousel"
+            height="560px"
+            indicator-position="none"
+            arrow="always"
+            :autoplay="false"
+          >
+            <el-carousel-item v-for="(item, key) in urls" :key="key">
+              <div style="width: 100%">
+                <el-image
+                  style="width: 100%; height: 500px"
+                  fit="contain"
+                  :src="item.url"
+                ></el-image>
+                <div class="textmiaos">{{ item.name }}</div>
+                <div class="annscc">
+                  <div style="flex: 1"></div>
+                  <div style="margin-right: 306px; display: flex">
+                    <el-upload
+                      action=""
+                      :show-file-list="false"
+                      :file-list="fileList"
+                      :http-request="uploadSectionFile"
+                    >
+                      <el-button type="primary" @click="uploadIMG(key)"
+                        >重新上传</el-button
+                      >
+                    </el-upload>
+                    <el-button
+                      style="margin-left: 10px"
+                      type="danger"
+                      @click="disappearIMG(key)"
+                      >删除图片</el-button
+                    >
+                  </div>
+                </div>
+              </div>
+            </el-carousel-item>
+          </el-carousel>
+        </div>
+      </div>
+      <el-divider content-position="left"> </el-divider>
+
+      <el-form-item label="审核结果" prop="auditStatus">
+        <el-radio-group v-model="form.auditStatus">
+          <el-radio :label="0">待审核</el-radio>
+          <el-radio :label="1">审核中</el-radio>
+          <el-radio :label="2">审核通过</el-radio>
+          <el-radio :label="3">审核不通过</el-radio>
+        </el-radio-group>
+      </el-form-item>
+
+      <div>
+        <el-form-item label=" ">
+          <el-button type="primary" @click="submitForm('form')" plain
+            >提交</el-button
+          >
+        </el-form-item>
+      </div>
+    </el-form>
+  </div>
+</template>
+
+<script>
+import { upload, deleteFile } from "@/api/index.js";
+import uploadIMG from '@/components/uploadIMG/index'
+export default {
+
+  components: {
+    uploadIMG
+  },
+  data () {
+    return {
+      form: {
+        vehicleNumber: "",
+        vehicleColor: "",
+        vehicleSize: "",
+        qualityType: "",
+        tonnage: "",
+        hzdQuality: "",
+        vehicleType: "",
+        vehicleNumberType: "",
+        master: "",
+        vehicleCode: "",
+        axleAmount: "",
+        nature: "",
+        energyType: "",
+        licenseNumber: "",
+        licenseAward: "",
+        licenseLoginTime: "",
+        licenseAwardTime: "",
+        licenseExpirationTime: "",
+        dlysNumber: "",
+        dlysExpirationTime: "",
+        yhName: "",
+        yhType: "",
+        businessCertificate: "",
+        belongingTo: "",
+        auditStatus: "",
+        //
+
+        //
+
+        //
+
+        //
+
+        //
+
+        //
+
+      },
+      //图片数据
+      urls: [],
+      fileList: [],
+      //等待删除的图片
+      imgURL: [],
+      carList: [],
+      payeeList: [],
+      imgKey: {
+        value: "",
+        key: ""
+      },
+      rules: {
+        xxx: [
+          { required: true, message: '不能为空' }
+        ]
+      }
+    }
+  },
+  methods: {
+    submitForm (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          alert('submit!');
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    },
+    addCar () {
+
+    },
+    addPayee () {
+
+    },
+    getImg (url) {
+      this.url = url;
+    }
+  }
+}
+</script>
+
+<style scoped>
+.imgBox {
+  width: 220px;
+  height: 500px;
+  overflow: auto;
+}
+
+.showBox {
+  height: 500px;
+  min-width: 700px;
+  width: 70%;
+}
+
+/*.showBox .el-image__inner {*/
+/*  width: auto;*/
+/*  height: 360px;*/
+/*}*/
+
+.imgs {
+  width: 200px;
+}
+</style>

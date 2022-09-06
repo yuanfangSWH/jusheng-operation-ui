@@ -1,0 +1,669 @@
+<template>
+  <div class="app-container">
+    <!-- 头部搜索模块 -->
+    <div class="mb20 flex justify-end">
+      <el-select v-model="conditions_value" class="mr5">
+        <el-option
+          v-for="item in conditions"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        >
+        </el-option>
+      </el-select>
+      <el-input
+        class="search mr5"
+        v-model="numberData"
+        placeholder="请输入对应的条件"
+      ></el-input>
+      <div class="fenge">|</div>
+      <el-select v-model="time_value" class="mr5">
+        <el-option
+          v-for="item in timeData"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        >
+        </el-option>
+      </el-select>
+      <el-date-picker
+        class="mr5"
+        v-model="startTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="选择起始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        v-model="endTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="选择结束日期"
+      >
+      </el-date-picker>
+      <el-button type="primary" @click="query">查询</el-button>
+      <el-button type="danger" @click="empty">清空</el-button>
+    </div>
+    <div class="mb20 flex justify-end">
+      <el-select
+        class="search mr5"
+        v-model="shenge"
+        placeholder="选择审核状态"
+        clearable
+      >
+        <el-option :value="0" label="未完成上传"></el-option>
+        <el-option :value="1" label="待审核"></el-option>
+        <el-option :value="2" label="审核通过"></el-option>
+        <el-option :value="3" label="审核不通过"></el-option>
+        <el-option :value="4" label="无需审核"></el-option>
+      </el-select>
+      <el-select class="search mr5" v-model="ydzt" placeholder="选择运单状态">
+        <el-option :value="1" label="全部"></el-option>
+        <el-option :value="2" label="已接单"></el-option>
+        <el-option :value="3" label="发车中"></el-option>
+        <el-option :value="4" label="已到达"></el-option>
+        <el-option :value="5" label="已签收"></el-option>
+        <el-option :value="6" label="已关闭"></el-option>
+      </el-select>
+      <el-select class="search mr5" v-model="zfzt" placeholder="选择支付状态">
+        <el-option :value="1" label="内部审核中"></el-option>
+        <el-option :value="2" label="平台审核中"></el-option>
+        <el-option :value="3" label="财务打款中"></el-option>
+        <el-option :value="4" label="已打款"></el-option>
+        <el-option :value="5" label="审核不通过"></el-option>
+        <el-option :value="6" label="打款失败"></el-option>
+      </el-select>
+    </div>
+    <div style="margin-bottom: 10px">
+      <el-button type="primary" @click="audit(1)">批量审核通过</el-button>
+      <el-button type="danger" @click="audit(2)">批量审核不通过</el-button>
+    </div>
+    <!-- 表格区域 -->
+    <el-table
+      :data="tableData"
+      style="width: 100%"
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column type="selection"></el-table-column>
+      <el-table-column label="序号" type="index"></el-table-column>
+      <el-table-column prop="carriageId" label="运单号" width="250">
+      </el-table-column>
+      <el-table-column prop="ifInvoice" label="是否开票">
+        <template slot-scope="scope">
+          <span v-if="scope.row.ifInvoice == 0">否</span>
+          <span v-if="scope.row.ifInvoice == 1">是</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="transportType" label="运输方式">
+        <template slot-scope="scope">
+          <span v-if="scope.row.transportType == 0">陆运</span>
+          <span v-if="scope.row.transportType == 1">水运</span>
+        </template>
+      </el-table-column>
+      <!-- 调车方式暂时没有字段 -->
+      <el-table-column prop="date" label="调车方式(无字段)"></el-table-column>
+      <el-table-column prop="carriageState" label="运单状态" width="120">
+        <template slot-scope="scope">
+          <span v-if="scope.row.carriageState == 0">草稿</span>
+          <span v-if="scope.row.carriageState == 1">已提交</span>
+          <span v-if="scope.row.carriageState == 2">已分配承运人</span>
+          <span v-if="scope.row.carriageState == 3">已接单</span>
+          <span v-if="scope.row.carriageState == 4">提货中</span>
+          <span v-if="scope.row.carriageState == 5">发车中</span>
+          <span v-if="scope.row.carriageState == 6">已到达</span>
+          <span v-if="scope.row.carriageState == 7">卸货中</span>
+          <span v-if="scope.row.carriageState == 8">已签收</span>
+          <span v-if="scope.row.carriageState == 9">已作废</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="checkState" label="审核状态" width="120">
+        <template slot-scope="scope">
+          <span v-if="scope.row.checkState == 0">待审核</span>
+          <span v-if="scope.row.checkState == 1">审核中</span>
+          <span v-if="scope.row.checkState == 2">审核通过</span>
+          <span v-if="scope.row.checkState == 3">审核不通过</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="shipperUserId"
+        label="托运人"
+        width="120"
+      ></el-table-column>
+      <el-table-column
+        prop="relevanceCode"
+        label="订单号"
+        width="200"
+      ></el-table-column>
+      <!-- <el-table-column prop="relevanceCode" label="订单号" width="200"></el-table-column> -->
+      <!-- <el-table-column :prop="relevanceCode" label="关联单号" width="120"></el-table-column> -->
+      <el-table-column prop="goodsName" label="货物名称"></el-table-column>
+      <el-table-column
+        prop="deliverContactsProvince"
+        label="装货地点"
+        width="200"
+      ></el-table-column>
+      <el-table-column
+        prop="takeContactsProvince"
+        label="卸货地点"
+        width="200"
+      ></el-table-column>
+      <el-table-column prop="takeContacts" label="收货人"></el-table-column>
+      <el-table-column
+        prop="drPaymentAmount"
+        label="第二收款人"
+        width="120"
+      ></el-table-column>
+      <el-table-column prop="payeeName" label="司机"></el-table-column>
+      <el-table-column prop="vehicleNumber" label="车船号"></el-table-column>
+      <el-table-column
+        prop="planPickTime"
+        label="计划装货时间"
+        width="230"
+      ></el-table-column>
+      <el-table-column
+        prop="arriveTime"
+        label="实际提货时间"
+        width="150"
+      ></el-table-column>
+      <el-table-column
+        prop="planArrivalTime"
+        label="计划到货时间"
+        width="180"
+      ></el-table-column>
+      <el-table-column
+        prop="demountTime"
+        label="实际到货时间"
+      ></el-table-column>
+      <el-table-column prop="settleWeight" label="计价单位"></el-table-column>
+      <el-table-column prop="planWeight" label="计划装货量"></el-table-column>
+      <el-table-column
+        prop="realityInstallNumber"
+        label="实发装货量"
+      ></el-table-column>
+      <el-table-column
+        prop="realityArriveNumber"
+        label="实收量"
+        width="120"
+      ></el-table-column>
+      <el-table-column prop="unitPrice" label="单价"></el-table-column>
+      <el-table-column
+        prop="sjPaymentAmount"
+        label="司机运费"
+      ></el-table-column>
+      <el-table-column prop="date" label="含税运费"></el-table-column>
+      <el-table-column
+        prop="alreadyPaidYf"
+        label="已支付运费"
+      ></el-table-column>
+      <el-table-column
+        prop="paymentState"
+        label="支付状态"
+        width="120"
+      ></el-table-column>
+      <el-table-column prop="goodsName" label="货物名称"></el-table-column>
+      <el-table-column
+        prop="deliverContactsProvince"
+        label="装货地点"
+        width="200"
+      ></el-table-column>
+      <el-table-column
+        prop="takeContactsProvince"
+        label="卸货地点"
+        width="200"
+      ></el-table-column>
+      <el-table-column prop="takeContacts" label="收货人"></el-table-column>
+      <el-table-column
+        prop="payeeName"
+        label="收款人"
+        width="120"
+      ></el-table-column>
+      <el-table-column prop="payeeName" label="司机"></el-table-column>
+      <el-table-column prop="vehicleNumber" label="车船号"></el-table-column>
+      <el-table-column
+        prop="planPickTime"
+        label="计划装货时间"
+        width="230"
+      ></el-table-column>
+      <el-table-column
+        prop="arriveTime"
+        label="实际提货时间"
+        width="150"
+      ></el-table-column>
+      <el-table-column
+        prop="planArrivalTime"
+        label="计划到货时间"
+        width="180"
+      ></el-table-column>
+      <el-table-column
+        prop="demountTime"
+        label="实际到货时间"
+      ></el-table-column>
+      <el-table-column prop="settleWeight" label="计价单位"></el-table-column>
+      <el-table-column prop="planWeight" label="计划装货量"></el-table-column>
+      <el-table-column
+        prop="realityInstallNumber"
+        label="实发装货量"
+      ></el-table-column>
+      <el-table-column
+        prop="realityArriveNumber"
+        label="实收量"
+        width="120"
+      ></el-table-column>
+      <el-table-column prop="unitPrice" label="单价"></el-table-column>
+      <el-table-column
+        prop="sjPaymentAmount"
+        label="司机运费"
+      ></el-table-column>
+      <!-- 先不要 -->
+      <!-- <el-table-column prop="date" label="含税运费" ></el-table-column> -->
+      <el-table-column
+        prop="alreadyPaidYf"
+        label="已支付运费"
+      ></el-table-column>
+      <el-table-column
+        prop="paymentState"
+        label="支付状态"
+        width="120"
+      ></el-table-column>
+      <!-- 开票状态无字段 -->
+      <el-table-column prop="date" label="开票状态(无字段)"></el-table-column>
+      <!-- 回单状态无字段 -->
+      <el-table-column prop="date" label="回单状态(无字段)"></el-table-column>
+      <el-table-column prop="remake" label="备注说明"></el-table-column>
+      <el-table-column
+        prop="adminCompany"
+        label="业务管理公司"
+      ></el-table-column>
+      <el-table-column prop="contractUrl" label="托运人合同"></el-table-column>
+      <el-table-column
+        prop="contractState"
+        label="托运人合同状态"
+      ></el-table-column>
+      <el-table-column
+        prop="contractUrl"
+        label="承运人合同"
+        width="120"
+      ></el-table-column>
+      <el-table-column
+        prop="contractState"
+        label="承运人合同状态"
+      ></el-table-column>
+      <el-table-column prop="createBy" label="创建人"></el-table-column>
+      <el-table-column prop="createTime" label="创建时间"></el-table-column>
+      <!-- 付款申请时间 -->
+      <el-table-column prop="date" label="付款申请时间"></el-table-column>
+      <el-table-column label="操作" fixed="right" width="300px">
+        <template slot-scope="data">
+          <span
+            class="operate mr10"
+            style="color: #409eff"
+            @click="auditTG(data.row)"
+            >审核通过</span
+          >
+          <span
+            class="operate mr10"
+            style="color: #f56c6c"
+            @click="auditBTG(data.row)"
+            >审核不通过</span
+          >
+          <span
+            class="operate mr10"
+            style="color: #67c23a"
+            @click="goinfo(data.row)"
+            >详情</span
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageSize"
+        :limit="pageNum"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+    <el-dialog
+      title="批量审核通过"
+      :visible.sync="dialogVisible1"
+      width="50%"
+      center
+    >
+      <div class="biaotk">确认将以下数据审核通过？</div>
+      <div class="shengmiaos">
+        <span v-for="(item, key) in multipleSelection" :key="key">{{
+          item.carriageId
+        }}</span>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible1 = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible1 = false"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
+    <el-dialog
+      title="批量审核不通过"
+      :visible.sync="dialogVisible2"
+      width="50%"
+      center
+    >
+      <div class="biaotk">确认将以下数据设为不通过？</div>
+      <div class="shengmiaos">
+        <span v-for="(item, key) in multipleSelection" :key="key">{{
+          item.carriageId
+        }}</span>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2 = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible2 = false"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import Pagination from "@/components/Pagination";
+import { getList } from '@/api/business/waybill'
+import { phoneCheck } from "@/utils/check.js";
+export default {
+  components: {
+    Pagination
+  },
+  data () {
+    return {
+      conditions: [
+        {
+          value: 1,
+          label: "车牌号",
+        },
+        {
+          value: 2,
+          label: "运单编号",
+        },
+        {
+          value: 3,
+          label: "司机手机号",
+        },
+        {
+          value: 4,
+          label: "托运人名称",
+        },
+        {
+          value: 5,
+          label: "收获方名称",
+        },
+        {
+          value: 6,
+          label: "货物名称",
+        },
+      ],
+      //选择的条件
+      conditions_value: 1,
+      //选择的条件返回字段
+      conditions_data: "vehicleNumber",
+      //条件参数
+      numberData: "",
+      timeData: [
+        {
+          value: 1,
+          label: "计划提货时间",
+        },
+        {
+          value: 2,
+          label: "实际提货时间",
+        },
+        {
+          value: 3,
+          label: "计划到货时间",
+        },
+        {
+          value: 4,
+          label: "实际到货时间",
+        },
+        {
+          value: 5,
+          label: "运单创建时间",
+        }
+      ],
+      //选择的时间条件
+      time_value: 1,
+      //选择的时间字段
+      time_dataA: "planPickTimeStartTime",
+      time_dataB: "planPickTimeEndTime",
+      //条件参数
+      startTime: "",
+      endTime: "",
+      //假条件数据↓
+      shenge: "",
+      ydzt: "",
+      zfzt: "",
+      //列表数据
+      tableData: [],
+      //页码
+      pageSize: 1,
+      //数量
+      pageNum: 10,
+      //总数据量
+      total: 0,
+      //多选数据
+      multipleSelection: [],
+      dialogVisible1: false,
+      dialogVisible2: false,
+    }
+  },
+  watch: {
+    conditions_value: function () {
+      switch (Number(val)) {
+        case 1:
+          this.conditions_data = "vehicleNumber"
+          break;
+        case 2:
+          this.conditions_data = "vehicleNumber"
+          break;
+        case 3:
+          this.conditions_data = "vehicleNumber"
+          break;
+        case 4:
+          this.conditions_data = "vehicleNumber"
+          break;
+        case 5:
+          this.conditions_data = "vehicleNumber"
+          break;
+        case 6:
+          this.conditions_data = "vehicleNumber"
+          break;
+      }
+    },
+    time_value: function () {
+      switch (Number(val)) {
+        case 1:
+          this.time_dataA = "planPickTimeStartTime"
+          this.time_dataB = "planPickTimeEndTime"
+          break;
+        case 2:
+          this.time_dataA = "arriveTimeStartTime"
+          this.time_dataB = "arriveTimeStartEndTime"
+          break;
+        case 3:
+          this.time_dataA = "planArrivalTimeStartTime"
+          this.time_dataB = "planArrivalTimeEndTime"
+          break;
+        case 4:
+          this.time_dataA = "demountTimeStartTime"
+          this.time_dataB = "demountTimeStartEndTime"
+          break;
+        case 5:
+          this.time_dataA = "createTimeStartTime"
+          this.time_dataB = "createTimeStartEndTime"
+          break;
+      }
+    },
+  },
+  mounted () {
+    this.getList()
+  },
+  methods: {
+    //审核通过
+    auditTG (data) {
+      this.$confirm('是否将单号为' + data.carriageId + "的数据审核通过", '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$message({
+          type: 'success',
+          message: '操作成功!'
+        });
+      })
+    },
+    //审核不通过
+    auditBTG (data) {
+      this.$confirm('是否将单号为' + data.carriageId + "的数据审核不通过", '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$message({
+          type: 'success',
+          message: '操作成功!'
+        });
+      })
+    },
+    audit (key) {
+      if (this.multipleSelection.length <= 0) {
+        this.$message({
+          message: '请勾选需要操作的数据',
+          type: 'warning',
+          duration: 2000
+        });
+        return
+      }
+      if (key == 1) {
+        this.dialogVisible1 = true;
+      } else {
+        this.dialogVisible2 = true;
+      }
+    },
+    //多选
+    handleSelectionChange (val) {
+      let data = [];
+      for (let i of val) {
+        data.push(i.carriageId)
+      }
+      this.multipleSelection = data;
+    },
+    //清空
+    empty () {
+      this.conditions_value = 1
+      this.conditions_data = ""
+      this.numberData = ""
+      this.time_value = 1
+      this.time_dataA = ""
+      this.time_dataB = ""
+      this.startTime = ""
+      this.endTime = ""
+      this.getList();
+    },
+    //查询
+    query () {
+      //   if (this.conditions_value == 3) {
+      //     if (this.numberData == "" || phoneCheck(this.numberData)) {
+      //       this.getList();
+      //     }
+      //   } else {
+      //     this.getList();
+      //   }
+      this.getList();
+    },
+    //分页
+    pagination (val) {
+      this.pageSize = val.page;
+      this.pageNum = val.limit;
+      this.getList();
+    },
+    //详情
+    goinfo (row) {
+      this.$router.push({ path: "/business/wayBill/info/index", query: { carriageId: row.carriageId } })
+    },
+    // 条件查询运单列表
+    getList () {
+      let data = {
+        pageSize: this.pageSize,
+        pageNum: this.pageNum,
+      }
+      data[this.time_dataA] = this.startTime;
+      data[this.time_dataB] = this.endTime;
+      getList(data).then(res => {
+        if (res.code == 200) {
+          this.tableData = res.rows
+          this.total = res.total
+        }
+      })
+    },
+
+
+  }
+}
+</script>
+
+<style scoped>
+.search {
+  transition: all 3s linear;
+}
+
+.el-date-picker {
+  width: 300px;
+}
+
+.el-row-border {
+  border: 1px solid #ccc;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.el-col-left {
+  width: 40%;
+}
+
+.el-col-right {
+  width: 60%;
+}
+
+.mar_r {
+  margin-right: 100px;
+}
+
+.searchBtn {
+  position: absolute;
+  bottom: 0;
+  right: 30px;
+}
+
+.clearBtn {
+  position: absolute;
+  bottom: 0;
+  right: 120px;
+}
+.biaotk {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+.shengmiaos {
+  font-size: 18px;
+  color: #409eff;
+}
+</style>
+
+
+
+
+
+

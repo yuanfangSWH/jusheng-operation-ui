@@ -1,0 +1,70 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex justify-end">
+
+      <el-button size="small" class="mr10" type="warning" plain>导出</el-button>
+
+      <el-select size="small mr10" value="" placeholder="身份" clearable>
+        <el-option value="2" label="司机"></el-option>
+        <el-option value="1" label="托运人"></el-option>
+      </el-select>
+
+      <el-select size="small mr5" value="" placeholder="" clearable>
+        <el-option value="2" label="用户手机号"></el-option>
+        <el-option value="1" label="用户姓名"></el-option>
+      </el-select>
+      <el-input class="search mr5" size="small" placeholder=""></el-input>
+      <el-button size="small" type="primary" plain>查询</el-button>
+    </div>
+
+
+    <el-table
+      :data="tableData"
+      style="width: 100%">
+      <el-table-column prop="date" label="序号" ></el-table-column>
+      <el-table-column prop="date" label="评价人" ></el-table-column>
+      <el-table-column prop="date" label="评价人手机号" ></el-table-column>
+      <el-table-column prop="date" label="评价人身份" ></el-table-column>
+      <el-table-column prop="date" label="运单编号" ></el-table-column>
+      <el-table-column prop="date" label="装货及时性" ></el-table-column>
+      <el-table-column prop="date" label="货物安全性" ></el-table-column>
+      <el-table-column prop="date" label="送达及时性" ></el-table-column>
+      <el-table-column prop="date" label="运输安全性" ></el-table-column>
+      <el-table-column prop="date" label="货物装载量" ></el-table-column>
+      <el-table-column prop="date" label="卸货及时性" ></el-table-column>
+      <el-table-column prop="date" label="沟通满意度" ></el-table-column>
+      <el-table-column prop="date" label="评价内容" ></el-table-column>
+      <el-table-column prop="date" label="评价时间" ></el-table-column>
+    </el-table>
+
+
+
+  </div>
+</template>
+
+<script>
+export default {
+  data(){
+    return {
+      tableData:[{
+        date:'111'
+      }],
+      time:[],
+      dialogVisible: false,
+      dialogVisible1: false,
+      dialogVisible2: false,
+      form:{},
+    }
+  },
+  methods: {
+    goInfo(){
+      this.dialogVisible1 = true;
+    }
+  }
+}
+</script>
+
+<style scoped>
+
+</style>
+

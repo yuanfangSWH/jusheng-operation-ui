@@ -1,0 +1,448 @@
+<template>
+  <div class="app-container">
+    <el-form ref="form" :model="form" :rules="rules" label-width="150px">
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">手机号信息</span>
+        </el-divider>
+      </div>
+      <el-form-item label="手机号" prop="phone">
+        <el-input
+          v-model="form.phone"
+          placeholder="请输入手机号"
+          clearable
+        ></el-input>
+        <el-button type="primary" style="margin-left: 10px" @click="phoneQuery"
+          >检测手机号是否被注册</el-button
+        >
+        <span
+          style="margin-left: 20px; color: #67c23a"
+          v-show="phoneProblem == 1"
+          >恭喜，该手机号可以使用~</span
+        ><span
+          style="margin-left: 20px; color: #f56c6c"
+          v-show="phoneProblem == 2"
+          >该手机号已被注册，请换一个手机号再试试！</span
+        >
+      </el-form-item>
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">身份信息</span>
+        </el-divider>
+      </div>
+
+      <el-row class="flex align-center">
+        <el-col :span="5">
+          <el-form-item label="身份证头像面" prop="idCardPerson"
+            ><uploadIMG
+              ref="uploadIMG1"
+              @pictureIMG="pictureIMG"
+              @pictureDelete="pictureDelete"
+              :imgUrl="form.idCardPerson"
+              componentText="添加身份证头像面"
+              fieldText="idCardPerson"
+            ></uploadIMG
+          ></el-form-item>
+        </el-col>
+        <el-col :span="13">
+          <el-form-item label="姓名" prop="name">
+            <el-input
+              v-model="form.name"
+              placeholder="请输入姓名"
+              clearable
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="身份证号" prop="idCardNumber">
+            <el-input
+              v-model="form.idCardNumber"
+              placeholder="请输入身份证号"
+              clearable
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="身份证有效期" prop="idCardLongEff">
+            <el-select
+              clearable
+              v-model="form.idCardLongEff"
+              placeholder="身份证有效期"
+            >
+              <el-option label="非长期有效" :value="1"></el-option>
+              <el-option label="长期有效" :value="0"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row class="flex align-center">
+        <el-col :span="5">
+          <el-form-item label="身份证国徽面" prop="idCardBadge">
+            <uploadIMG
+              ref="uploadIMG2"
+              @pictureIMG="pictureIMG"
+              @pictureDelete="pictureDelete"
+              :imgUrl="form.idCardBadge"
+              componentText="添加身份证国徽面"
+              fieldText="idCardBadge"
+            ></uploadIMG>
+          </el-form-item>
+        </el-col>
+        <el-col :span="13">
+          <el-form-item label="身份证有效开始日期" prop="idCardPeriodStartTime">
+            <el-date-picker
+              v-model="form.idCardPeriodStartTime"
+              format="yyyy 年 MM 月 dd 日"
+              value-format="yyyy-MM-dd"
+              type="date"
+              placeholder="选择开始日期"
+            >
+            </el-date-picker>
+          </el-form-item>
+          <el-form-item label="身份证有效结束日期" prop="idCardPeriodEndTime">
+            <el-date-picker
+              v-model="form.idCardPeriodEndTime"
+              format="yyyy 年 MM 月 dd 日"
+              value-format="yyyy-MM-dd"
+              type="date"
+              placeholder="选择结束日期"
+            >
+            </el-date-picker>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">驾驶证信息</span>
+        </el-divider>
+      </div>
+
+      <el-row class="flex align-center">
+        <el-col :span="5">
+          <el-form-item label="驾驶证正本" prop="drivingPerson">
+            <uploadIMG
+              ref="uploadIMG3"
+              @pictureIMG="pictureIMG"
+              @pictureDelete="pictureDelete"
+              :imgUrl="form.drivingPerson"
+              componentText="添加驾驶证正本"
+              fieldText="drivingPerson"
+            ></uploadIMG>
+          </el-form-item>
+        </el-col>
+        <el-col :span="13">
+          <el-form-item label="驾驶证号" prop="drivingNumber">
+            <el-input
+              v-model="form.drivingNumber"
+              placeholder="请输入驾驶证号"
+              clearable
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="准驾车型" prop="vehicleType">
+            <el-input
+              v-model="form.vehicleType"
+              placeholder="请输入准驾车型"
+              clearable
+            ></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-row class="flex align-center">
+        <el-col :span="5">
+          <el-form-item label="驾驶证副本" prop="drivingBadge">
+            <uploadIMG
+              ref="uploadIMG4"
+              @pictureIMG="pictureIMG"
+              @pictureDelete="pictureDelete"
+              :imgUrl="form.drivingBadge"
+              componentText="添加驾驶证副本"
+              fieldText="drivingBadge"
+            ></uploadIMG>
+          </el-form-item>
+        </el-col>
+        <el-col :span="13">
+          <el-form-item label="驾驶证有效开始日期" prop="drivingStartTime">
+            <el-date-picker
+              v-model="form.drivingStartTime"
+              format="yyyy 年 MM 月 dd 日"
+              value-format="yyyy-MM-dd"
+              type="date"
+              placeholder="选择开始日期"
+            >
+            </el-date-picker>
+          </el-form-item>
+          <el-form-item label="驾驶证有效结束日期" prop="drivingEndTime">
+            <el-date-picker
+              v-model="form.drivingEndTime"
+              format="yyyy 年 MM 月 dd 日"
+              value-format="yyyy-MM-dd"
+              type="date"
+              placeholder="选择结束日期"
+            >
+            </el-date-picker>
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">从业资格证信息（非必填）</span>
+        </el-divider>
+      </div>
+
+      <el-row class="flex align-center">
+        <el-col :span="5">
+          <el-form-item label="从业资格证" prop="cyCertificate">
+            <uploadIMG
+              ref="uploadIMG5"
+              @pictureIMG="pictureIMG"
+              @pictureDelete="pictureDelete"
+              :imgUrl="form.cyCertificate"
+              componentText="添加从业资格证"
+              fieldText="cyCertificate"
+            ></uploadIMG>
+          </el-form-item>
+        </el-col>
+        <el-col :span="13">
+          <el-form-item label="从业资格证号" prop="qualifiedNumber">
+            <el-input v-model="form.qualifiedNumber" clearable></el-input>
+          </el-form-item>
+          <el-form-item
+            label="资格证有效开始日期"
+            prop="qualifiedPeriodStartTime"
+          >
+            <el-date-picker
+              v-model="form.qualifiedPeriodStartTime"
+              format="yyyy 年 MM 月 dd 日"
+              value-format="yyyy-MM-dd"
+              type="date"
+              placeholder="选择开始日期"
+            >
+            </el-date-picker>
+          </el-form-item>
+          <el-form-item
+            label="资格证有效结束日期"
+            prop="qualifiedPeriodEndTime"
+          >
+            <el-date-picker
+              v-model="form.qualifiedPeriodEndTime"
+              format="yyyy 年 MM 月 dd 日"
+              value-format="yyyy-MM-dd"
+              type="date"
+              placeholder="选择结束日期"
+            >
+            </el-date-picker>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">其它信息</span>
+        </el-divider>
+      </div>
+      <el-row class="flex align-center">
+        <el-col :span="5">
+          <el-form-item label="关联车辆" prop="cyCertificate">
+            <el-input
+              v-model="form.vehicleNumber"
+              placeholder="请输入关联车辆"
+              clearable
+            ></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </el-form>
+    <div class="flex justify-center">
+      <el-button
+        @click="
+          () => {
+            this.$router.go(-1);
+          }
+        "
+        >返回</el-button
+      >
+      <el-button type="primary" @click="AddData()">保存提交</el-button>
+    </div>
+  </div>
+</template>
+
+<script>
+import uploadIMG from '@/components/uploadIMG/index'
+import { saveDriver, detectionPhone } from '@/api/member/driver'
+import { phoneCheck } from "@/utils/check.js";
+export default {
+  components: {
+    uploadIMG
+  },
+  data () {
+    return {
+      form: {
+        //手机号
+        phone: "",
+        //身份证头像面
+        idCardPerson: "",
+        //姓名
+        name: "",
+        //身份证
+        idCardNumber: "",
+        //身份证有效期
+        idCardLongEff: 1,
+        //身份证国徽面
+        idCardBadge: "",
+        //身份证有效开始日期
+        idCardPeriodStartTime: "",
+        //身份证有效结束日期
+        idCardPeriodEndTime: "",
+        //驾驶证正本
+        drivingPerson: "",
+        //驾驶证号
+        drivingNumber: "",
+        //准驾车型
+        vehicleType: "",
+        //驾驶证副本
+        drivingBadge: "",
+        //驾驶证有效开始日期
+        drivingStartTime: "",
+        //驾驶证有效结束日期
+        drivingEndTime: "",
+        //从业资格证
+        cyCertificate: "",
+        //从业资格证号
+        qualifiedNumber: "",
+        //资格证有效开始日期
+        qualifiedPeriodStartTime: "",
+        //资格证有效结束日期
+        qualifiedPeriodEndTime: "",
+        //关联车辆
+        vehicleNumber: ""
+      },
+      //检测结果
+      phoneProblem: 0,
+      rules: {
+        phone: [
+          { required: true, message: '不能为空' }
+        ]
+      }
+    }
+  },
+  mounted () {
+
+  },
+  methods: {
+    //检测手机号
+    phoneQuery () {
+      if (this.form.phone == "" || phoneCheck(this.form.phone)) {
+        detectionPhone({ mobilePhone: this.form.phone }).then((res) => {
+          if (res) {
+            this.phoneProblem = 1;
+          } else {
+            this.phoneProblem = 2;
+          }
+        });
+      }
+    },
+    //添加之前
+    AddData () {
+      if (this.phoneProblem == 0) {
+        if (this.form.phone == "" || phoneCheck(this.form.phone)) {
+          detectionPhone({ mobilePhone: this.form.phone }).then((res) => {
+            if (res) {
+              this.phoneProblem = 1;
+              this.submitForm();
+            } else {
+              this.phoneProblem = 2;
+            }
+          });
+        }
+      } else {
+        this.submitForm();
+      }
+    },
+    //添加
+    submitForm () {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          let data = {
+            //手机号
+            phone: this.form.phone,
+            //身份证头像面
+            idCardPerson: this.form.idCardPerson,
+            //姓名
+            name: this.form.name,
+            //身份证
+            idCardNumber: this.form.idCardNumber,
+            //身份证有效期
+            idCardLongEff: this.form.idCardLongEff,
+            //身份证国徽面
+            idCardBadge: this.form.idCardBadge,
+            //身份证有效开始日期
+            idCardPeriodStartTime: this.form.idCardPeriodStartTime,
+            //身份证有效结束日期
+            idCardPeriodEndTime: this.form.idCardPeriodEndTime,
+            //驾驶证正本
+            drivingPerson: this.form.drivingPerson,
+            //驾驶证号
+            drivingNumber: this.form.drivingNumber,
+            //准驾车型
+            vehicleType: this.form.vehicleType,
+            //驾驶证副本
+            drivingBadge: this.form.drivingBadge,
+            //驾驶证有效开始日期
+            drivingStartTime: this.form.drivingStartTime,
+            //驾驶证有效结束日期
+            drivingEndTime: this.form.drivingEndTime,
+            //从业资格证
+            cyCertificate: this.form.cyCertificate,
+            //从业资格证号
+            qualifiedNumber: this.form.qualifiedNumber,
+            //资格证有效开始日期
+            qualifiedPeriodStartTime: this.form.qualifiedPeriodStartTime,
+            //资格证有效结束日期
+            qualifiedPeriodEndTime: this.form.qualifiedPeriodEndTime,
+            //关联车辆
+            vehicleNumber: this.form.vehicleNumber
+          }
+          saveDriver(data).then((res) => {
+            if (res.code == 200) {
+              this.phoneProblem = 0;
+              this.$refs.form.resetFields();
+              this.$message({
+                message: '添加成功',
+                type: 'success',
+                duration: 3000
+              });
+              this.$router.push({ path: "/member/driver/index" })
+            }
+          });
+        }
+      });
+
+    },
+    //添加图片
+    pictureIMG (data) {
+      if (data?.idCardPerson) {
+        this.form.idCardPerson = data.idCardPerson;
+      } else if (data?.idCardBadge) {
+        this.form.idCardBadge = data.idCardBadge;
+      } else if (data?.drivingPerson) {
+        this.form.drivingPerson = data.drivingPerson;
+      } else if (data?.drivingBadge) {
+        this.form.drivingBadge = data.drivingBadge;
+      } else if (data?.cyCertificate) {
+        this.form.cyCertificate = data.cyCertificate;
+      }
+    },
+    //删除图片
+    pictureDelete (data) {
+      this.form[data] = "";
+    }
+  }
+}
+</script>
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+</style>

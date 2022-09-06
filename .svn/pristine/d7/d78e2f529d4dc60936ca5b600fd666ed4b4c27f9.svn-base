@@ -1,0 +1,24 @@
+import request from "@/utils/request";
+
+// export function getList(data){
+//     return request({
+//         url: "/operation/carriageAudit/queryCarriages",
+//         method: "POST",
+//         data: data
+//     })
+// }
+
+
+// 条件查询运单列表
+export function getList(data){
+    return request({
+        url: "/operation/carriageAudit/queryCarriages",
+        method: "post",
+        data: {}
+    })
+}
+
+
+
+
+

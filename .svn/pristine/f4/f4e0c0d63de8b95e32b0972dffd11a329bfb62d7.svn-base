@@ -1,0 +1,453 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex transposition justify-end">
+      <el-date-picker
+        class="mr5"
+        v-model="startTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="选择更新起始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        v-model="lastTradingTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="选择更新结束日期"
+      >
+      </el-date-picker>
+
+      <el-select
+        size="small mr10"
+        value=""
+        placeholder="选择角色"
+        v-model="type"
+      >
+        <el-option :value="1" label="托运人"></el-option>
+        <el-option :value="2" label="承运司机"></el-option>
+      </el-select>
+
+      <!-- 手机号或者名称2选1 -->
+      <el-select
+        size="small mr5"
+        v-model="conditions_value"
+        placeholder="请选择条件"
+      >
+        <el-option :value="1" label="用户名称"></el-option>
+        <el-option :value="2" label="用户手机号"></el-option>
+      </el-select>
+      <el-input class="search mr5" v-model="numberData"></el-input>
+      <el-button type="primary" @click="query">查询</el-button>
+      <el-button type="danger" @click="clearBtn">清空</el-button>
+    </div>
+
+    <!-- <div class="mb20">
+      <div>
+        <el-button type="warning">导出</el-button>
+      </div>
+    </div> -->
+
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column type="index" label="序号"></el-table-column>
+      <el-table-column prop="userPhone" label="用户手机号"></el-table-column>
+      <el-table-column prop="userName" label="用户名称"></el-table-column>
+      <el-table-column prop="type" label="角色">
+        <template slot-scope="data">
+          <span v-if="data.row.type == 2">托运人</span>
+          <span v-else-if="data.row.type == 3">司机</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="totalMoney" label="账户总额"></el-table-column>
+      <el-table-column prop="usableMoney" label="可用余额"></el-table-column>
+      <el-table-column prop="freezeMoney" label="冻结金额"></el-table-column>
+      <!-- 字段是开户行 -->
+      <el-table-column prop="accountBank" label="提现银行卡"></el-table-column>
+      <el-table-column
+        prop="lastTradingTime"
+        label="最后更新时间"
+      ></el-table-column>
+      <el-table-column label="操作" fixed="right" width="180px">
+        <template slot-scope="scope">
+          <span
+            class="operate mr10"
+            style="color: #e6a23c"
+            @click="goInvoice(scope.row)"
+            >交易记录</span
+          >
+          <span
+            v-if="scope.row.type == 2"
+            class="operate mr10"
+            style="color: #409eff"
+            @click="getRecharge(scope.row)"
+            >充值</span
+          >
+          <span
+            v-if="scope.row.type == 2"
+            class="operate mr10"
+            style="color: #f56c6c"
+            @click="getDeduction(scope.row)"
+            >扣款</span
+          >
+          <span
+            v-if="scope.row.type == 3"
+            class="operate mr10"
+            style="color: #67c23a"
+            @click="getBankCark(scope.row)"
+            >银行卡管理</span
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageSize"
+        :limit="pageNum"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+    <!-- 银行卡管理弹框 -->
+    <el-dialog
+      title="银行卡管理"
+      :visible.sync="dialogVisible"
+      width="500px"
+      center
+    >
+      <el-form
+        ref="queryCard"
+        :model="queryCard"
+        :rules="rules3"
+        label-width="150px"
+      >
+        <p>银行卡信息(绑定成功后，指派给该承运人的运单，均使用此银行卡结算)</p>
+        <el-form-item label="银行卡号" prop="bankCardNumber">
+          <el-input v-model="queryCard.bankCardNumber"></el-input>
+        </el-form-item>
+        <el-form-item label="持卡人姓名" prop="cardholderName">
+          <el-input v-model="queryCard.cardholderName"></el-input>
+        </el-form-item>
+        <el-form-item label="持卡人身份证号" prop="cardholderIDNumber">
+          <el-input v-model="queryCard.cardholderIDNumber"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="cardBtn">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- 扣款弹框 -->
+    <el-dialog
+      title="账户扣款"
+      :visible.sync="dialogVisible1"
+      width="600px"
+      center
+    >
+      <el-form
+        ref="queryToDown"
+        :model="queryToDown"
+        :rules="rules2"
+        label-width="100px"
+      >
+        <el-form-item label="扣款用户" prop="userId">
+          <template>
+            <span>{{ queryToDown.userId }}</span>
+          </template>
+        </el-form-item>
+        <el-form-item label="可用余额" prop="usableMoney">
+          <template>
+            <span>{{ queryToDown.usableMoney }}</span>
+          </template>
+        </el-form-item>
+        <el-form-item label="扣款金额" prop="amountOfDeductions">
+          <el-input v-model="queryToDown.amountOfDeductions"></el-input>
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input
+            v-model="queryToDown.remark"
+            type="textarea"
+            :rows="8"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible1 = false">取 消</el-button>
+        <el-button type="primary" @click="toDown">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- 充值弹框 -->
+    <el-dialog
+      title="账户充值"
+      :visible.sync="dialogVisible2"
+      width="600px"
+      center
+    >
+      <el-form
+        ref="queryRecharge"
+        :model="queryRecharge"
+        :rules="rules1"
+        label-width="100px"
+      >
+        <el-form-item label="充值用户" prop="userId">
+          <template>
+            <span>{{ queryRecharge.userId }}</span>
+          </template>
+        </el-form-item>
+        <el-form-item label="可用余额" prop="usableMoney">
+          <template>
+            <span>{{ queryRecharge.usableMoney }}</span>
+          </template>
+        </el-form-item>
+        <el-form-item label="充值金额" prop="topUpAmount">
+          <el-input v-model="queryRecharge.topUpAmount"></el-input>
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input
+            v-model="queryRecharge.remark"
+            type="textarea"
+            :rows="8"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2 = false">取 消</el-button>
+        <el-button type="primary" @click="toUp">确 定</el-button>
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import { getList, clientAccountTopUp, clientDeductions, queryBankCardInfo, updateDriverBankCard } from "@/api/finance/wallet";
+import Pagination from "@/components/Pagination";
+export default {
+  components: {
+    Pagination
+  },
+  data () {
+    return {
+      tableData: [],
+      rules1: {
+        topUpAmount: [
+          { required: true, message: '充值金额不能为空' }
+        ],
+        remark: [
+          { required: true, message: '备注不能为空' }
+        ]
+      },
+      rules2: {
+        amountOfDeductions: [
+          { required: true, message: '扣款金额不能为空' }
+        ],
+        remark: [
+          { required: true, message: '备注不能为空' }
+        ]
+      },
+      rules3: {
+        bankCardNumber: [
+          { required: true, message: '银行卡号不能为空' }
+        ],
+        cardholderName: [
+          { required: true, message: '持卡人姓名不能为空' }
+        ],
+        cardholderIDNumber: [
+          { required: true, message: '持卡人身份证号不能为空' }
+        ]
+      },
+      dialogVisible: false,
+      dialogVisible1: false,
+      dialogVisible2: false,
+      startTime: "", //更新开始时间
+      lastTradingTime: "", //更新结束时间
+      type: "", //角色
+
+      conditions_value: 1, //下拉框
+      conditions_data: "userPhone", //下拉框选中的值
+      numberData: "", //输入框
+
+      //充值接口参数
+      queryRecharge: {
+        remark: "", //备注
+        topUpAmount: "", //充值金额
+        userId: "", //托运人userId
+        usableMoney: "", //余额
+      },
+
+      // 扣款接口参数
+      queryToDown: {
+        amountOfDeductions: "", //扣款金额
+        remark: "", //备注
+        userId: "", //托运人userId
+      },
+
+      // 银行卡管理接口参数
+      queryCard: {
+        bankCardNumber: "",//银行卡号
+        cardholderIDNumber: "", //持卡人身份证号
+        cardholderName: "", //持卡人姓名
+        chauffeurId: "", //司机的id
+      },
+      //页码
+      pageSize: 1,
+      //数量
+      pageNum: 10,
+      //总数据量
+      total: 0,
+    };
+  },
+
+  watch: {
+    //数据监听
+    conditions_value: function (val) {
+      switch (Number(val)) {
+        case 1:
+          this.conditions_data = "userPhone";
+          break;
+        case 2:
+          this.conditions_data = "userName";
+          break;
+      }
+    },
+  },
+  mounted () {
+    this.getList();
+  },
+
+  methods: {
+    // 交易记录
+    goInvoice (data) {
+      this.$router.push({ path: '/finance/record/index', query: { userId: data.userId, type: data.type } });
+    },
+
+    /**充值 */
+    getRecharge (row) {
+      this.dialogVisible2 = true;
+      this.queryRecharge.userId = row.userId;
+      this.queryRecharge.usableMoney = row.usableMoney;
+    },
+    // 充值对话框确定按钮
+    toUp () {
+      this.$refs.queryRecharge.validate((valid) => {
+        if (valid) {
+          clientAccountTopUp(this.queryRecharge).then(res => {
+            if (res.code == 200) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 3000
+              });
+              this.$refs.queryRecharge.resetFields();
+              this.dialogVisible2 = false;
+              this.getList()
+            }
+          })
+        }
+      })
+    },
+
+    /**扣款 */
+    getDeduction (row) {
+      this.dialogVisible1 = true;
+      this.queryToDown.userId = row.userId;
+      this.queryToDown.usableMoney = row.usableMoney;
+    },
+    /**扣款对话框确定按钮 */
+    toDown () {
+      this.$refs.queryToDown.validate((valid) => {
+        if (valid) {
+          clientDeductions(this.queryToDown).then(res => {
+            if (res.code == 200) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 3000
+              });
+              this.$refs.queryToDown.resetFields();
+              this.dialogVisible1 = false;
+              this.getList()
+            }
+          })
+        }
+      })
+    },
+
+    /**银行卡管理 */
+    getBankCark (row) {
+      this.queryCard.chauffeurId = row.userId
+      queryBankCardInfo({ chauffeurId: row.userId }).then(res => {
+        if (res.code == 200) {
+          this.queryCard.cardholderName = res.data?.cardholderName
+          this.queryCard.bankCardNumber = res.data?.bankCardNumber
+          this.queryCard.cardholderIDNumber = res.data?.cardholderIDNumber
+          this.dialogVisible = true;
+        }
+      })
+    },
+    /**银行卡管理确定按钮*/
+    cardBtn () {
+      this.$refs.queryCard.validate((valid) => {
+        if (valid) {
+          updateDriverBankCard(this.queryCard).then(res => {
+            if (res.code == 200) {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 3000
+              });
+              this.$refs.queryCard.resetFields();
+              this.dialogVisible = false;
+              this.getList()
+            }
+          })
+        }
+      })
+    },
+    query () {
+      this.pageSize = 1;
+      this.getList();
+    },
+    // 获取用户的钱包信息
+    getList () {
+      let data = {
+        startTime: this.startTime,
+        lastTradingTime: this.lastTradingTime,
+        type: this.type
+      }
+      data[this.conditions_data] = this.numberData;
+      getList(data,{
+        pageSize: this.pageSize,
+        pageNum: this.pageNum
+      }).then((res) => {
+        if (res.code == 200) {
+          this.tableData = res.rows;
+          this.total = res.total
+        }
+      });
+    },
+    //分页
+    pagination (val) {
+      this.pageSize = val.page;
+      this.pageNum = val.limit;
+      this.getList();
+    },
+    // 清空按钮
+    clearBtn () {
+      this.startTime = ""; //更新开始时间
+      this.lastTradingTime = ""; //更新结束时间
+      this.type = ""; //角色
+      this.numberData = "";
+      this.pageSize = 1;
+      this.getList();
+    },
+
+  },
+};
+</script>
+
+<style scoped>
+</style>
+

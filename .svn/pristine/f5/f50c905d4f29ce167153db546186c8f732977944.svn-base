@@ -1,0 +1,21 @@
+import request from "@/utils/request"
+import qs from "qs"
+
+// 1,查看付款申请列表
+export function getListXX(){
+    return request({
+        url: "/operation/paymentAudit/queryPaymentInfo",
+        method: "GET",
+        data: {}
+    })
+}
+
+
+// 条件查询付款申请列表
+export function getList(data){
+    return request({
+        url: "/operation/paymentAudit/queryPayments",
+        method: "put",
+        data: data
+    })
+}

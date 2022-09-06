@@ -1,0 +1,270 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex transposition justify-end">
+      <el-button class="mr10" type="warning">导出</el-button>
+      <el-date-picker
+        class="mr5"
+        v-model="startTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="选择评价起始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        v-model="endTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="选择评价结束日期"
+      >
+      </el-date-picker>
+      <el-input
+        class="search mr5"
+        v-model="carriageId"
+        placeholder="运单编号"
+      ></el-input>
+
+      <el-input
+        class="search mr5"
+        v-model="evaluationPhone"
+        placeholder="评论人手机号"
+      ></el-input>
+      <el-select
+        size="small mr10"
+        v-model="evaluationUserType"
+        placeholder="评论人身份"
+      >
+        <el-option label="托运人" :value="0"></el-option>
+        <el-option label="司机" :value="1"></el-option>
+      </el-select>
+      <el-button type="primary" @click="query">查询</el-button>
+      <el-button type="danger" @click="empty">清空</el-button>
+    </div>
+
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column type="index" label="序号"></el-table-column>
+      <el-table-column prop="evaluationUserId" label="评价人"></el-table-column>
+      <el-table-column
+        prop="evaluationPhone"
+        label="评价人手机号"
+      ></el-table-column>
+      <el-table-column prop="evaluationUserType" label="评价人身份">
+        <template slot-scope="data">
+          <span v-if="data.row.evaluationUserType == 0">托运人</span>
+          <span v-else-if="data.row.evaluationUserType == 1">司机</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="carriageId" label="运单编号"></el-table-column>
+      <el-table-column
+        prop="evaluationContent"
+        label="评价内容"
+        width="500px"
+      ></el-table-column>
+      <el-table-column label="操作" fixed="right" width="200px">
+        <template slot-scope="data">
+          <span class="operate mr10" @click="goInfo(data.row)">详情</span>
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageSize"
+        :limit="pageNum"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+    <el-dialog
+      title="用户评论详情"
+      :visible.sync="dialogVisible"
+      width="30%"
+      center
+    >
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">序号</el-col>
+        <el-col :span="16">{{ form.evaluationId }}</el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">评价人</el-col>
+        <el-col :span="16">{{ form.evaluationUserId }}</el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">评价人手机号</el-col>
+        <el-col :span="16">{{ form.evaluationPhone }}</el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">评价人身份</el-col>
+        <el-col :span="16">
+          <span v-if="form.evaluationUserType == 0">托运人</span>
+          <span v-else-if="form.evaluationUserType == 1">司机</span>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">运单编号</el-col>
+        <el-col :span="16">{{ form.carriageId }}</el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">货物装载量</el-col>
+        <el-col :span="16" style="color: #f56c6c">没有字段</el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">货物安全性</el-col>
+        <el-col :span="16"
+          ><span v-if="form.cargoSafety == 0">10分</span>
+          <span v-else-if="form.cargoSafety == 1">8分</span>
+          <span v-else-if="form.cargoSafety == 2">6分</span>
+          <span v-else-if="form.cargoSafety == 3">4分</span>
+          <span v-else-if="form.cargoSafety == 4">2分</span>
+          <span v-else-if="form.cargoSafety == 5">0分</span></el-col
+        >
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">送达及时性</el-col>
+        <el-col :span="16">
+          <span v-if="form.timelinessOfDelivery == 0">10分</span>
+          <span v-else-if="form.timelinessOfDelivery == 1">8分</span>
+          <span v-else-if="form.timelinessOfDelivery == 2">6分</span>
+          <span v-else-if="form.timelinessOfDelivery == 3">4分</span>
+          <span v-else-if="form.timelinessOfDelivery == 4">2分</span>
+          <span v-else-if="form.timelinessOfDelivery == 5">0分</span>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">运输安全性</el-col>
+        <el-col :span="16">
+          <span v-if="form.safetyOfTransportation == 0">10分</span>
+          <span v-else-if="form.safetyOfTransportation == 1">8分</span>
+          <span v-else-if="form.safetyOfTransportation == 2">6分</span>
+          <span v-else-if="form.safetyOfTransportation == 3">4分</span>
+          <span v-else-if="form.safetyOfTransportation == 4">2分</span>
+          <span v-else-if="form.safetyOfTransportation == 5">0分</span>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">装货及时性</el-col>
+        <el-col :span="16">
+          <span v-if="form.timelinessOfLoading == 0">10分</span>
+          <span v-else-if="form.timelinessOfLoading == 1">8分</span>
+          <span v-else-if="form.timelinessOfLoading == 2">6分</span>
+          <span v-else-if="form.timelinessOfLoading == 3">4分</span>
+          <span v-else-if="form.timelinessOfLoading == 4">2分</span>
+          <span v-else-if="form.timelinessOfLoading == 5">0分</span>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">卸货及时性</el-col>
+        <el-col :span="16">
+          <span v-if="form.timelinessOfDischarge == 0">10分</span>
+          <span v-else-if="form.timelinessOfDischarge == 1">8分</span>
+          <span v-else-if="form.timelinessOfDischarge == 2">6分</span>
+          <span v-else-if="form.timelinessOfDischarge == 3">4分</span>
+          <span v-else-if="form.timelinessOfDischarge == 4">2分</span>
+          <span v-else-if="form.timelinessOfDischarge == 5">0分</span>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">沟通满意度</el-col>
+        <el-col :span="16">
+          <span v-if="form.communicationSatisfaction == 0">10分</span>
+          <span v-else-if="form.communicationSatisfaction == 1">8分</span>
+          <span v-else-if="form.communicationSatisfaction == 2">6分</span>
+          <span v-else-if="form.communicationSatisfaction == 3">4分</span>
+          <span v-else-if="form.communicationSatisfaction == 4">2分</span>
+          <span v-else-if="form.communicationSatisfaction == 5">0分</span>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">评价内容</el-col>
+        <el-col :span="16">{{ form.evaluationContent }}</el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="6" style="text-align: right">评价时间</el-col>
+        <el-col :span="16">{{ form.evaluationTime }}</el-col>
+      </el-row>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import { getList } from "@/api/feedback/evaluation.js";
+import { phoneCheck } from "@/utils/check.js";
+import Pagination from "@/components/Pagination";
+export default {
+  components: {
+    Pagination,
+  },
+  data () {
+    return {
+      carriageId: "",
+      startTime: "",
+      endTime: "",
+      evaluationPhone: "",
+      tableData: [],
+      evaluationUserType: "",
+      dialogVisible: false,
+      form: {},
+      //页码
+      pageSize: 1,
+      //数量
+      pageNum: 10,
+      //总数据量
+      total: 0,
+    };
+  },
+  mounted () {
+    this.getList();
+  },
+  methods: {
+    //清空
+    empty () {
+      this.carriageId = "";
+      this.startTime = "";
+      this.endTime = "";
+      this.evaluationPhone = "";
+      this.evaluationUserType = "";
+      this.pageSize = 1;
+      this.pageNum = 10;
+      this.getList();
+    },
+    //查询
+    query () {
+      if (this.evaluationPhone == "" || phoneCheck(this.evaluationPhone)) {
+        this.pageSize = 1;
+        this.getList();
+      }
+    },
+    //分页
+    pagination (val) {
+      this.pageSize = val.page;
+      this.pageNum = val.limit;
+      this.getList();
+    },
+    goInfo (row) {
+      this.form = row
+      this.dialogVisible = true;
+    },
+    getList () {
+      getList({
+        carriageId: this.carriageId,
+        startTime: this.startTime,
+        endTime: this.endTime,
+        evaluationPhone: this.evaluationPhone,
+        evaluationUserType: this.evaluationUserType,
+        pageSize: this.pageSize,
+        pageNum: this.pageNum,
+      }).then((res) => {
+        if (res.code == 200) {
+          this.tableData = res.rows;
+          this.total = res.total
+        }
+      });
+    },
+  },
+};
+</script>
+
+<style scoped>
+</style>
+

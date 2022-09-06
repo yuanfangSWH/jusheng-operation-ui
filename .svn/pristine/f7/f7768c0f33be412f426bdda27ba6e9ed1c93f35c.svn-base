@@ -1,0 +1,84 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex justify-end">
+
+      <el-date-picker
+        class="mr10"
+        size="small"
+        v-model="time"
+        type="daterange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期">
+      </el-date-picker>
+
+      <el-select size="small mr10" value="" placeholder="审核状态">
+        <el-option value="" label="待开票"></el-option>
+        <el-option value="1" label="已开票"></el-option>
+      </el-select>
+
+      <el-select size="small mr5" value="">
+        <el-option value="2" label="托运人"></el-option>
+        <el-option value="1" label="发票申请单编号"></el-option>
+        <el-option value="2" label="申请人"></el-option>
+        <el-option value="1" label="发票号码"></el-option>
+        <el-option value="1" label="发票代码"></el-option>
+      </el-select>
+      <el-input class="search mr5" size="small"></el-input>
+      <el-button size="small" type="primary" plain>查询</el-button>
+    </div>
+
+    <div class="mb20 ">
+      <div>
+        <el-button size="small" type="primary" @click="goInfo" plain>新建</el-button>
+        <el-button size="small" type="danger" plain>删除</el-button>
+        <el-button size="small" type="warning" plain>导出</el-button>
+      </div>
+
+    </div>
+
+    <el-table
+      :data="tableData"
+      style="width: 100%">
+      <el-table-column type="selection" ></el-table-column>
+      <el-table-column prop="date" label="序号" type="index"></el-table-column>
+      <el-table-column prop="date" label="申请单编号" ></el-table-column>
+      <el-table-column prop="date" label="托运人" ></el-table-column>
+      <el-table-column prop="date" label="业务管理公司" ></el-table-column>
+      <el-table-column prop="date" label="含管理费总运费" ></el-table-column>
+      <el-table-column prop="date" label="申请时间" ></el-table-column>
+      <el-table-column prop="date" label="申请人" ></el-table-column>
+      <el-table-column prop="date" label="运单数" ></el-table-column>
+      <el-table-column prop="date" label="发票备注" ></el-table-column>
+      <el-table-column prop="date" label="开票状态"></el-table-column>
+      <el-table-column prop="date" label="操作" fixed="right" width="200px">
+        <template slot-scope="data">
+          <span class="operate mr10" @click="goInvoice">发票管理</span>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+</template>
+
+<script>
+export default {
+  data(){
+    return {
+      tableData:[{111:11}],
+      time:[]
+    }
+  },
+  methods: {
+    goInvoice(){
+      this.$router.push("/finance/invoice/info")
+    },
+
+    // 销项发票管理，疑似没有接口
+  }
+}
+</script>
+
+<style scoped>
+
+</style>
+

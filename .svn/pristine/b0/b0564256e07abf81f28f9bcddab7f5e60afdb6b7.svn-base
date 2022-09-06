@@ -1,0 +1,48 @@
+import request from "@/utils/request"
+import qs from "qs"
+
+
+// 条件查询付款申请列表
+export function getList(data){
+    return request({
+        url: "/operation/paymentAudit/queryPayments",
+        method: "post",
+        data: data
+    })
+}
+
+//  查看付款申请详情
+export function queryPaymentById(data){
+    return request({
+        url: "/operation/paymentAudit/queryPaymentById",
+        method: "post",
+        data: data
+    })
+}
+
+// 批量审核付款申请单
+export function paymentAudit(data){
+    return request({
+        url: "/operation/paymentAudit/paymentAudit",
+        method: "post",
+        data: data
+    })
+}
+
+// 运营回退付款申请单
+export function financeFallbackPayment(data){
+    return request({
+        url: "/operation/paymentAudit/financeFallbackPayment",
+        method: "post",
+        data: data
+    })
+}
+//付款申请单历史记录列表
+export function queryPaymentRecord(data){
+    return request({
+        url: "/operation/paymentAudit/queryPaymentRecord",
+        method: "post",
+        data: data
+    })
+}
+

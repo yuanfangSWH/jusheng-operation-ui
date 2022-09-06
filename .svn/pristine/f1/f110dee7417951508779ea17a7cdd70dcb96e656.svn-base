@@ -1,0 +1,259 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex justify-start">
+      <el-form prop="conditionQuery" class="flex">
+        <el-select size="small mr5" v-model="conditionQuery.selected">
+          <el-option value="0" label="客户名称"></el-option>
+          <el-option value="1" label="合同编号"></el-option>
+        </el-select>
+        <el-form
+          :model="conditionQuery.phoneNum"
+          :rules="rules"
+          ref="ruleForm"
+          label-width="100px"
+          class="demo-ruleForm mr10"
+        >
+          <el-form-item label="手机号" prop="phone">
+            <el-input v-model="rules.phoneNum"></el-input>
+          </el-form-item>
+        </el-form>
+
+        <el-date-picker
+          class="mr10"
+          size="small"
+          v-model="time"
+          type="daterange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+        >
+        </el-date-picker>
+
+        <el-select
+          size="small mr5"
+          value=""
+          class="select"
+          v-model="conditionQuery.shenheSelected"
+        >
+          <el-option value="0" label="已启用"></el-option>
+          <el-option value="1" label="已停用"></el-option>
+          <el-option value="2" label="待审核"></el-option>
+        </el-select>
+
+        <el-button size="small" type="primary" plain class="searchBtn"
+        @click="searchBtn"
+          >查询</el-button
+        >
+      </el-form>
+    </div>
+    <div class="mb20">
+      <el-button size="small" type="primary" plain @click="goadd"
+        >新建</el-button
+      >
+      <el-button size="small" type="danger" plain>删除</el-button>
+      <el-button size="small" type="warning" plain>导出</el-button>
+    </div>
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column type="selection"></el-table-column>
+      <el-table-column prop="date" label="序号" type="index"></el-table-column>
+      <el-table-column prop="companyName" label="客户名称"></el-table-column>
+      <el-table-column
+        prop="companyShortName"
+        label="客户简称"
+      ></el-table-column>
+      <el-table-column
+        prop="clientContacts"
+        label="客户联系人"
+      ></el-table-column>
+      <el-table-column
+        prop="clientContactsPhone"
+        label="联系电话"
+      ></el-table-column>
+      <el-table-column prop="contactAddress" label="联系地址"></el-table-column>
+      <el-table-column
+        prop="clientDeveloper"
+        label="客户开发人"
+      ></el-table-column>
+      <el-table-column prop="date" label="结算方式">
+        <template slot-scope="scope">
+          <span v-if="scope.closeType == 0">即时结算</span>
+          <span v-else-if="scope.closeType == 1">预付结算</span>
+          <span v-else>其他账期</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="billDate" label="账期"></el-table-column>
+      <el-table-column
+        prop="contractStartTime"
+        label="合同起始日期"
+      ></el-table-column>
+      <el-table-column
+        prop="contractEndTime"
+        label="合同结束日期"
+      ></el-table-column>
+      <el-table-column prop="createBy" label="创建人"></el-table-column>
+      <el-table-column prop="date" label="创建人所属企业"></el-table-column>
+      <el-table-column prop="createTime" label="创建时间"></el-table-column>
+      <el-table-column prop="date" label="操作" fixed="right" width="200px">
+        <template slot-scope="scope">
+          <el-button type="primary" size="mini" plain>编辑</el-button>
+          <el-button
+            type="danger"
+            size="mini"
+            plain
+            @click="deleteBtn(scope.row.shipperClientId)"
+            >删除</el-button
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!-- 分页器 -->
+    <div class="paging_css">
+      <Pagination
+        :total="tableData.length"
+        :page="conditionQuery.pageSize"
+        :limit="conditionQuery.pageNum"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+  </div>
+</template>
+
+<script>
+import {
+  getList,
+  getShipperClient,
+  deleteShipperClient,
+  saveShipperClient,
+} from "../../../api/member/client";
+import Pagination from "@/components/Pagination";
+export default {
+  data() {
+    //手机号验证规则
+    var checkMobile = (rule, value, cb) => {
+      //验证手机号的正则表达式
+      const regMobile =
+        /^(0|86|17951)?(13[0-9]|15[012356789]|17[678]|18[0-9]|14[57])[0-9]{8}$/;
+      if (regMobile.test(value)) {
+        return cb();
+      }
+      cb(new Error("请输入合法的手机号"));
+    };
+
+    return {
+      time: [],
+      //1、数据列表
+      tableData: [],
+
+      // 条件查询客户列表参数
+      conditionQuery: {
+        selected: null, //下拉选择
+        phoneNum: null, //电话
+        time: [], // 时间
+        shenheSelected: "", //下拉选择
+        pageNum: 1, //页码，默认1
+        pageSize: 10, //默认显示10条数据
+      },
+
+      // 删除的Id
+      shipperClientId: "", //id
+
+      //条件查询验证规则对象
+      rules: {
+        phone: [
+          { required: true, message: "请输入手机号", trigger: "blur" },
+          { validator: checkMobile, trigger: "blur" },
+        ],
+      },
+
+      // 新建页参数
+      addCarQuery: {
+        carNum: null, //车牌号
+      },
+
+      //分页
+      pagination(val) {
+        this.pageSize = val.page;
+        this.pageNum = val.limit;
+        this.getList();
+      },
+    };
+  },
+  created() {
+    this.getList();
+  },
+
+  methods: {
+    /** */
+    getList() {
+      // 查看客户列表
+      getList().then((res) => {
+        if (res.code == 200) {
+          console.log(res);
+          this.tableData = res.rows;
+          // console.log("id="+res.rows.shipperClientId);
+          // this.shipperClientId = res.rows.shipperClientId
+        }
+      });
+    },
+
+    //2，新建客户
+    goadd() {
+      //跳转新建页
+      this.$router.push({
+        name:"edit",
+        params:{data:123456}
+        });
+       saveShipperClient().then(res=>{
+         console.log(res)
+       })
+    },
+
+    /**头部查询按钮 */
+    // 未完成
+    searchBtn(){
+      console.log(111)
+      getShipperClient().then(res => {
+        console.log(res)
+      })
+    },
+
+    //删除客户
+    deleteBtn(id) {
+      deleteShipperClient(id).then((res) => {
+        this.getList();
+        // console.log(res)
+      });
+    },
+  },
+  components: {
+    Pagination,
+  }
+};
+</script>
+
+<style scoped>
+.app-container {
+  width: 100%;
+}
+.fontSize {
+  font-size: 10px;
+}
+
+.searchBtn {
+  /* width: 50px; */
+  display: flex;
+  height: 33px;
+}
+
+label.el-form-item__label {
+  font-weight: 400;
+}
+
+.flex {
+  display: flex;
+}
+</style>
+
+
+

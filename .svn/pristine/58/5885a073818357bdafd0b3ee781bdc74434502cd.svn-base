@@ -1,0 +1,227 @@
+<template>
+  <div class="app-container">
+    <el-form ref="form" :model="form" :rules="rules" label-width="150px" inline>
+
+      <el-form-item label="身份信息">
+
+        <el-radio-group v-model="form.name">
+          <el-radio :label="3">企业</el-radio>
+          <el-radio :label="6">个人/经纪人</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <div class="mb20">
+        <el-divider content-position="left"> <span class="weight">基础信息</span> </el-divider>
+      </div>
+      <el-form-item label="托运人全称" prop="companyName">
+        <el-input v-model="form.companyName"></el-input>
+      </el-form-item>
+      <el-form-item label="联系人姓名" prop="companyName">
+        <el-input v-model="form.companyName"></el-input>
+      </el-form-item>
+      <el-form-item label="联系人手机号" prop="companyName">
+        <el-input v-model="form.companyName"></el-input>
+      </el-form-item>
+      <el-form-item label="托运人简称" prop="companyName">
+        <el-input v-model="form.companyName"></el-input>
+      </el-form-item>
+      <el-form-item label="法人代表姓名" prop="companyName">
+        <el-input v-model="form.companyName"></el-input>
+      </el-form-item>
+      <el-form-item label="管理员手机号" prop="companyName">
+        <el-input v-model="form.companyName"></el-input>
+      </el-form-item>
+
+      <div class="mb20">
+        <el-divider content-position="left"> <span class="weight">商务信息</span> </el-divider>
+      </div>
+      <div>
+        <el-form-item label="合作产品" prop="">
+          <el-checkbox-group v-model="form.name">
+            <el-checkbox label="公路运输" ></el-checkbox>
+            <el-checkbox label="水路运输" ></el-checkbox>
+            <el-checkbox label="集装箱运输"></el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+      </div>
+      <el-form-item label="管理费率" prop="companyName">
+        <el-input v-model="form.companyName"></el-input>
+      </el-form-item>
+      <el-form-item label="业务管理公司" prop="companyName">
+        <el-input v-model="form.companyName"></el-input>
+      </el-form-item>
+
+
+      <div class="mb20">
+        <el-divider content-position="left"> <span class="weight">需求配置</span> </el-divider>
+      </div>
+      <div class="radio">
+        <div>
+          <el-form-item label="是否必须确认发货" prop="">
+            <el-radio-group v-model="form.name">
+              <el-radio :label="3">否</el-radio>
+              <el-radio :label="6">是</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="是否必须确认到达" prop="companyName">
+            <el-radio-group v-model="form.name">
+              <el-radio :label="3">否</el-radio>
+              <el-radio :label="6">是</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="是否必须签收核算" prop="companyName">
+            <el-radio-group v-model="form.name">
+              <el-radio :label="3">否</el-radio>
+              <el-radio :label="6">是</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="允许运力接单条件" prop="companyName">
+            <el-radio-group v-model="form.name">
+              <el-radio :label="3">否</el-radio>
+              <el-radio :label="6">是</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="允许申请开票条件" prop="companyName">
+            <el-radio-group v-model="form.name">
+              <el-radio :label="3">否</el-radio>
+              <el-radio :label="6">是</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="是否开通TMS功能" prop="companyName">
+            <el-radio-group v-model="form.name">
+              <el-radio :label="3">否</el-radio>
+              <el-radio :label="6">是</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="付款审核方式" prop="companyName">
+            <el-radio-group v-model="form.name">
+              <el-radio :label="3">人工审核</el-radio>
+              <el-radio :label="6">自动审核</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </div>
+      </div>
+
+
+      <div class="mb20">
+        <el-divider content-position="left"> <span class="weight">附件信息</span> </el-divider>
+      </div>
+      <div class="flex flex-warp">
+        <div>
+          <el-form-item label="企业营业执照"  label-width="50%" >
+            <ImageUpload></ImageUpload>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="法人/负责人身份证人像面"  label-width="50%" prop="">
+            <ImageUpload></ImageUpload>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="法人/负责人身份证国徽面" label-width="50%" prop="">
+            <ImageUpload></ImageUpload>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="公司现场照片" label-width="50%" prop="">
+            <ImageUpload></ImageUpload>
+          </el-form-item>
+        </div>
+        <div>
+          <el-form-item label="框架合同" label-width="50%" prop="">
+            <ImageUpload></ImageUpload>
+          </el-form-item>
+        </div>
+      </div>
+
+      <div class="mb20">
+        <el-divider content-position="left"> <span class="weight">开票信息</span> </el-divider>
+      </div>
+        <el-form-item label="发票抬头" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+        </el-form-item>
+        <el-form-item label="注册地址" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+        </el-form-item>
+        <el-form-item label="纳税人识别号" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+        </el-form-item>
+        <el-form-item label="注册电话" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+        </el-form-item>
+        <el-form-item label="开户行" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+        </el-form-item>
+      <el-form-item label="开户账号" prop="companyName">
+        <el-input v-model="form.companyName"></el-input>
+      </el-form-item>
+      <el-form-item label="发票收件人" prop="companyName">
+        <el-input v-model="form.companyName"></el-input>
+      </el-form-item>
+      <el-form-item label="收件人电话" prop="companyName">
+        <el-input v-model="form.companyName"></el-input>
+      </el-form-item>
+      <el-form-item label="发票收件地址" prop="companyName">
+        <el-input v-model="form.companyName"></el-input>
+      </el-form-item>
+
+
+      <div>
+        <el-form-item label=" ">
+          <el-button type="primary" @click="submitForm('form')">提交</el-button>
+        </el-form-item>
+      </div>
+    </el-form>
+  </div>
+</template>
+
+<script>
+import ImageUpload from '../../../../components/ImageUpload/index'
+
+export default {
+  data(){
+    return {
+      form:{
+        name:[],
+      },
+      rules:{
+        companyName:[
+          {required:true , message:'不能为空'}
+        ]
+      }
+    }
+  },
+  components:{
+    ImageUpload
+  },
+  methods:{
+    submitForm(formName){
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          alert('submit!');
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    }
+  }
+}
+</script>
+
+<style scoped>
+.radio {
+  padding-left: 50px;
+}
+</style>

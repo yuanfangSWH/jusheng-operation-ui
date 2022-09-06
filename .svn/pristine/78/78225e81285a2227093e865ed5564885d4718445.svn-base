@@ -1,0 +1,258 @@
+<template>
+  <!-- 系统交易记录 -->
+  <div class="app-container">
+    <!-- 头部搜索模块 -->
+    <div class="mb20 flex justify-end">
+      <!-- <el-button class="mr10" type="warning">导出</el-button> -->
+      <el-date-picker
+        class="mr5"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        v-model="startTime"
+        type="date"
+        placeholder="交易时间起始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        v-model="endTime"
+        type="date"
+        placeholder="交易时间结束日期"
+      >
+      </el-date-picker>
+      <el-select v-model="conditions_value" class="mr5">
+        <el-option :value="1" label="用户手机号"></el-option>
+        <el-option :value="2" label="用户名称"></el-option>
+      </el-select>
+      <el-input
+        class="search mr5"
+        v-model="numberData"
+        placeholder="请输入对应的条件"
+      ></el-input>
+      <el-button type="primary" @click="query">查询</el-button>
+      <el-button type="danger" @click="empty">清空</el-button>
+    </div>
+    <div class="mb20 flex justify-end">
+      <el-input
+        class="search mr5"
+        v-model="orderCode"
+        placeholder="请输入订单号"
+      ></el-input>
+      <el-select size="small mr10" placeholder="交易类型" v-model="transType">
+        <el-option value="0" label="充值"></el-option>
+        <el-option value="1" label="支付"></el-option>
+        <el-option value="2" label="提现"></el-option>
+        <el-option value="3" label="扣款"></el-option>
+        <el-option value="4" label="钱包收款"></el-option>
+        <el-option value="5" label="银行卡收款"></el-option>
+        <el-option value="6" label="返利支付"></el-option>
+      </el-select>
+      <el-select size="small mr10" placeholder="订单状态" v-model="orderStatus">
+        <el-option value="1" label="新建"></el-option>
+        <el-option value="2" label="发布中"></el-option>
+        <el-option value="3" label="已完成"></el-option>
+        <el-option value="4" label="已删除"></el-option>
+      </el-select>
+      <el-select size="small mr10" placeholder="用户类型" v-model="type">
+        <el-option value="2" label="托运人"></el-option>
+        <el-option value="3" label="司机"></el-option>
+      </el-select>
+    </div>
+    <!-- 表格区域 -->
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column type="selection"></el-table-column>
+      <el-table-column label="序号" type="index"></el-table-column>
+      <el-table-column prop="orderCode" label="订单号"></el-table-column>
+      <el-table-column prop="carriageCode" label="运单号"></el-table-column>
+      <el-table-column prop="phone" label="用户手机"></el-table-column>
+      <el-table-column prop="userName" label="用户名"></el-table-column>
+      <el-table-column prop="nickName" label="操作人"></el-table-column>
+      <el-table-column prop="transType" label="交易类型" width="120">
+        <template slot-scope="scope">
+          <span v-if="scope.row.transType == 0">充值</span>
+          <span v-if="scope.row.transType == 1">支付</span>
+          <span v-if="scope.row.transType == 2">提现</span>
+          <span v-if="scope.row.transType == 3">扣款</span>
+          <span v-if="scope.row.transType == 4">钱包收款</span>
+          <span v-if="scope.row.transType == 5">银行卡收款</span>
+          <span v-if="scope.row.transType == 6">返利支付</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="transMoney" label="交易金额"></el-table-column>
+      <el-table-column prop="transStatus" label="交易状态" width="120">
+        <template slot-scope="scope">
+          <span v-if="scope.row.transStatus == 1">处理中</span>
+          <span v-if="scope.row.transStatus == 2">处理成功</span>
+          <span v-if="scope.row.transStatus == 3">处理失败</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="remark" label="备注"></el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageSize"
+        :limit="pageNum"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+  </div>
+</template>
+
+<script>
+import { getList } from "@/api/finance/record";
+import { phoneCheck } from "@/utils/check.js";
+import Pagination from "@/components/Pagination";
+
+export default {
+  components: {
+    Pagination
+  },
+  data () {
+    return {
+      tableData: [],
+      //页码
+      pageSize: 1,
+      //数量
+      pageNum: 10,
+      //总数据量
+      total: 0,
+      //选择的条件
+      conditions_value: 1,
+      //选择的条件字段
+      conditions_data: "phone",
+      //条件参数
+      numberData: "",
+      startTime: "",
+      endTime: "",
+      transType: "",
+      orderStatus: "",
+      type: "",
+      orderCode: "",
+      userId: ""
+    }
+  },
+  watch: {
+    conditions_value: function () {
+      switch (Number(val)) {
+        case 1:
+          this.conditions_data = "phone"
+          break;
+        case 2:
+          this.conditions_data = "userName"
+          break;
+      }
+    }
+  },
+  mounted () {
+    if (this.$route.query.userId) {
+      this.userId = this.$route.query.userId;
+      this.type = this.$route.query.type;
+    }
+    this.getList()
+  },
+  methods: {
+    //列表
+    getList () {
+      let data = {
+        userId: this.userId,
+        startTime: this.startTime,
+        endTime: this.endTime,
+        transType: this.transType,
+        orderStatus: this.orderStatus,
+        type: this.type,
+        orderCode: this.orderCode,
+        pageSize: this.pageSize,
+        pageNum: this.pageNum,
+      }
+      data[this.conditions_data] = this.numberData;
+      getList(data).then((res) => {
+        if (res.code == 200) {
+          this.tableData = res.rows;
+          this.total = res.total
+        }
+      });
+    },
+    //清空
+    empty () {
+      this.userId = "";
+      this.startTime = "";
+      this.endTime = "";
+      this.numberData = "";
+      this.transType = "";
+      this.orderStatus = "";
+      this.type = "";
+      this.orderCode = "";
+      this.pageSize = 1;
+      this.pageNum = 10;
+      this.getList();
+    },
+    //查询
+    query () {
+      if (this.conditions_value == 1) {
+        if (this.numberData == "" || phoneCheck(this.numberData)) {
+          this.getList();
+        }
+      } else {
+        this.getList();
+      }
+    },
+    //分页
+    pagination (val) {
+      this.pageSize = val.page;
+      this.pageNum = val.limit;
+      this.getList();
+    },
+  }
+}
+</script>
+
+<style scoped>
+.search {
+  transition: all 3s linear;
+}
+
+.el-date-picker {
+  width: 300px;
+}
+
+.el-row-border {
+  border: 1px solid #ccc;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.el-col-left {
+  width: 40%;
+}
+
+.el-col-right {
+  width: 60%;
+}
+
+.mar_r {
+  margin-right: 100px;
+}
+
+.searchBtn {
+  position: absolute;
+  bottom: 0;
+  right: 30px;
+}
+
+.clearBtn {
+  position: absolute;
+  bottom: 0;
+  right: 120px;
+}
+</style>
+
+
+
+
+
+

@@ -1,0 +1,30 @@
+import request from "@/utils/request";
+
+// 调销项发票审核的接口
+// 条件查询发票申请列表
+export function getList(data){
+    return request({
+        url: "/operation/invoiceAudit/queryInvoices",
+        method: "post",
+        data: data
+    })
+}
+
+
+// 发票回退至审核状态（财务发现发票有问题，打回）
+export function fallbackInvoice(code) {
+  return request({
+    url: "operation/invoiceManage/fallbackInvoice",
+    method: "post",
+    data: {applyCode: code}
+  });
+}
+
+// 上传发票
+export function uploadInvoice(data){
+    return request({
+        url: "/operation/invoiceManage/uploadInvoice",
+        method: "post",
+        data: data
+    })
+}

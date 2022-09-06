@@ -1,0 +1,209 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex transposition">
+      <el-button class="mr10" type="primary" @click="addInvoice"
+        >添加发票</el-button
+      >
+    </div>
+
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column type="index" label="序号"></el-table-column>
+      <el-table-column prop="invoiceNumber" label="发票号码"></el-table-column>
+      <el-table-column prop="invoiceCode" label="发票代码"></el-table-column>
+      <el-table-column prop="invoiceDetail" label="发票及明细">
+        <template slot-scope="data">
+          <a
+            class="operate mr10"
+            :href="data.row.invoiceDetail"
+            style="color: #67c23a"
+            >下载</a
+          >
+        </template>
+      </el-table-column>
+      <el-table-column prop="invoiceTime" label="开票日期"></el-table-column>
+      <el-table-column prop="createTime" label="创建时间"></el-table-column>
+      <el-table-column label="操作" fixed="right" width="100px">
+        <template slot-scope="data">
+          <span
+            class="operate mr10"
+            style="color: #f56c6c"
+            @click="deleteInvoice(data.row)"
+            >删除</span
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!-- 发票对话框 -->
+    <el-dialog
+      title="添加发票"
+      :visible.sync="dialogVisible"
+      width="30%"
+      center
+    >
+      <el-form ref="form" :model="form" :rules="rules" label-width="150px">
+        <el-form-item label="发票号码" prop="invoiceNumber">
+          <el-input v-model="form.invoiceNumber" clearable></el-input>
+        </el-form-item>
+
+        <el-form-item label="发票代码" prop="invoiceCode">
+          <el-input v-model="form.invoiceCode" clearable></el-input>
+        </el-form-item>
+
+        <el-form-item label="开票日期" prop="invoiceTime">
+          <el-date-picker
+            class="mr5"
+            format="yyyy 年 MM 月 dd 日"
+            value-format="yyyy-MM-dd"
+            v-model="form.invoiceTime"
+            type="date"
+            placeholder="选择开票日期"
+          >
+          </el-date-picker>
+        </el-form-item>
+
+        <el-form-item label="发票及明细" prop="invoiceDetail">
+          <uploadIMG
+            ref="uploadIMG"
+            @pictureIMG="pictureIMG"
+            @pictureDelete="pictureDelete"
+            :fileTxet="true"
+            componentText="添加文件"
+            fieldText="invoiceDetail"
+          ></uploadIMG>
+          <p style="font-size: 12px">
+            可上传发票图片及发票明细单，建议以压缩文件格式上传;支持图片、PDF、Word、Excel、压缩包格式，文件大小限制40M。
+          </p>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="uploadInvoice">确 定</el-button>
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import { queryInvoiceById, uploadInvoice, deleteInvoice } from "@/api/finance/invoice";
+import uploadIMG from '@/components/uploadIMG/index'
+export default {
+  components: {
+    uploadIMG
+  },
+  data () {
+    return {
+      dialogVisible: false,
+      tableData: [],
+      rules: {
+        xxx: [{ required: true, message: "不能为空" }],
+      },
+      form: {
+        applyCode: "", //开票申请号
+        invoiceTime: "", //开票日期
+        invoiceNumber: "", //发票号码
+        invoiceCode: "", //发票代码
+        invoiceDetail: "", //图片
+      },
+    };
+  },
+
+  mounted () {
+    this.form.applyCode = this.$route.query.applyCode;
+    this.queryInvoiceById();
+  },
+
+  methods: {
+    //添加图片
+    pictureIMG (data) {
+      if (data?.invoiceDetail) {
+        this.form.invoiceDetail = data.invoiceDetail;
+      }
+    },
+    //删除图片
+    pictureDelete (data) {
+      this.form[data] = "";
+    },
+    // 查询发票申请列表
+    queryInvoiceById () {
+      queryInvoiceById({ applyCode: this.form.applyCode }).then((res) => {
+        if (res.code == 200) {
+          this.tableData.push(res.data);
+        }
+      });
+    },
+    //添加发票弹框
+    addInvoice () {
+      this.dialogVisible = true;
+    },
+
+    // 添加发票
+    uploadInvoice () {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          uploadInvoice(this.form).then((res) => {
+            if (res.code == 200) {
+              this.queryInvoiceById()
+              this.dialogVisible = false;
+              //初始化图片上传组件
+              this.$refs.uploadIMG.originalData();
+              this.$refs.form.resetFields();
+              this.$message({
+                type: "success",
+                message: "添加成功!",
+              });
+            }
+          });
+        }
+      })
+    },
+
+    // 删除发票
+    deleteInvoice (data) {
+      this.$confirm('确定将该条数据删除吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteInvoice({ applyCode: data.applyCode }).then((res) => {
+          if (res.code == 200) {
+            this.tableData = [];
+            this.queryInvoiceById()
+            this.$message({
+              type: "success",
+              message: "删除成功!",
+            });
+          }
+        });
+      })
+    }
+  },
+};
+</script>
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+
+.label {
+  color: #333;
+  display: inline-block;
+  width: 160px;
+  text-align: right;
+}
+.val {
+  color: #999;
+}
+.imgBox {
+  height: 500px;
+  min-width: 600px;
+  width: 100%;
+}
+
+.imgs {
+  height: 150px;
+}
+</style>

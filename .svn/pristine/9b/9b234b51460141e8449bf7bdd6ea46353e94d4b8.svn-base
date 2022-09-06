@@ -1,0 +1,15 @@
+import { Notification, MessageBox, Message } from "element-ui";
+//手机号正则
+export function phoneCheck(value){
+    let reg_tel = /^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\d{8}$/
+    if (!reg_tel.test(value)) {
+        Message({
+            message: "手机号不正确",
+            type: "warning",
+            duration:3000
+        });
+        return false;
+    }else{
+        return true;
+    }
+}

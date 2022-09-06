@@ -1,0 +1,256 @@
+<template>
+  <div class="app-container">
+    <div class="mb20">
+      <el-divider content-position="left"> <span class="weight">基础信息</span> </el-divider>
+    </div>
+    <el-row class="ma20">
+      <el-col :span="6">
+        <span class="mr20 label">申请单编号</span>
+        <span class="val"></span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">托运人</span>
+        <span class="val"></span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">申请人</span>
+        <span class="val"></span>
+      </el-col>
+    </el-row>
+    <el-row class="ma20">
+      <el-col :span="6">
+        <span class="mr20 label">申请时间</span>
+        <span class="val">aaa</span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">含管理费总运费</span>
+        <span class="val"></span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">不含管理费总运费</span>
+        <span class="val"></span>
+      </el-col>
+    </el-row>
+    <el-row class="ma20">
+      <el-col :span="6">
+        <span class="mr20 label">管理费</span>
+        <span class="val">aaa</span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">总计划装货量</span>
+        <span class="val"></span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">业务管理公司</span>
+        <span class="val"></span>
+      </el-col>
+    </el-row>
+    <el-row class="ma20">
+      <el-col :span="6">
+        <span class="mr20 label">实发重量</span>
+        <span class="val">aaa</span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">实收重量</span>
+        <span class="val"></span>
+      </el-col>
+      <el-col :span="6">
+        <span class="mr20 label">发票备注栏信息</span>
+        <span class="val"></span>
+      </el-col>
+    </el-row>
+
+    <div class="mb20">
+      <el-divider content-position="left"> <span class="weight">审核</span> </el-divider>
+    </div>
+
+    <el-row class="ma20">
+      <el-col :span="12">
+        <span class="mr20 label">装货量</span>
+        <span class="val">aaa</span>
+      </el-col>
+    </el-row>
+    <el-row class="ma20">
+      <el-col :span="8">
+        <span class="mr20 label">本次支付</span>
+        <span class="val">aaa</span>
+      </el-col>
+    </el-row>
+    <el-row class="ma20">
+      <el-col :span="12">
+        <span class="mr20 label">审核结果</span>
+        <span class="val">
+          <el-radio-group v-model="radio">
+            <el-radio :label="1">审核通过</el-radio>
+            <el-radio :label="2">审核不通过</el-radio>
+          </el-radio-group>
+        </span>
+      </el-col>
+    </el-row>
+    <el-row class="ma20">
+      <el-col :span="12" class="flex align-center">
+        <span class="mr20 label" >不通过原因</span>
+        <span class="val">
+          <el-input type="textarea" :rows="5"></el-input>
+
+        </span>
+      </el-col>
+    </el-row>
+
+    <div >
+      <el-row>
+        <el-col :span="16" class="flex justify-center">
+          <el-button size="small" type="primary" @click="" plain>提交</el-button>
+          <el-button size="small" @click="" plain>取消</el-button>
+        </el-col>
+      </el-row>
+
+    </div>
+
+    <div class="mb20">
+      <el-divider content-position="left"> <span class="weight">收发货凭证</span> </el-divider>
+    </div>
+
+    <div style="margin: 80px 0 ">
+      <div class="flex justify-center mb20 imgBox ">
+        <el-image fit="contain" :src="url"></el-image>
+      </div>
+      <div class="flex justify-between">
+        <el-image fit="contain" v-for="url in urls" :key="url" :src="url" @click="getImg(url)" class="imgs"></el-image>
+      </div>
+    </div>
+    <el-divider content-position="left"> </el-divider>
+
+    <div class="mb20 flex">
+
+      <el-button class="mr20" size="small" type="warning" plain>导出</el-button>
+
+      <el-select size="small" class="mr20"  value="" placeholder="运单审核状态">
+        <el-option value="1" label="待审核"></el-option>
+        <el-option value="1" label="审核通过"></el-option>
+        <el-option value="1" label="未上传"></el-option>
+        <el-option value="1" label="审核不通过"></el-option>
+      </el-select>
+
+      <el-select size="small" class="mr20"  value="" placeholder="司机审核状态">
+        <el-option value="1" label="待审核"></el-option>
+        <el-option value="1" label="审核通过"></el-option>
+        <el-option value="1" label="审核不通过"></el-option>
+      </el-select>
+
+      <el-select size="small " class="mr20"  value="" placeholder="车辆审核状态">
+        <el-option value="1" label="待审核"></el-option>
+        <el-option value="1" label="审核通过"></el-option>
+        <el-option value="1" label="审核不通过"></el-option>
+      </el-select>
+    </div>
+
+
+    <el-table
+      :data="tableData"
+      style="width: 100%">
+      <el-table-column prop="date" label="序号" ></el-table-column>
+      <el-table-column prop="date" label="运单编号" ></el-table-column>
+      <el-table-column prop="date" label="托运人" ></el-table-column>
+      <el-table-column prop="date" label="承运司机" ></el-table-column>
+      <el-table-column prop="date" label="承运车辆" ></el-table-column>
+      <el-table-column prop="date" label="含管理费运费" ></el-table-column>
+      <el-table-column prop="date" label="不含管理费运费" ></el-table-column>
+      <el-table-column prop="date" label="管理费" ></el-table-column>
+      <el-table-column prop="date" label="管理费率" ></el-table-column>
+      <el-table-column prop="date" label="支付状态" ></el-table-column>
+      <el-table-column prop="date" label="承运人结算时间" ></el-table-column>
+      <el-table-column prop="date" label="最后付款时间" ></el-table-column>
+      <el-table-column prop="date" label="计划提货时间" ></el-table-column>
+      <el-table-column prop="date" label="装货地" ></el-table-column>
+      <el-table-column prop="date" label="卸货地" ></el-table-column>
+      <el-table-column prop="date" label="计划装货量" ></el-table-column>
+      <el-table-column prop="date" label="实发量" ></el-table-column>
+      <el-table-column prop="date" label="实收量" ></el-table-column>
+      <el-table-column prop="date" label="结算量" ></el-table-column>
+      <el-table-column prop="date" label="单价" ></el-table-column>
+      <el-table-column prop="date" label="操作" fixed="right" width="200px">
+        <template slot-scope="data">
+          <span class="operate mr10">审核</span>
+        </template>
+      </el-table-column>
+    </el-table>
+
+  </div>
+</template>
+
+<script>
+import ImageUpload from '../../../../components/ImageUpload/index'
+
+export default {
+  data(){
+    return {
+      form:{
+        name:[],
+      },
+      tableData:[],
+      radio:1,
+      urls: [
+        'https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg',
+        'https://fuss10.elemecdn.com/1/34/19aa98b1fcb2781c4fba33d850549jpeg.jpeg',
+        'https://fuss10.elemecdn.com/0/6f/e35ff375812e6b0020b6b4e8f9583jpeg.jpeg',
+        'https://fuss10.elemecdn.com/9/bb/e27858e973f5d7d3904835f46abbdjpeg.jpeg'
+      ],
+      url:'https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg',
+      rules:{
+        companyName:[
+          {required:true , message:'不能为空'}
+        ]
+      }
+    }
+  },
+  components:{
+    ImageUpload
+  },
+  methods:{
+    submitForm(formName){
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          alert('submit!');
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    },
+
+    getImg(url) {
+      this.url = url;
+    }
+
+  }
+}
+</script>
+
+<style scoped>
+
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+
+.label {
+  color:#333;
+  display: inline-block;
+  width: 160px;
+  text-align: right;
+}
+.val {
+  color:#999;
+}
+.imgBox {
+  height: 500px;
+  min-width: 600px;
+  width: 100%;
+}
+
+.imgs {
+  height: 150px;
+}
+</style>

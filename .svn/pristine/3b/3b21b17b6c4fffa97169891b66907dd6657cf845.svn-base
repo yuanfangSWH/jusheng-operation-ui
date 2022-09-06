@@ -1,0 +1,186 @@
+<template>
+  <div class="app-container">
+    <el-form ref="form" :model="form" :rules="rules" label-width="150px" inline>
+      <div v-if="val">
+        <div>
+          <el-form-item label="调车方式" prop="companyName">
+            <el-radio-group v-model="radio">
+              <el-radio :label="3">平台找车</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </div>
+        <el-form-item label="车型">
+          <el-select size="" value="">
+            <el-option value="1" label="货车"></el-option>
+            <el-option value="1" label="大货车"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="车长">
+          <el-select size="" value="">
+            <el-option value="1" label="2"></el-option>
+            <el-option value="1" label="3"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="单价">
+          <el-input v-model="form.name" clearable></el-input>
+
+          <el-select size="" value="">
+            <el-option value="1" label="元/车"></el-option>
+            <el-option value="2" label="元/吨"></el-option>
+            <el-option value="3" label="元/方"></el-option>
+            <el-option value="4" label="元/件"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="付款方式">
+          <el-select size="" value="">
+            <el-option value="1" label="现付"></el-option>
+            <el-option value="2" label="到付"></el-option>
+            <el-option value="3" label="回单付"></el-option>
+            <el-option value="4" label="月结"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="货运险方案">
+          <el-radio-group v-model="radio">
+            <el-radio :label="3">不投保</el-radio>
+            <el-radio :label="6">综合险</el-radio>
+            <el-radio :label="9">基本险</el-radio>
+          </el-radio-group>
+          <p>具体以保险对接方案为准（要有保险方案说明以及保险金额显示）</p>
+        </el-form-item>
+        <div class="mb10">
+          <el-button type="primary" plain>新增</el-button>
+        </div>
+        <el-table :data="tableData" class="mb20" style="width: 100%">
+          <el-table-column prop="date" label="承运人"></el-table-column>
+          <el-table-column prop="date" label="承运车辆"></el-table-column>
+          <el-table-column prop="date" label="计划配载量"></el-table-column>
+          <el-table-column prop="date" label="运费收款人"></el-table-column>
+        </el-table>
+      </div>
+
+      <div v-else>
+        <div>
+          <el-form-item label="调车方式" prop="companyName">
+            <el-radio-group v-model="radio">
+              <el-radio :label="3">平台找船</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </div>
+        <el-form-item label="传播类型">
+          <el-select size="" value="">
+            <el-option value="1" label="货车"></el-option>
+            <el-option value="1" label="大货车"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="所需船舶吨位">
+          <el-input style="min-width: 100px; width: 100px" clearable></el-input>
+          -
+          <el-input style="min-width: 100px; width: 100px" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="单价">
+          <el-input v-model="form.name" clearable></el-input>
+
+          <el-select size="" value="">
+            <el-option value="1" label="元/车"></el-option>
+            <el-option value="2" label="元/吨"></el-option>
+            <el-option value="3" label="元/方"></el-option>
+            <el-option value="4" label="元/件"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="付款方式">
+          <el-select size="" value="">
+            <el-option value="1" label="现付"></el-option>
+            <el-option value="2" label="到付"></el-option>
+            <el-option value="3" label="回单付"></el-option>
+            <el-option value="4" label="月结"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="是否开票">
+          <el-switch
+            v-model="value"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+          >
+          </el-switch>
+        </el-form-item>
+
+        <el-form-item label="滞期费规则（元/吨/天）">
+          <el-input v-model="form.name" clearable></el-input>
+        </el-form-item>
+
+        <el-form-item label="其他费用">
+          <el-input v-model="form.name" clearable></el-input>
+        </el-form-item>
+
+        <div class="mb10">
+          <el-button type="primary" plain>新增</el-button>
+        </div>
+        <el-table :data="tableData" class="mb20" style="width: 100%">
+          <el-table-column prop="date" label="承运人"></el-table-column>
+          <el-table-column prop="date" label="承运船舶"></el-table-column>
+          <el-table-column prop="date" label="计划装货量"></el-table-column>
+          <el-table-column prop="date" label="运费收款人"></el-table-column>
+        </el-table>
+      </div>
+
+      <div>
+        <el-form-item label="">
+          <el-button type="primary" @click="submitForm('form')">提交</el-button>
+        </el-form-item>
+      </div>
+    </el-form>
+  </div>
+</template>
+
+<script>
+export default {
+  data () {
+    let checkCompany = (rule, value, callback) => {
+      if (!value) {
+        return callback(new Error('不能为空'))
+      }
+      setTimeout(() => {
+        if (!Number.isInteger(value)) {
+          console.log(value)
+          callback(new Error('请输入数字值'));
+        } else {
+          callback();
+        }
+      }, 1000)
+
+    }
+    return {
+      form: {},
+      val: true,
+      rules: {
+        companyName: [
+          { required: true, message: '不能为空' },
+          { validator: checkCompany, trigger: 'blur' }
+        ]
+      }
+    }
+  },
+  methods: {
+    submitForm (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          alert('submit!');
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    }
+  }
+}
+</script>
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+</style>

@@ -1,0 +1,154 @@
+<template>
+  <div class="app-container">
+    <div class="flex justify-between mb20">
+      <div class="flex">
+        <div style="margin-right: 30px">
+          <span class="mr10">运单编号：{{ form.carriageId }}</span>
+          <span></span>
+        </div>
+        <div style="margin-right: 30px">
+          <span class="mr10">司机：{{ form.chauffeur }}</span>
+          <span></span>
+        </div>
+        <div style="margin-right: 30px">
+          <span class="mr10">车辆：{{ form.vehicleNumber }}</span>
+          <span></span>
+        </div>
+      </div>
+      <div>
+        <!-- <el-button type="primary">刷新位置</el-button> -->
+      </div>
+    </div>
+    <div>
+      <baidu-map
+        class="bm-view"
+        ak="QFav2EIs2fwDBmMSm9k3LcHW14XC2xNW"
+        :center="center"
+        :zoom="zoom"
+        @ready="handler"
+      >
+        <!--缩放控件-->
+        <bm-navigation anchor="BMAP_ANCHOR_TOP_RIGHT"></bm-navigation>
+        <!-- 点控件 -->
+        <bm-marker
+          :position="position"
+          :dragging="true"
+          animation="BMAP_ANIMATION_BOUNCE"
+        >
+          <bm-label
+            content="运输车辆位置"
+            :labelStyle="{ color: '#ed2d2d', fontSize: '24px' }"
+            :offset="{ width: -35, height: 30 }"
+          />
+        </bm-marker>
+        <!-- 折线控件 -->
+        <bm-polyline
+          :path="polylinePath"
+          stroke-color="blue"
+          :stroke-opacity="0.5"
+          :stroke-weight="2"
+          :editing="false"
+        ></bm-polyline>
+        <!-- 定位控件 -->
+        <bm-geolocation
+          anchor="BMAP_ANCHOR_BOTTOM_RIGHT"
+          :showAddressBar="true"
+          :autoLocation="true"
+        ></bm-geolocation>
+      </baidu-map>
+    </div>
+  </div>
+</template>
+
+<script>
+//百度地图
+import BaiduMap from 'vue-baidu-map/components/map/Map.vue'
+import BmNavigation from 'vue-baidu-map/components/controls/Navigation'
+import BmMarker from 'vue-baidu-map/components/overlays/Marker'
+import BmGeolocation from 'vue-baidu-map/components/controls/Geolocation'
+import BmLabel from 'vue-baidu-map/components/overlays/Label'
+import BmPolyline from 'vue-baidu-map/components/overlays/Polyline'
+
+import { carriageTraces } from '@/api/transform/waybill'
+
+export default {
+  components: {
+    BaiduMap,
+    BmNavigation,
+    BmMarker,
+    BmGeolocation,
+    BmLabel,
+    BmPolyline,
+  },
+  props: {
+    form: Object
+  },
+  data () {
+    return {
+      //地图坐标
+      center: { lng: 0, lat: 0 },
+      //地图缩放等级
+      zoom: 3,
+      //标记地址
+      position: { lng: 0, lat: 0 },
+      //折线地址
+      polylinePath: [
+        {
+          lng: 116.809, lat: 40.000
+        },
+        {
+          lng: 116.808, lat: 40.002
+        }
+      ],
+      //异步请求得到的位置数据
+      locationData: {}
+    }
+  },
+  methods: {
+    //百度地图自身调用API
+    handler ({ BMap, map }) {
+      this.zoom = 10
+      var point = []
+      //实例化坐标转换
+      var convertor = new BMap.Convertor();
+      carriageTraces({ carriageId: 789 }).then((res) => {
+        if (res.code == 200) {
+          this.locationData = res.data.carriageLocationInfo;
+          //百度地图基础显示位置
+          point[0] = new BMap.Point(this.locationData.location[0].longitude, this.locationData.location[0].latitude)
+          convertor.translate(point, 3, 5, (data) => {
+            this.center.lng = data.points[0].lng;
+            this.center.lat = data.points[0].lat;
+            //货车目前位置 点+标记控件
+            this.position.lng = data.points[0].lng;
+            this.position.lat = data.points[0].lat;
+          });
+          //遍历转换坐标，添加进折线控件数组
+          for (let i of this.locationData.location) {
+            point[0] = new BMap.Point(i.longitude, i.latitude)
+            convertor.translate(point, 3, 5, (data) => {
+              this.polylinePath.push({ lng: data.points[0].lng, lat: data.points[0].lat });
+            })
+          }
+        }
+      });
+
+    },
+    //位置返回
+    carriageTraces () {
+      carriageTraces({ carriageId: 789 }).then((res) => {
+        if (res.code == 200) {
+          this.location = res.data.carriageLocationInfo;
+        }
+      });
+    },
+  }
+}
+</script>
+
+<style scoped>
+.bm-view {
+  width: 100%;
+  height: 700px;
+}
+</style>

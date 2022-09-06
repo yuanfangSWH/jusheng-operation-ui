@@ -1,0 +1,676 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex transposition justify-end">
+      <!-- <el-button class="mr10" type="success" @click="piltk"
+        >批量上传凭证</el-button
+      > -->
+      <el-button class="mr10" type="warning">导出</el-button>
+      <el-date-picker
+        class="mr5"
+        v-model="startTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd 00:00:00"
+        type="date"
+        placeholder="选择打款起始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        v-model="endTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd 23:59:00"
+        type="date"
+        placeholder="选择打款结束日期"
+      >
+      </el-date-picker>
+      <el-select clearable v-model="conditions_value" class="mr5">
+        <el-option
+          v-for="item in conditions"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        >
+        </el-option>
+      </el-select>
+      <el-input
+        class="search mr5"
+        v-model="numberData"
+        placeholder="请输入对应的条件"
+        clearable
+      ></el-input>
+      <el-button type="primary" @click="query">查询</el-button>
+      <el-button type="danger" @click="empty">清空</el-button>
+    </div>
+    <div class="mb20 flex transposition justify-end">
+      <el-select
+        clearable
+        class="mr5"
+        v-model="auditStatus"
+        placeholder="打款状态"
+      >
+        <el-option
+          v-for="item in state"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        >
+        </el-option>
+      </el-select>
+      <el-input
+        class="search mr5"
+        v-model="companyName"
+        placeholder="请输入业务管理公司"
+        clearable
+      ></el-input>
+    </div>
+    <div class="litim">
+      <div class="pingt1">平台账户</div>
+      <div class="pingt2" v-for="item in bankData" :key="item.accId">
+        {{ item.companyName }}({{ item.accBankName }})：￥{{ item.accAmt }}
+      </div>
+    </div>
+    <el-table height="600px" :data="tableData" style="width: 100%">
+      <el-table-column label="序号" type="index"></el-table-column>
+      <el-table-column
+        prop="shipperFullName"
+        label="托运人"
+        width="150px"
+      ></el-table-column>
+      <el-table-column
+        prop="companyName"
+        label="业务管理公司"
+        width="180px"
+      ></el-table-column>
+      <el-table-column
+        prop="vehicleNumber"
+        label="车牌号"
+        width="180px"
+      ></el-table-column>
+      <el-table-column
+        prop="carriageId"
+        label="运单编号"
+        width="240px"
+      ></el-table-column>
+      <el-table-column
+        prop="reqSeqNo"
+        label="资金流水号"
+        width="240px"
+      ></el-table-column>
+      <el-table-column
+        prop="freightSum"
+        label="运费"
+        width="120px"
+      ></el-table-column>
+      <el-table-column
+        prop="chauffeurMoney"
+        label="司机收款金额"
+        width="120px"
+      ></el-table-column>
+      <el-table-column
+        prop="payeeName"
+        label="承运司机"
+        width="150px"
+      ></el-table-column>
+      <el-table-column label="收款人" width="150px">
+        <template slot-scope="data">
+          {{ data.row.payeeName }}({{ data.row.driverAccountBank }}
+          {{ data.row.driverKaihuBank }})
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="anotherPayeeMoney"
+        label="第二收款人金额"
+        width="120px"
+      ></el-table-column>
+      <el-table-column label="第二收款人" width="120px">
+        <template slot-scope="data">
+          {{ data.row.kaihuName }}({{ data.row.djAccountBank }}
+          {{ data.row.djKaihuBank }})
+        </template>
+      </el-table-column>
+      <el-table-column prop="auditStatus" label="托运人审核状态" width="120px">
+        <template slot-scope="data">
+          <span v-if="data.row.auditStatus == 0">内部审核中</span>
+          <span v-else-if="data.row.auditStatus == 1">平台审核中</span>
+          <span v-else-if="data.row.auditStatus == 2">打款中</span>
+          <span v-else-if="data.row.auditStatus == 3">内部审核未通过</span>
+          <span v-else-if="data.row.auditStatus == 4">平台审核未通过</span>
+          <span v-else-if="data.row.auditStatus == 5">交易失败</span>
+          <span v-else-if="data.row.auditStatus == 6">交易成功</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="internalAudit" label="内部支付状态" width="120px">
+        <template slot-scope="data">
+          <span v-if="data.row.internalAudit == 0">平台审核中</span>
+          <span v-else-if="data.row.internalAudit == 1">平台审核不通过</span>
+          <span v-else-if="data.row.internalAudit == 2">打款中</span>
+          <span v-else-if="data.row.internalAudit == 3">打款成功</span>
+          <span v-else-if="data.row.internalAudit == 4">打款失败</span>
+          <span v-else-if="data.row.internalAudit == 5">财务退回</span>
+          <span v-else-if="data.row.internalAudit == 6">已线下打款</span>
+          <span v-else-if="data.row.internalAudit == 7">交易关闭</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="remake"
+        label="备注"
+        width="150px"
+      ></el-table-column>
+      <el-table-column
+        prop="paymentTime"
+        label="打款时间"
+        width="150px"
+      ></el-table-column>
+      <el-table-column prop="depositBank" label="支付渠道"></el-table-column>
+      <el-table-column
+        prop="nickName"
+        label="申请人"
+        width="150px"
+      ></el-table-column>
+      <el-table-column
+        prop="createTime"
+        label="申请时间"
+        width="150px"
+      ></el-table-column>
+      <el-table-column
+        prop="payApplyCode"
+        label="申请单编号"
+        width="240px"
+      ></el-table-column>
+      <el-table-column label="操作" fixed="right" width="300px">
+        <template slot-scope="data">
+          <span
+            class="operate mr10"
+            style="color: #409eff"
+            @click="offlinePayment(data.row)"
+            >线下打款</span
+          >
+          <span
+            class="operate mr10"
+            style="color: #e6a23c"
+            @click="againRemittance(data.row)"
+            >再次发起付款</span
+          >
+          <span
+            class="operate mr10"
+            style="color: #f56c6c"
+            @click="fallbackPayment(data.row)"
+            >回退</span
+          >
+          <span
+            class="operate mr10"
+            style="color: #67c23a"
+            @click="zhifupz(data.row)"
+            >支付凭证</span
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageNum"
+        :limit="pageSize"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+
+    <el-dialog
+      title="支付凭证管理"
+      :visible.sync="dialogVisible1"
+      width="50%"
+      center
+    >
+      <el-form ref="form1" :model="form1" :rules="rules1" label-width="150px">
+        <el-form-item label="资金流水单号" prop="payApplyCode">
+          <el-input
+            placeholder="请输入资金流水单号"
+            v-model="form1.payApplyCode"
+            clearable
+          >
+          </el-input>
+        </el-form-item>
+        <el-form-item label="已上传的支付凭证" v-if="form1.paymentVoucher">
+          <div style="margin-bottom: 10px; display: flex">
+            <div
+              class="baogtidv"
+              v-for="(item, key) in form1.paymentVoucher"
+              :key="key"
+            >
+              <div class="gbij" @click="deleteImg(key)">
+                <i class="el-icon-error"></i>
+              </div>
+              <el-image
+                style="width: 100%; height: 100%"
+                :src="item"
+                :fit="'cover'"
+              ></el-image>
+            </div>
+          </div>
+        </el-form-item>
+        <el-form-item label="上传支付凭证">
+          <uploadIMGD
+            ref="uploadIMGD"
+            @pictureIMG="pictureIMG"
+            componentText="添加凭证"
+          ></uploadIMGD>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible1 = false">取 消</el-button>
+        <el-button type="primary" @click="setCredentials">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <el-dialog
+      title="批量上传支付凭证"
+      :visible.sync="dialogVisible2"
+      width="30%"
+      center
+    >
+      <el-form ref="form2" :model="form2" :rules="rules2" label-position="top">
+        <el-form-item
+          label="请复制付款单号并粘贴至以下方框内，多个单号换行区分"
+          prop="payApplyCodeList "
+        >
+          <el-input
+            v-model="form2.payApplyCodeList"
+            type="textarea"
+            :rows="8"
+            clearable
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="上传方式" prop="uploadTheWay">
+          <el-radio-group v-model="form2.uploadTheWay">
+            <el-radio :label="0">新增</el-radio>
+            <el-radio :label="1">覆盖</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="上传支付凭证" prop="paymentVoucherList">
+          <uploadIMGD
+            ref="uploadIMGD2"
+            @pictureIMG="pictureIMG"
+            componentText="添加凭证"
+          ></uploadIMGD>
+        </el-form-item>
+        <el-form-item label="">
+          <span
+            >注:复制的运单号还未打款成功威新增后导致其凭证图片超过勒张的运竿则会失败</span
+          >
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2 = false">取 消</el-button>
+        <el-button type="primary" @click="batchPaymentCredentials"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+
+import { getList, queryAllCompanyAccountBalances, setCredentials, offlinePayment, againRemittance, fallbackPayment, batchPaymentCredentials } from "@/api/finance/pay.js";
+import { deleteFile } from "@/api/index.js";
+import { phoneCheck } from "@/utils/check.js";
+import Pagination from "@/components/Pagination";
+import uploadIMGD from "@/components/uploadIMGD/index"
+export default {
+  components: {
+    Pagination,
+    uploadIMGD
+  },
+  data () {
+    return {
+      startTime: "",
+      endTime: "",
+      state: [{
+        value: "2",
+        label: "打款中",
+      }, {
+        value: "5",
+        label: "交易失败",
+      }, {
+        value: "6",
+        label: "交易成功",
+      }
+      ],
+      auditStatus: "",
+      companyName: "",
+      conditions: [
+        {
+          value: 1,
+          label: "车牌号",
+        },
+        {
+          value: 2,
+          label: "运单编号",
+        },
+        {
+          value: 3,
+          label: "司机手机号",
+        },
+        {
+          value: 4,
+          label: "托运人名称",
+        },
+        {
+          value: 5,
+          label: "申请单编号",
+        },
+        {
+          value: 6,
+          label: "资金流水号",
+        },
+      ],
+      //选择的条件
+      conditions_value: 1,
+      //选择的条件字段
+      conditions_data: "vehicleNumber",
+      //条件参数
+      numberData: "",
+      tableData: [],
+      //表单验证1
+      rules1: {
+        payApplyCode: [
+          { required: true, message: "请输入付款单号", trigger: "blur" },
+        ]
+      },
+      rules2: {
+        payApplyCodeList: [
+          { required: true, message: "请输入申请付款单号", trigger: "blur" },
+        ]
+      },
+      dialogVisible1: false,
+      dialogVisible2: false,
+      form1: {
+        payApplyCode: "",
+        paymentVoucher: ""
+      },
+      form2: {
+        //申请付款单号(逗号隔开)
+        payApplyCodeList: "",
+        //上传的方式
+        uploadTheWay: 0
+      },
+      //页码
+      pageSize: 10,
+      //数量
+      pageNum: 1,
+      //总数据量
+      total: 0,
+      //凭证图片数据
+      paymentVoucher: "",
+      bankData: []
+    }
+  },
+  watch: {
+    conditions_value: function (val) {
+      switch (Number(val)) {
+        case 1:
+          this.conditions_data = "vehicleNumber"
+          break;
+        case 2:
+          this.conditions_data = "carriageId"
+          break;
+        case 3:
+          this.conditions_data = "idCardPhone"
+          break;
+        case 4:
+          this.conditions_data = "shipperFullName"
+          break;
+        case 5:
+          this.conditions_data = "payApplyCode"
+          break;
+        case 6:
+          this.conditions_data = "reqSeqNo"
+          break;
+      }
+    },
+  },
+  mounted () {
+    this.getList();
+    this.queryAllCompanyAccountBalances();
+  },
+  methods: {
+    //查询公司账户
+    queryAllCompanyAccountBalances () {
+      queryAllCompanyAccountBalances().then((res) => {
+        if (res.code == 200) {
+          this.bankData = res.data
+        }
+      })
+    },
+    //批量打款弹框(现在版本废弃)
+    piltk () {
+      this.paymentVoucher = ""
+      this.dialogVisible2 = true;
+      setTimeout(() => {
+        //初始化图片上传组件
+        this.$refs.uploadIMGD2.originalData();
+      })
+    },
+    //批量添加凭证(现在版本废弃)
+    batchPaymentCredentials () {
+      this.$refs.form2.validate((valid) => {
+        if (valid) {
+          batchPaymentCredentials({ uploadTheWay: this.form2.uploadTheWay, payApplyCodeList: this.form2.payApplyCodeList, paymentVoucherList: this.paymentVoucher }).then((res) => {
+            if (res.code == 200) {
+              this.$message({
+                message: '添加成功',
+                type: 'success',
+                duration: 3000
+              });
+              this.dialogVisible1 = false;
+            }
+          })
+        }
+      })
+    },
+    //打款
+    offlinePayment (data) {
+      this.$confirm('是否对该条数据：' + data.carriageCode + "打款", '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        offlinePayment({ payApplyCode: data.payApplyCode }).then((res) => {
+          if (res.code == 200) {
+            this.getList();
+            this.$message({
+              message: '打款成功',
+              type: 'success',
+              duration: 3000
+            });
+          }
+        })
+      })
+    },
+    //再次发起付款
+    againRemittance (data) {
+      this.$confirm('是否对该条数据：' + data.carriageCode + "再次发起付款", '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        againRemittance({ payApplyCode: data.payApplyCode }).then((res) => {
+          if (res.code == 200) {
+            this.getList();
+            this.$message({
+              message: '再次发起付款成功',
+              type: 'success',
+              duration: 3000
+            });
+          }
+        })
+      })
+    },
+    //回退
+    fallbackPayment (data) {
+      this.$confirm('是否对该条数据：' + data.carriageCode + "回退", '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        fallbackPayment({ payApplyCode: data.payApplyCode }).then((res) => {
+          if (res.code == 200) {
+            this.getList();
+            this.$message({
+              message: '回退成功',
+              type: 'success',
+              duration: 3000
+            });
+          }
+        })
+      })
+    },
+    //删除图片
+    deleteImg (key) {
+      deleteFile({ filePath: this.form1.paymentVoucher[key] }).then((res) => {
+        if (res.code == 200) {
+          this.form1.paymentVoucher.splice(key, 1)
+          this.$message({
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          });
+        }
+      });
+    },
+    //支付凭证弹框
+    zhifupz (data) {
+      this.paymentVoucher = ""
+      this.form1 = data;
+      if (Array.isArray(data.paymentVoucher)) {
+        //是数组就不做处理直接赋值
+        this.form1.paymentVoucher = data.paymentVoucher
+      } else if (data.paymentVoucher != "") {
+        //是字符串就转为数组
+        this.form1.paymentVoucher = data.paymentVoucher?.split(",")
+      }
+      this.dialogVisible1 = true;
+      setTimeout(() => {
+        //初始化图片上传组件
+        this.$refs.uploadIMGD.originalData();
+      })
+    },
+    //图片返回
+    pictureIMG (data) {
+      if (data.length > 1) {
+        this.paymentVoucher = String(data)
+      } else if (data.length == 1) {
+        this.paymentVoucher = String(data[0])
+      } else if (data.length == 0) {
+        this.paymentVoucher = ""
+      }
+    },
+    //添加凭证
+    setCredentials () {
+      this.$refs.form1.validate((valid) => {
+        if (valid) {
+          setCredentials({ payApplyCode: this.form1.payApplyCode, paymentVoucher: (this.form1.paymentVoucher + "," + this.paymentVoucher) }).then((res) => {
+            if (res.code == 200) {
+              this.$message({
+                message: '添加成功',
+                type: 'success',
+                duration: 3000
+              });
+              this.dialogVisible1 = false;
+            }
+          })
+        }
+      })
+    },
+    //列表
+    getList () {
+      let data = {
+        auditStatus: this.auditStatus,
+        companyName: this.companyName,
+        startTime: this.startTime,
+        endTime: this.endTime
+      }
+      data[this.conditions_data] = this.numberData;
+      getList(data, {
+        pageSize: this.pageSize,
+        pageNum: this.pageNum
+      }).then((res) => {
+        if (res.code == 200) {
+          this.tableData = res.rows;
+          this.total = res.total
+        }
+      });
+    },
+    //清空
+    empty () {
+      this.auditStatus = "";
+      this.companyName = "";
+      this.startTime = "";
+      this.endTime = "";
+      this.numberData = "";
+      this.pageSize = 10;
+      this.pageNum = 1;
+      this.getList();
+    },
+    //查询
+    query () {
+      if (this.conditions_value == 3) {
+        if (this.numberData == "" || phoneCheck(this.numberData)) {
+          this.pageNum = 1;
+          this.getList();
+        }
+      } else {
+        this.pageNum = 1;
+        this.getList();
+      }
+    },
+    //分页
+    pagination (val) {
+      this.pageSize = val.limit;
+      this.pageNum = val.page;
+      this.getList();
+    },
+  }
+}
+</script>
+
+<style scoped>
+.baogtidv {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  border: 1px #d4dadd solid;
+  margin-right: 20px;
+}
+.gbij {
+  width: 20px;
+  height: 30px;
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  z-index: 30;
+  cursor: pointer;
+}
+.gbij i {
+  font-size: 20px;
+}
+.litim {
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+}
+.pingt1 {
+  font-weight: bold;
+  float: left;
+  margin-right: 50px;
+}
+.pingt2 {
+  float: left;
+  margin-right: 100px;
+}
+.pingt2 {
+  float: left;
+}
+</style>
+

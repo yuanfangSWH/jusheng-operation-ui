@@ -1,0 +1,516 @@
+<template>
+  <div class="app-container">
+    <div class="mb20">
+      <el-button type="primary" class="mr10">上传附件</el-button>
+      <el-button type="primary" class="mr10" @click="getCar">发车</el-button>
+      <el-button slot="reference">签收</el-button>
+    </div>
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column type="selection"></el-table-column>
+      <el-table-column prop="fileType" label="文件类型"></el-table-column>
+      <el-table-column prop="remark" label="描述信息"></el-table-column>
+      <el-table-column prop="createBy" label="操作人"></el-table-column>
+      <el-table-column prop="createTime" label="操作时间"></el-table-column>
+      <el-table-column prop="date" label="操作">
+        <template>
+          <span class="operate mr10">查看</span>
+          <span class="operate mr10">删除</span>
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageSize"
+        :limit="pageNum"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+    <el-dialog
+      title="上传附件"
+      :visible.sync="dialogVisible1"
+      width="50%"
+      center
+    >
+      <el-form ref="form1" :model="form1" :rules="rules1" label-width="150px">
+        <el-form-item label="申请付款单号" prop="payApplyCode">
+          <el-input
+            placeholder="请输入申请付款单号"
+            v-model="form1.payApplyCode"
+            clearable
+          >
+          </el-input>
+        </el-form-item>
+        <el-form-item label="上传附件">
+          <uploadIMG
+            ref="uploadIMG1"
+            @pictureIMG="pictureIMG"
+            @pictureDelete="pictureDelete"
+            :imgUrl="form.rchz"
+            componentText="添加附件"
+            fieldText="rchz"
+          ></uploadIMG>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible1 = false">取 消</el-button>
+        <el-button type="primary" @click="setCredentials">确 定</el-button>
+      </span>
+    </el-dialog>
+    <!--  发车-->
+    <el-dialog
+      title="发车上报"
+      :visible.sync="dialogVisible"
+      width="50%"
+      center
+    >
+      <p>非司机操作，系统将启动对运单的审核流程，请确认后谨慎操作</p>
+      <el-card class="box-card mb20">
+        <div slot="header" class="clearfix">
+          <span>张三 沪A12345</span>
+          <!--          <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>-->
+        </div>
+        <div class="flex justify-around align-center">
+          <div class="text-center">
+            <h2>江西省南昌市毛线区</h2>
+            <p>装货点</p>
+          </div>
+          <div class="text-center">
+            <el-image></el-image>
+            <p>480.00/吨</p>
+          </div>
+          <div class="text-center">
+            <h2>广东省广州市白云区</h2>
+            <p>卸货点</p>
+          </div>
+        </div>
+      </el-card>
+      <el-form ref="form" :model="form" :rules="rules" label-width="150px">
+        <el-form-item label="装货数量" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+
+          <el-select class="mr10" value="" placeholder="" clearable>
+            <el-option value="" label="吨"></el-option>
+            <el-option value="1" label="方"></el-option>
+            <el-option value="1" label="件"></el-option>
+            <el-option value="1" label="整车"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="运费" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+
+          <el-select class="mr10" value="" placeholder="" clearable>
+            <el-option value="1" label="元"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="装货时间" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+        </el-form-item>
+
+        <div>
+          <el-form-item label="装货单" prop="companyName">
+            <uploadIMGD
+              ref="uploadIMGD"
+              @pictureIMG="pictureIMG"
+              componentText="添加凭证"
+            ></uploadIMGD>
+          </el-form-item>
+        </div>
+
+        <div>
+          <el-form-item label="其它单据" prop="companyName">
+            <uploadIMGD
+              ref="uploadIMGD"
+              @pictureIMG="pictureIMG"
+              componentText="添加凭证"
+            ></uploadIMGD>
+          </el-form-item>
+        </div>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible = false"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
+
+    <!--  签收 公路-->
+    <el-dialog
+      title="签收确认"
+      :visible.sync="dialogVisible1"
+      width="60%"
+      center
+    >
+      <p>非司机操作，系统将启动对运单的审核流程，请确认后谨慎操作</p>
+      <el-card class="box-card mb20">
+        <div slot="header" class="clearfix">
+          <span>张三 沪A12345</span>
+          <!--          <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>-->
+        </div>
+        <div class="flex justify-around align-center">
+          <div class="text-center">
+            <h2>江西省南昌市毛线区</h2>
+            <p>装货点</p>
+          </div>
+          <div class="text-center">
+            <el-image></el-image>
+            <p>480.00/吨</p>
+          </div>
+          <div class="text-center">
+            <h2>广东省广州市白云区</h2>
+            <p>卸货点</p>
+          </div>
+        </div>
+      </el-card>
+      <el-form ref="form" :model="form" :rules="rules" label-width="150px">
+        <el-row>
+          <el-col :sapn="12">
+            <el-form-item label="装货信息" prop="companyName">
+              <uploadIMGD
+                ref="uploadIMGD"
+                @pictureIMG="pictureIMG"
+                componentText="添加凭证"
+              ></uploadIMGD>
+            </el-form-item>
+          </el-col>
+          <el-col :sapn="12">
+            <el-form-item label="实装数量" prop="companyName">
+              <el-input v-model="form.companyName"></el-input>
+
+              <el-select class="mr10" value="" placeholder="" clearable>
+                <el-option value="" label="吨"></el-option>
+                <el-option value="1" label="方"></el-option>
+                <el-option value="1" label="件"></el-option>
+                <el-option value="1" label="整车"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="装货时间" prop="companyName">
+              2021
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :sapn="12">
+            <el-form-item label="卸货信息" prop="companyName">
+              <uploadIMGD
+                ref="uploadIMGD"
+                @pictureIMG="pictureIMG"
+                componentText="添加凭证"
+              ></uploadIMGD>
+            </el-form-item>
+          </el-col>
+          <el-col :sapn="12">
+            <el-form-item label="实收数量" prop="companyName">
+              <el-input v-model="form.companyName"></el-input>
+
+              <el-select class="mr10" value="" placeholder="" clearable>
+                <el-option value="" label="吨"></el-option>
+                <el-option value="1" label="方"></el-option>
+                <el-option value="1" label="件"></el-option>
+                <el-option value="1" label="整车"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="卸货时间" prop="companyName">
+              2021
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <div>
+          <el-form-item label="其它单据" prop="companyName">
+            <uploadIMGD
+              ref="uploadIMGD"
+              @pictureIMG="pictureIMG"
+              componentText="添加凭证"
+            ></uploadIMGD>
+          </el-form-item>
+        </div>
+
+        <p>结算信息</p>
+        <el-form-item label="单价" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+
+          <el-select class="mr10" value="" placeholder="" clearable>
+            <el-option value="1" label="元/车"></el-option>
+            <el-option value="1" label="元/吨"></el-option>
+            <el-option value="1" label="元/方"></el-option>
+            <el-option value="1" label="元/件"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="结算重量" prop="companyName">
+          <el-select
+            size="small mr10"
+            value=""
+            placeholder="销项发票状态"
+            clearable
+          >
+            <el-option value="1" label="按实际发货量最小结算"></el-option>
+            <el-option value="1" label="按实际发货量最大结算"></el-option>
+            <el-option value="1" label="按实际发货量结算"></el-option>
+            <el-option value="1" label="按实际收货量结算"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="合理亏吨" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+
+          <el-select class="mr10" value="" placeholder="" clearable>
+            <el-option value="1" label="%/车"></el-option>
+            <el-option value="1" label="吨/车"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="亏吨单价" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+
+          <el-select class="mr10" value="" placeholder="" clearable>
+            <el-option value="1" label="%/车"></el-option>
+            <el-option value="1" label="吨/车"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="结算运费" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+
+          <el-select class="mr10" value="" placeholder="" clearable>
+            <el-option value="1" label="元"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-row>
+          <el-col :span="8">
+            <el-form-item label="签收人" prop="companyName">
+              用户名
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="签收说明" prop="companyName">
+              <el-input v-model="form.companyName" type="textarea"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible1 = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible1 = false"
+          >确认签收</el-button
+        >
+      </span>
+    </el-dialog>
+
+    <!--  签收 水路-->
+    <el-dialog
+      title="签收确认"
+      :visible.sync="dialogVisible2"
+      width="60%"
+      center
+    >
+      <p>非船主操作，系统将启动对运单的审核流程，请确认后谨慎操作</p>
+      <el-card class="box-card mb20">
+        <div slot="header" class="clearfix">
+          <span>张三 沪A12345</span>
+          <!--          <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>-->
+        </div>
+        <div class="flex justify-around align-center">
+          <div class="text-center">
+            <h2>江西省南昌市毛线区</h2>
+            <p>装货点</p>
+          </div>
+          <div class="text-center">
+            <el-image></el-image>
+            <p>480.00/吨</p>
+          </div>
+          <div class="text-center">
+            <h2>广东省广州市白云区</h2>
+            <p>卸货点</p>
+          </div>
+        </div>
+      </el-card>
+      <el-form ref="form" :model="form" :rules="rules" label-width="150px">
+        <el-row>
+          <el-col :sapn="12">
+            <el-form-item label="装货信息" prop="companyName">
+              <uploadIMGD
+                ref="uploadIMGD"
+                @pictureIMG="pictureIMG"
+                componentText="添加凭证"
+              ></uploadIMGD>
+            </el-form-item>
+          </el-col>
+          <el-col :sapn="12">
+            <el-form-item label="实装数量" prop="companyName">
+              <el-input v-model="form.companyName"></el-input>
+
+              <el-select class="mr10" value="" placeholder="" clearable>
+                <el-option value="" label="吨"></el-option>
+                <el-option value="1" label="方"></el-option>
+                <el-option value="1" label="件"></el-option>
+                <el-option value="1" label="整车"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="装货时间" prop="companyName">
+              2021
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :sapn="12">
+            <el-form-item label="卸货信息" prop="companyName">
+              <uploadIMGD
+                ref="uploadIMGD"
+                @pictureIMG="pictureIMG"
+                componentText="添加凭证"
+              ></uploadIMGD>
+            </el-form-item>
+          </el-col>
+          <el-col :sapn="12">
+            <el-form-item label="实收数量" prop="companyName">
+              <el-input v-model="form.companyName"></el-input>
+
+              <el-select class="mr10" value="" placeholder="" clearable>
+                <el-option value="" label="吨"></el-option>
+                <el-option value="1" label="方"></el-option>
+                <el-option value="1" label="件"></el-option>
+                <el-option value="1" label="整车"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="卸货时间" prop="companyName">
+              2021
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <div>
+          <el-form-item label="其它单据" prop="companyName">
+            <uploadIMGD
+              ref="uploadIMGD"
+              @pictureIMG="pictureIMG"
+              componentText="添加凭证"
+            ></uploadIMGD>
+          </el-form-item>
+        </div>
+
+        <p>结算信息</p>
+        <el-form-item label="单价" prop="companyName"> 48元/吨 </el-form-item>
+
+        <el-form-item label="滞期费规则(元/吨/天)" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+        </el-form-item>
+
+        <el-form-item label="其他费用" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+        </el-form-item>
+
+        <el-form-item label="滞期费(元)" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+        </el-form-item>
+        <el-form-item label="实际运费" prop="companyName">
+          <el-input v-model="form.companyName"></el-input>
+
+          <el-select class="mr10" value="" placeholder="" clearable>
+            <el-option value="1" label="元"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-row>
+          <el-col :span="8">
+            <el-form-item label="签收人" prop="companyName">
+              用户名
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="签收说明" prop="companyName">
+              <el-input v-model="form.companyName" type="textarea"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2 = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible2 = false"
+          >确认签收</el-button
+        >
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+
+import { queryCarriageAttachment } from '@/api/transform/waybill'
+import { deleteFile } from "@/api/index.js";
+import Pagination from "@/components/Pagination";
+import uploadIMGD from "@/components/uploadIMGD/index"
+import uploadIMG from '@/components/uploadIMG/index'
+export default {
+  components: {
+    Pagination,
+    uploadIMGD,
+    uploadIMG
+  },
+  data () {
+    return {
+      form: {},
+      dialogVisible: false,
+      dialogVisible1: false,
+      dialogVisible2: false,
+      tableData: [],
+      //页码
+      pageSize: 1,
+      //数量
+      pageNum: 10,
+      //总数据量
+      total: 0,
+    }
+  },
+  mounted () {
+    this.queryCarriageAttachment();
+  },
+  methods: {
+    // 附件列表
+    queryCarriageAttachment () {
+      let data = {
+        pageSize: this.pageSize,
+        pageNum: this.pageNum,
+      }
+      queryCarriageAttachment(data).then(res => {
+        if (res.code == 200) {
+          this.tableData = res.rows
+          this.total = res.total
+        }
+      })
+    },
+    //图片返回
+    pictureIMG (data) {
+      if (data.length > 1) {
+        this.paymentVoucher = String(data)
+      } else if (data.length == 1) {
+        this.paymentVoucher = String(data[0])
+      } else if (data.length == 0) {
+        this.paymentVoucher = ""
+      }
+    },
+    getCar () {
+      this.dialogVisible = true
+    },
+    gonglu () {
+      this.dialogVisible1 = true;
+    },
+    shuilu () {
+      this.dialogVisible2 = true;
+    }
+  }
+}
+</script>
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+</style>

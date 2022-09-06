@@ -1,0 +1,32 @@
+import request from "@/utils/request";
+
+//列表
+export function getList(data) {
+  return request({
+    url: "/operation/shipperClient/queryShipperClient",
+    method: "get",
+    data: data
+  });
+}
+
+// 条件查询客户列表
+export function getShipperClient(data){
+  return request({
+    url: "/operation/shipperClient/getShipperClient",
+    method: "POST",
+    data: data
+  })
+}
+
+// 删除客户
+export function deleteShipperClient(id){
+  return request({
+    url: "/operation/shipperClient/deleteShipperClient",
+    method: "POST",
+    params: {"shipperClientId": id}
+  })
+}
+
+
+
+

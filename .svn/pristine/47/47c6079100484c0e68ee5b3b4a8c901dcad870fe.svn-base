@@ -1,0 +1,422 @@
+<template>
+  <div class="app-container">
+    <!-- tab页签区域 -->
+    <el-tabs v-model="activeName" @tab-click="handleClick">
+      <!-- 基础信息面板 -->
+      <el-tab-pane label="基础信息" name="1">
+        <el-form
+          ref="form"
+          :model="form"
+          :rules="rules"
+          label-width="150px"
+          inline
+        >
+          <!-- 基础信息 -->
+          <div class="mb20">
+            <el-divider content-position="left">
+              <span class="weight">基础信息</span>
+            </el-divider>
+          </div>
+          <el-form-item label="公司名称" prop="companyName">
+            <el-input v-model="form.companyName"></el-input>
+          </el-form-item>
+          <el-form-item label="公司简称" prop="companyShortName">
+            <el-input v-model="form.companyShortName"></el-input>
+          </el-form-item>
+          <el-form-item label="法定代表人" prop="legalPersonName">
+            <el-input v-model="form.legalPersonName"></el-input>
+          </el-form-item>
+          <el-form-item label="成立时间">
+            <el-input v-model="form.setUpTime"></el-input>
+          </el-form-item>
+          <el-form-item label="注册资本">
+            <el-input v-model="form.registerMoney"></el-input>
+          </el-form-item>
+          <el-form-item label="主营业务">
+            <el-input v-model="form.mainBusiness"></el-input>
+          </el-form-item>
+          <el-form-item label="客户联系人" prop="clientContacts">
+            <el-input v-model="form.clientContacts"></el-input>
+          </el-form-item>
+          <el-form-item label="客户联系电话" prop="clientContactsPhone">
+            <el-input v-model="form.clientContactsPhone"></el-input>
+          </el-form-item>
+          <el-form-item label="联系地址" prop="contactAddress">
+            <el-input v-model="form.contactAddress"></el-input>
+          </el-form-item>
+          <el-form-item label="客户开发人" prop="clientDeveloper">
+            <el-input v-model="form.clientDeveloper"></el-input>
+          </el-form-item>
+          <!-- 合同信息 -->
+          <div class="mb20">
+            <el-divider content-position="left">
+              <span class="weight">合同信息</span>
+            </el-divider>
+          </div>
+          <el-form-item label="合同编号">
+            <el-input v-model="form.contractNumber"></el-input>
+          </el-form-item>
+          <el-form-item label="合同类型">
+            <el-input v-model="form.contractType"></el-input>
+          </el-form-item>
+          <el-form-item label="结算方式">
+            <el-select
+              size="small mr5"
+              value=""
+              class="select"
+              v-model="form.closeType"
+            >
+              <el-option value="0" label="即时结算"></el-option>
+              <el-option value="1" label="预付结算"></el-option>
+              <el-option value="2" label="其他账期"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="开票时间节点">
+            <el-input v-model="form.makeOutTimeNodes"></el-input>
+          </el-form-item>
+          <el-form-item label="保证金（元）">
+            <el-input v-model="form.earnestMoney"></el-input>
+          </el-form-item>
+          <el-form-item label="归档时间">
+            <el-input v-model="form.pigeonholeTime"></el-input>
+          </el-form-item>
+          <el-form-item label="账期（天）">
+            <el-input v-model="form.billDate"></el-input>
+          </el-form-item>
+          <el-form-item label="合同开始时间">
+            <el-input v-model="form.contractStartTime"></el-input>
+          </el-form-item>
+          <el-form-item label="合同结束时间">
+            <el-input v-model="form.contractEndTime"></el-input>
+          </el-form-item>
+          <!-- 开票信息 -->
+          <div class="mb20">
+            <el-divider content-position="left">
+              <span class="weight">开票信息</span>
+            </el-divider>
+          </div>
+          <el-form-item label="开户银行">
+            <el-input v-model="form.kaihuBank"></el-input>
+          </el-form-item>
+          <el-form-item label="银行账户">
+            <el-input v-model="form.accountBank"></el-input>
+          </el-form-item>
+          <el-form-item label="开票单位地址">
+            <el-input v-model="form.name"></el-input>
+          </el-form-item>
+          <el-form-item label="统一社会信用代码">
+            <el-input v-model="form.cods"></el-input>
+          </el-form-item>
+          <el-form-item label="邮寄地址">
+            <el-input v-model="form.mailAddress"></el-input>
+          </el-form-item>
+          <el-form-item label="收件人">
+            <el-input v-model="form.recipients"></el-input>
+          </el-form-item>
+          <el-form-item label="联系电话">
+            <el-input v-model="form.recipientsPhone"></el-input>
+          </el-form-item>
+          <!-- 其他信息 -->
+          <div class="mb20">
+            <el-divider content-position="left">
+              <span class="weight">其它信息</span>
+            </el-divider>
+          </div>
+          <el-form-item label="备注">
+            <el-input v-model="form.remark" type="textarea" :rows="5"></el-input>
+          </el-form-item>
+          <div>
+            <el-form-item label="">
+              <el-button type="primary" @click="updateShipperClient()"
+                >提交</el-button
+              >
+            </el-form-item>
+          </div>
+        </el-form>
+      </el-tab-pane>
+      <!-- 附件信息面板 字段未对-->
+      <el-tab-pane label="附件信息" name="2">
+        <el-button
+          type="success"
+          style="margin-bottom: 10px"
+          @click="attachmentWindow"
+          >上传附件</el-button
+        >
+        <!-- ---------------------- -->
+        <el-table style="width: 100%" :data="attachment">
+          <el-table-column prop="accessoryId" label="ID"></el-table-column>
+          <el-table-column prop="fileType" label="文件类型"></el-table-column>
+          <el-table-column
+            prop="fileExplain"
+            label="描述信息"
+          ></el-table-column>
+          <el-table-column prop="createBy" label="创建人"></el-table-column>
+          <el-table-column prop="createTime" label="创建时间"></el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="data">
+              <div>
+                <span class="operate mr10" style="color: #409eff">查看</span
+                ><span
+                  class="operate mr10"
+                  style="color: #f56c6c"
+                  @click="deleteData(data.row)"
+                  >删除</span
+                >
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+        <!-- ---------------------------->
+      </el-tab-pane>
+    </el-tabs>
+    <el-dialog
+      title="新建附件"
+      :visible.sync="dialogVisible1"
+      width="30%"
+      center
+    >
+      <el-form ref="form2" :model="form2" :rules="rules2" label-width="100px">
+        <el-form-item label="文件类型">
+          <el-select class="mr5" v-model="form.fileType" placeholder="选择类型">
+            <el-option
+              v-for="item in typeData"
+              :key="item.dictValue"
+              :label="item.dictLabel"
+              :value="item.dictValue"
+            >
+            </el-option> </el-select
+        ></el-form-item>
+        <el-form-item label="描述说明">
+          <el-input
+            type="textarea"
+            :autosize="{ minRows: 2, maxRows: 4 }"
+            placeholder="请输入描述说明"
+            v-model="form.fileExplain"
+          >
+          </el-input>
+        </el-form-item>
+        <el-form-item label="上传附件">
+          <uploadIMGD
+            ref="uploadIMGD"
+            @pictureIMG="pictureIMG"
+            componentText="添加附件"
+          ></uploadIMGD>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible1 = false">取 消</el-button>
+        <el-button type="primary" @click="saveAccessory">确 定</el-button>
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import { getList, updateShipperClient, selectAccessory, getFileTypes, saveAccessory } from "@/api/member/client";
+import uploadIMGD from "@/components/uploadIMGD/index"
+export default {
+  components: {
+    uploadIMGD
+  },
+  data () {
+    return {
+      activeName: "1",
+      form: {
+        companyName: "", //公司名称
+        companyShortName: "", //公司简称
+        legalPersonName: "", //法定代表人
+        setUpTime: "", //成立时间
+        registerMoney: "", //注册资本
+        mainBusiness: "", //主营业务
+        clientContacts: "", //客户联系人
+        clientContactsPhone: "", //客户联系电话
+        contactAddress: "", //联系地址
+        clientDeveloper: "", //客户开发人
+        contractNumber: "", //合同编号
+        contractType: "", //合同类型
+        closeType: "", //结算方式
+        makeOutTimeNodes: "", //开票时间节点
+        earnestMoney: "", //保证金
+        pigeonholeTime: "", //归档时间
+        billDate: "", //账期
+        contractStartTime: "", //合同开始时间
+        contractEndTime: "", //合同结束时间
+        kaihuBank: "", //开户银行
+        accountBank: "", //银行账户
+        makeOutUnitAddress: "", //开票单位地址
+        cods: "", //统一社会信用代码
+        mailAddress: "", //邮寄地址
+        recipients: "", //收件人
+        recipientsPhone: "", // 联系电话
+        remark: "", //备注
+        userId: "",
+        shipperClientId: "",
+      },
+      rules: {},
+      //附件数据
+      attachment: [],
+      dialogVisible1: false,
+      form2: {
+        fileType: "",
+        fileExplain: "",
+        fileUrl: ""
+      },
+      rules2: {},
+      typeData: [],
+
+      // userId:"",
+    };
+  },
+  mounted () {
+    console.log(this.$route.query.userId)
+    console.log(this.$route.query.shipperClientId)
+    this.form.shipperClientId = this.$route.query.shipperClientId
+    this.form.userId = this.$route.query.userId;
+    this.getList();
+    // this.getFileTypes();
+  },
+  methods: {
+    //详情
+    getList () {
+      getList({userId:this.form.userId, shipperClientId: this.form.shipperClientId}).then((res) => {
+        console.log(res)
+        if (res.code == 200) {
+          this.form.companyName = res.rows[0].companyName
+          this.form.companyShortName = res.rows[0].companyShortName
+          this.form.legalPersonName = res.rows[0].legalPersonName
+          this.form.setUpTime = res.rows[0].setUpTime
+          this.form.registerMoney = res.rows[0].registerMoney
+          this.form.mainBusiness = res.rows[0].mainBusiness
+          this.form.clientNontacts = res.rows[0].clientNontacts
+          this.form.clientContactsPhone = res.rows[0].clientContactsPhone
+          this.form.contactAddress = res.rows[0].contactAddress
+          this.form.clientDeveloper = res.rows[0].clientDeveloper
+          this.form.contractNumber = res.rows[0].contractNumber
+          this.form.contractType = res.rows[0].contractType
+          this.form.closeType = res.rows[0].closeType
+          this.form.makeOutTimeNodes = res.rows[0].makeOutTimeNodes
+          this.form.earnestMoney = res.rows[0].earnestMoney
+          this.form.pigeonholeTime = res.rows[0].pigeonholeTime
+          this.form.billDate = res.rows[0].billDate
+          this.form.contractStartTime = res.rows[0].contractStartTime
+          this.form.contractEndTime = res.rows[0].contractEndTime
+          this.form.kaihuBank = res.rows[0].kaihuBank
+          this.form.accountBank = res.rows[0].accountBank
+          this.form.makeOutUnitAddress = res.rows[0].makeOutUnitAddress
+          this.form.cods = res.rows[0].cods
+          this.form.mailAddress = res.rows[0].mailAddress
+          this.form.recipients = res.rows[0].recipients
+          this.form.recipientsPhone = res.rows[0].recipientsPhone
+          this.form.remark = res.rows[0].remark
+          this.form.userId = res.rows[0].userId
+          this.form.shipperClientId = res.rows[0].shipperClientId
+        }
+      });
+    },
+    //TAB
+    handleClick (tab) {
+      if (tab.name == "2") {
+        this.selectAccessory();
+      }
+    },
+    //添加
+    updateShipperClient () {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          updateShipperClient(this.form).then((res) => {
+            if (res.code == 200) {
+              this.$message({
+                message: '修改成功',
+                type: 'success',
+                duration: 3000
+              });
+              this.$router.push('/member/client/index')
+            }
+          });
+        }
+      });
+    },
+    //添加附件弹框
+    attachmentWindow () {
+      this.dialogVisible1 = true;
+      setTimeout(() => {
+        //初始化图片上传组件
+        this.$refs.uploadIMGD.originalData();
+      })
+    },
+    //添加组件
+    saveAccessory () {
+      this.$refs.form2.validate((valid) => {
+        if (valid) {
+          saveAccessory({ fileType: this.form2.fileType, fileExplain: this.form2.fileExplain, fileUrl: this.form2.fileUrl }).then((res) => {
+            if (res.code == 200) {
+              this.selectAccessory()
+              this.$message({
+                message: '添加附件成功',
+                type: 'success',
+                duration: 3000
+              });
+            }
+          });
+        }
+      })
+    },
+    //删除附件
+    deleteData () {
+      this.$message({
+        message: '还没有接口',
+        type: 'success',
+        duration: 3000
+      });
+      //     selectAccessory().then((res) => {
+      //     if (res.code == 200) {
+      //        this.$message({
+      //             message: '修改成功',
+      //             type: 'success',
+      //             duration: 3000
+      //           });
+      //     }
+      //   });
+    },
+    //组件数据返回
+    pictureIMG (data) {
+      if (data.length > 1) {
+        this.form.fileUrl = String(data)
+      } else if (data.length == 1) {
+        this.form.fileUrl = String(data[0])
+      } else if (data.length == 0) {
+        this.form.fileUrl = ""
+      }
+    },
+    //文件类型
+    getFileTypes () {
+      getFileTypes().then((res) => {
+        if (res.code == 200) {
+          this.typeData = res.rows;
+        }
+      });
+    },
+    //附件列表
+    selectAccessory (row) {
+      selectAccessory().then((res) => {
+        if (res.code == 200) {
+          this.attachment = res.rows;
+        }
+      });
+    }
+  },
+};
+</script>
+
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+
+.mb20 {
+  margin-bottom: 40px;
+}
+</style>

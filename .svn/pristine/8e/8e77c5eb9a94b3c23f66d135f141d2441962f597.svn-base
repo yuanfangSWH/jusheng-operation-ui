@@ -1,0 +1,61 @@
+import request from "@/utils/request";
+
+//条件查询列表
+export function getList(data) {
+  return request({
+    url: "/operation/shipperClient/getShipperClient",
+    method: "post",
+    data: data
+  });
+}
+// 添加
+export function saveShipperClient(data){
+    return request({
+      url: "/operation/shipperClient/saveShipperClient",
+      method: "post",
+      data: data
+    })
+  }
+  // 修改保存
+export function updateShipperClient(data){
+    return request({
+      url: "/operation/shipperClient/updateShipperClient",
+      method: "post",
+      data: data
+    })
+  }
+  // 查询附件
+export function selectAccessory(data){
+    return request({
+      url: "/operation/shipperClient/selectAccessory",
+      method: "post",
+      data: data
+    })
+  }
+  //修改保存附件
+  export function saveAccessory(data){
+    return request({
+      url: "/operation/shipperClient/saveAccessory",
+      method: "post",
+      data: data
+    })
+  }
+// 删除客户
+export function deleteShipperClient(data){
+  return request({
+    url: "/operation/shipperClient/deleteShipperClient",
+    method: "post",
+    data: data
+  })
+}
+//获取文件类型列表
+export function getFileTypes(params) {
+    return request({
+      url: "/operation/shipperClient/getFileTypes",
+      method: "get",
+      params: params
+    });
+  }
+
+
+

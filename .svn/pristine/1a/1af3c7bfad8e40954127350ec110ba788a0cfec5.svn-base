@@ -1,0 +1,41 @@
+import request from "@/utils/request"
+
+// 销项发票审核
+// 条件查询发票申请列表
+export function getList(data){
+    return request({
+        url: "/operation/invoiceAudit/queryInvoices",
+        method: "post",
+        data: data
+    })
+}
+
+
+
+
+// 根据发票申请单查看对应的运单列表
+export function queryCarriagesByApplyCode(data){
+    return request({
+        url: "/operation/invoiceAudit/queryCarriagesByApplyCode",
+        method: "post",
+        data: data
+    })
+}
+
+
+// 查看发票申请详情
+export function queryInvoiceById(data){
+    return request({
+        url: "/operation/invoiceAudit/queryInvoiceById",
+        method: "post",
+        data: data
+    })
+}
+//审核发票
+export function invoiceAudit(data){
+    return request({
+        url: "/operation/invoiceAudit/invoiceAudit",
+        method: "post",
+        data: data
+    })
+}

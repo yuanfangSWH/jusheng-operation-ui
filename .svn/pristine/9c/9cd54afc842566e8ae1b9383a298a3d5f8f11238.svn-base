@@ -1,0 +1,230 @@
+<template>
+  <div class="app-container">
+    <div class="mb20">
+      <el-button size="small" type="primary" @click="goInfo" plain
+        >创建</el-button
+      >
+    </div>
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column type="index" label="序号"></el-table-column>
+      <el-table-column prop="noticeTitle" label="公告标题"></el-table-column>
+      <el-table-column prop="createTime" label="创建时间"></el-table-column>
+      <el-table-column prop="noticeScope" label="公告类型"></el-table-column>
+      <el-table-column prop="status" label="公告状态">
+        <template slot-scope="data">
+          <span v-if="data.row.status == 0">下线</span>
+          <span v-if="data.row.status == 1">上线</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" fixed="right" width="300px">
+        <template slot-scope="data">
+          <el-button
+            size="mini"
+            type="primary"
+            v-if="data.row.status === 1"
+            @click="cancel(data.row.noticeId)"
+            >取消发布</el-button
+          >
+          <el-button
+            size="mini"
+            type="primary"
+            v-else-if="data.row.status === 0"
+            @click="issue(data.row.noticeId)"
+            >发布</el-button
+          >
+          <el-button size="mini" type="success" @click="edit(data.row.noticeId)"
+            >编辑</el-button
+          >
+          <el-button
+            size="mini"
+            type="danger"
+            @click="deleteBtn(data.row.noticeId)"
+            >删除</el-button
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!--新建对话框-->
+    <el-dialog
+      title="发布公告"
+      :visible.sync="dialogVisible1"
+      width="50%"
+      center
+    >
+      <el-form ref="form" :model="form" :rules="rules" label-position="top">
+        <el-form-item label="公告标题" prop="companyName">
+          <el-input v-model="form.noticeTitle"></el-input>
+        </el-form-item>
+        <el-form-item label="公告内容" prop="companyName">
+          <el-input
+            v-model="form.noticeContent"
+            type="textarea"
+            :rows="9"
+          ></el-input>
+        </el-form-item>
+        <el-form-item
+          label="设置公告类型(至少勾选—个终端，勾选的终端可正常查看公告信息)"
+          prop="companyName"
+        >
+          <el-radio-group v-model="form.noticeScope">
+            <el-radio :label="0">通知</el-radio>
+            <el-radio :label="1">公告</el-radio>
+            <el-radio :label="2">托运人端</el-radio>
+            <el-radio :label="3">承运人端</el-radio>
+            <el-radio :label="4">全平台</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible1 = false">取 消</el-button>
+        <el-button type="primary" @click="add">确 定</el-button>
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import {
+  getList,
+  savaJushengSysNotice,
+  release,
+  deleteJushengSysNotice,
+  revocation,
+  updateJushengSysNotice,
+  queryNoticeManageById,
+} from "../../../api/adminSystem/announcement";
+export default {
+  data() {
+    return {
+      tableData: [],
+      time: [],
+      dialogVisible: false,
+      dialogVisible1: false,
+      dialogVisible2: false,
+
+      // 新建参数
+      form: {
+        noticeContent: "", //公告内容
+        noticeScope: "", //公告类型
+        noticeTitle: "", //公告标题
+        //status: null, //公告状态
+        sysNotice: "", //
+        noticeId: null,
+      },
+
+      // 公告id
+      noticeId: "",
+    };
+  },
+  created() {
+    this.getList();
+  },
+
+  methods: {
+    goInfo() {
+      this.dialogVisible1 = true;
+    },
+
+    // 条件查询系统公告列表
+    getList() {
+      getList(this.form).then((res) => {
+        if (res.code == 200) {
+          this.tableData = res.rows;
+          this.noticeId = res.rows.noticeId;
+        }
+      });
+    },
+
+
+
+
+    // 创建公告按钮
+    add() {
+      const noticeId = this.form.noticeId;
+
+      if (noticeId == null && noticeId == "") {
+        //创建
+        savaJushengSysNotice(this.form).then((res) => {
+          this.getList();
+          this.dialogVisible1 = false;
+          this.form = "";
+        });
+      } else {
+        //修改提交
+        updateJushengSysNotice(this.form).then((res) => {
+          this.getList();
+          this.dialogVisible1 = false;
+          this.form = "";
+        });
+      }
+    },
+
+    // 系统发布公告
+    issue(id) {
+      release(id).then((res) => {
+        if (res.code == !200) {
+          this.$message.error(res.msg);
+        }
+        this.$message.success(res.msg);
+        this.getList();
+      });
+    },
+
+    // 取消发布系统公告
+    cancel(id) {
+      revocation(id).then((res) => {
+        if (res.code !== 200) {
+          this.$message.error(res.msg);
+        }
+        this.$message.success(res.msg);
+        this.getList();
+      });
+    },
+
+    // 删除系统公告
+    deleteBtn(id) {
+      this.$confirm("您确定要删除该公告吗, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          deleteJushengSysNotice(id).then((res) => {
+            console.log(res);
+            this.msgSuccess("删除成功");
+            this.getList();
+          });
+        })
+        .catch(() => {
+          this.msgError("删除失败");
+        });
+    },
+
+    // 修改系统公告
+    // updateJushengSysNotice
+    edit(id) {
+      queryNoticeManageById(id).then((res) => {
+        this.dialogVisible1 = true;
+        console.log(res);
+        if (
+          res != null &&
+          res.code != undefined &&
+          res.code === 200 &&
+          res.data != null
+        ) {
+          this.form = res.data;
+        }
+      });
+
+      // updateJushengSysNotice(id).then(res => {
+      //   console.log(res)
+      // })
+    },
+  },
+};
+</script>
+
+<style scoped>
+</style>
+

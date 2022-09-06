@@ -1,0 +1,23 @@
+import request from "@/utils/request";
+import qs from "qs";
+
+// 条件查询运单列表
+export function getList(data){
+    return request({
+        url: "/operation/carriageAudit/queryCarriages",
+        method: "post",
+        data: {}
+    })
+}
+
+
+// 批量审核
+export function auditState(){
+    return request({
+        url: "/carriageAudit/carriageAudit",
+        method: 'post',
+        headers:{"content-type":"application/x-www-form-urlencoded"},
+        data:qs.stringify(data)
+    })
+}
+

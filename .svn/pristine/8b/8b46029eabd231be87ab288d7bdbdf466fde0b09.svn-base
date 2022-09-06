@@ -1,0 +1,106 @@
+<template>
+  <div class="app-container">
+    <div class="flex justify-between mb20">
+      <div class="flex">
+        <div style="margin-right: 30px">
+          <span class="mr10">运单编号：{{ form.carriageId }}</span>
+          <span></span>
+        </div>
+        <div style="margin-right: 30px">
+          <span class="mr10">司机：{{ form.chauffeur }}</span>
+          <span></span>
+        </div>
+        <div style="margin-right: 30px">
+          <span class="mr10">车辆：{{ form.vehicleNumber }}</span>
+          <span></span>
+        </div>
+      </div>
+      <div>
+        <el-button type="primary" @click="carriageTraces">刷新位置</el-button>
+      </div>
+    </div>
+    <div>
+      <baidu-map
+        class="bm-view"
+        ak="QFav2EIs2fwDBmMSm9k3LcHW14XC2xNW"
+        :center="center"
+        :zoom="zoom"
+        @ready="handler"
+      >
+        <!--缩放控件-->
+        <bm-navigation anchor="BMAP_ANCHOR_TOP_RIGHT"></bm-navigation>
+        <!-- 点控件 -->
+        <bm-marker
+          :position="position"
+          :dragging="true"
+          animation="BMAP_ANIMATION_BOUNCE"
+        >
+          <!-- 标注信息控件 -->
+          <bm-label
+            content="货车已到达这里"
+            :labelStyle="{ color: 'red', fontSize: '16px' }"
+            :offset="{ width: -35, height: 30 }"
+          />
+        </bm-marker>
+        <!-- 定位控件 -->
+        <bm-geolocation
+          anchor="BMAP_ANCHOR_BOTTOM_RIGHT"
+          :showAddressBar="true"
+          :autoLocation="true"
+        ></bm-geolocation>
+      </baidu-map>
+    </div>
+  </div>
+</template>
+<script>
+//百度地图
+import BaiduMap from 'vue-baidu-map/components/map/Map.vue'
+import BmNavigation from 'vue-baidu-map/components/controls/Navigation'
+import BmMarker from 'vue-baidu-map/components/overlays/Marker'
+import BmGeolocation from 'vue-baidu-map/components/controls/Geolocation'
+import BmLabel from 'vue-baidu-map/components/overlays/Label'
+import { carriageTraces } from '@/api/transform/waybill'
+export default {
+  components: {
+    BaiduMap,
+    BmNavigation,
+    BmMarker,
+    BmGeolocation,
+    BmLabel
+  },
+  props: {
+    form: Object
+  },
+  data () {
+    return {
+      center: { lng: 0, lat: 0 },
+      zoom: 3,
+      position: { lng: 116.404, lat: 39.915 },
+    }
+  },
+  methods: {
+    //百度地图自身调用API
+    handler () {
+      this.center.lng = 116.404
+      this.center.lat = 39.915
+      this.zoom = 15
+      this.carriageTraces();
+    },
+    //位置返回
+    carriageTraces () {
+      carriageTraces().then((res) => {
+        if (res.code == 200) {
+          console.log(res);
+        }
+      });
+    }
+  }
+}
+</script>
+
+<style scoped>
+.bm-view {
+  width: 100%;
+  height: 700px;
+}
+</style>

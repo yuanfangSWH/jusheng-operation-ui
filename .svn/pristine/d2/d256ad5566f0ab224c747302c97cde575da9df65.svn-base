@@ -1,0 +1,89 @@
+<template>
+  <div class="app-container">
+    <div class="mb20">
+      <el-button type="primary" class="mr10">上传附件</el-button>
+    </div>
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column prop="fileType" label="文件类型"></el-table-column>
+      <el-table-column prop="remark" label="描述信息"></el-table-column>
+      <el-table-column prop="createBy" label="操作人"></el-table-column>
+      <el-table-column prop="createTime" label="操作时间"></el-table-column>
+      <el-table-column label="操作">
+        <template>
+          <span class="operate mr10">查看</span>
+          <span class="operate mr10" style="color: #f56c6c">删除</span>
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageSize"
+        :limit="pageNum"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+  </div>
+</template>
+
+<script>
+
+import { queryCarriageAttachment } from '@/api/transform/waybill'
+import { deleteFile } from "@/api/index.js";
+import Pagination from "@/components/Pagination";
+import uploadIMGD from "@/components/uploadIMGD/index"
+export default {
+  components: {
+    Pagination,
+    uploadIMGD
+  },
+  data () {
+    return {
+      form: {},
+      tableData: [],
+      //页码
+      pageSize: 1,
+      //数量
+      pageNum: 10,
+      //总数据量
+      total: 0,
+    }
+  },
+  mounted () {
+    this.queryCarriageAttachment();
+  },
+  methods: {
+    // 附件列表
+    queryCarriageAttachment () {
+      let data = {
+        pageSize: this.pageSize,
+        pageNum: this.pageNum,
+      }
+      queryCarriageAttachment(data).then(res => {
+        if (res.code == 200) {
+          this.tableData = res.rows
+          this.total = res.total
+        }
+      })
+    },
+    //图片返回
+    pictureIMG (data) {
+      if (data.length > 1) {
+        this.paymentVoucher = String(data)
+      } else if (data.length == 1) {
+        this.paymentVoucher = String(data[0])
+      } else if (data.length == 0) {
+        this.paymentVoucher = ""
+      }
+    },
+  }
+}
+</script>
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+</style>

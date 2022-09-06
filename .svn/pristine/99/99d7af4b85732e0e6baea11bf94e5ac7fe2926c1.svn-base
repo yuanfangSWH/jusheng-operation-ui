@@ -1,0 +1,21 @@
+import request from "@/utils/request";
+
+// 公共上传方法
+export function upload(data) {
+  return request({
+    url: "/operation/file/uploadFile",
+    method: "post",
+    headers:{"Content-Type":"multipart/form-data"},
+    data: data
+  });
+}
+
+//上传图片删除
+export function deleteFile(data) {
+    return request({
+      url: "/operation/file/deleteFile",
+      headers:{"Content-Type":"multipart/form-data"},
+      method: "post",
+      data: data
+    });
+  }

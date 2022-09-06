@@ -1,0 +1,648 @@
+<template>
+  <div class="app-container">
+    <el-form ref="form" :model="form" :rules="rules" label-width="150px" inline>
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">基础信息</span>
+        </el-divider>
+      </div>
+      <el-form-item label="车牌号" prop="vehicleNumber">
+        <el-input v-model="form.vehicleNumber" disabled clearable></el-input>
+      </el-form-item>
+      <el-form-item label="车牌颜色" prop="vehicleColor">
+        <el-select
+          size="small mr5"
+          v-model="form.vehicleColor"
+          placeholder="请选择车牌颜色"
+        >
+          <el-option
+            v-for="(item, key) in vehicleColor_Data"
+            :key="key"
+            :label="item.dictLabel"
+            :value="item.dictValue"
+          >
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="外廓尺寸(mm)" prop="vehicleSize">
+        <el-input v-model="form.vehicleSize" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="车辆总质量类型" prop="qualityType">
+        <el-select
+          size="small mr5"
+          v-model="form.qualityType"
+          placeholder="选择总质量类型"
+        >
+          <el-option label="4.5吨及以下" :value="0"></el-option>
+          <el-option label="4.5吨以上" :value="1"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="整备质量(kg)" prop="tonnage">
+        <el-input v-model="form.tonnage" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="核定载质量(kg)" prop="hzdQuality">
+        <el-input v-model="form.hzdQuality" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="车辆分类" prop="vehicleType">
+        <el-select
+          size="small mr5"
+          v-model="form.vehicleType"
+          placeholder="请选择车辆分类"
+        >
+          <el-option
+            v-for="(item, key) in vehicleType_Data"
+            :key="key"
+            :label="item.dictLabel"
+            :value="item.dictValue"
+          >
+          </el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="牌照类型" prop="vehicleNumberType">
+        <el-select
+          size="small mr5"
+          v-model="form.vehicleNumberType"
+          placeholder="选择牌照类型"
+        >
+          <el-option label="大型汽车号牌" :value="0"></el-option>
+          <el-option label="小型汽车号牌" :value="1"></el-option>
+          <el-option label="其他号牌" :value="2"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="车辆所有人" prop="master">
+        <el-input v-model="form.master" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="车辆识别代码" prop="vehicleCode">
+        <el-input v-model="form.vehicleCode" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="车轴数(含悬浮轴)" prop="axleAmount">
+        <el-select
+          size="small mr5"
+          v-model="form.axleAmount"
+          placeholder="请选择车轴数"
+        >
+          <el-option label="二轴" :value="0"></el-option>
+          <el-option label="三轴" :value="1"></el-option>
+          <el-option label="四轴" :value="2"></el-option>
+          <el-option label="五轴" :value="3"></el-option>
+          <el-option label="六轴" :value="4"></el-option>
+          <el-option label="六轴以上" :value="5"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="使用性质" prop="nature">
+        <el-input v-model="form.nature" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="能源类型" prop="energyType">
+        <el-select
+          size="small mr5"
+          v-model="form.energyType"
+          placeholder="请选择能源类型"
+        >
+          <el-option
+            v-for="(item, key) in energyType_Data"
+            :key="key"
+            :label="item.dictLabel"
+            :value="item.dictValue"
+          >
+          </el-option>
+        </el-select>
+      </el-form-item>
+
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">证照信息</span>
+        </el-divider>
+      </div>
+
+      <el-form-item label="车辆行驶证档案编号" prop="licenseNumber">
+        <el-input v-model="form.licenseNumber" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="行驶证发证机关" prop="licenseAward">
+        <el-input v-model="form.licenseAward" clearable></el-input>
+      </el-form-item>
+
+      <el-form-item label="车辆行驶证注册日期" prop="licenseLoginTime">
+        <el-date-picker
+          v-model="form.licenseLoginTime"
+          format="yyyy 年 MM 月 dd 日"
+          value-format="yyyy-MM-dd"
+          type="date"
+          placeholder="选择日期"
+        >
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item label="行驶证发证日期" prop="licenseAwardTime">
+        <el-date-picker
+          v-model="form.licenseAwardTime"
+          format="yyyy 年 MM 月 dd 日"
+          value-format="yyyy-MM-dd"
+          type="date"
+          placeholder="选择日期"
+        >
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item label="行驶证到期日期" prop="licenseExpirationTime">
+        <el-date-picker
+          v-model="form.licenseExpirationTime"
+          format="yyyy 年 MM 月 dd 日"
+          value-format="yyyy-MM-dd"
+          type="date"
+          placeholder="选择日期"
+        >
+        </el-date-picker>
+      </el-form-item>
+      <el-form-item label="道路运输证字号" prop="dlysNumber">
+        <el-input v-model="form.dlysNumber" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="道路运输证到期日期" prop="dlysExpirationTime">
+        <el-date-picker
+          v-model="form.dlysExpirationTime"
+          format="yyyy 年 MM 月 dd 日"
+          value-format="yyyy-MM-dd"
+          type="date"
+          placeholder="选择日期"
+        >
+        </el-date-picker>
+      </el-form-item>
+
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">业户信息</span>
+        </el-divider>
+      </div>
+
+      <el-form-item label="业户名称" prop="yhName">
+        <el-input v-model="form.yhName" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="业户类型" prop="yhType">
+        <el-select v-model="form.yhType" placeholder="请选择业户类型">
+          <el-option label="企业" :value="1"></el-option>
+          <el-option label="个体" :value="0"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item
+        label="业户社会信用代码 / 身份证"
+        prop="yhIdCard"
+        label-width="200px"
+      >
+        <el-input v-model="form.yhIdCard" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="经营许可证号" prop="businessCertificate">
+        <el-input v-model="form.businessCertificate" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="所属辖区" prop="belongingTo">
+        <el-input v-model="form.belongingTo" clearable></el-input>
+      </el-form-item>
+
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">证件照片列表</span>
+        </el-divider>
+      </div>
+      <div class="imgdiv">
+        <div class="liemg">
+          <div class="imgBox">
+            <div class="youshang" v-for="(item, key) in urls" :key="key">
+              <el-image
+                class="imgs"
+                :src="item.url"
+                lazy
+                fit="cover"
+                @click="getImg(key)"
+              ></el-image>
+              <div class="biatwcss">{{ item.name }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="xianshu">
+          <el-carousel
+            ref="slideCarousel"
+            height="560px"
+            indicator-position="none"
+            arrow="always"
+            :autoplay="false"
+          >
+            <el-carousel-item v-for="(item, key) in urls" :key="key">
+              <div style="width: 100%">
+                <el-image
+                  style="width: 100%; height: 500px"
+                  fit="contain"
+                  :src="item.url"
+                ></el-image>
+                <div class="textmiaos">{{ item.name }}</div>
+                <div class="annscc">
+                  <div style="flex: 1"></div>
+                  <div style="margin-right: 306px; display: flex">
+                    <el-upload
+                      action=""
+                      :show-file-list="false"
+                      :file-list="fileList"
+                      :http-request="uploadSectionFile"
+                    >
+                      <el-button type="primary" @click="uploadIMG(key)"
+                        >重新上传</el-button
+                      >
+                    </el-upload>
+                    <el-button
+                      style="margin-left: 10px"
+                      type="danger"
+                      @click="disappearIMG(key)"
+                      >删除图片</el-button
+                    >
+                  </div>
+                </div>
+              </div>
+            </el-carousel-item>
+          </el-carousel>
+        </div>
+      </div>
+      <el-divider content-position="left"> </el-divider>
+
+      <el-form-item label="审核结果" prop="auditStatus">
+        <el-radio-group v-model="form.auditStatus">
+          <el-radio :label="0">待审核</el-radio>
+          <el-radio :label="1">审核通过</el-radio>
+          <el-radio :label="2">审核不通过</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="审核意见" v-show="form.auditStatus == 2">
+        <el-input
+          type="textarea"
+          style="min-width: 330px"
+          :autosize="{ minRows: 2, maxRows: 4 }"
+          placeholder="请输入审核意见"
+          v-model="form.notGoCause"
+        >
+        </el-input>
+      </el-form-item>
+      <div>
+        <el-form-item label=" ">
+          <el-button type="primary" @click="updateVehicle()" plain
+            >提交</el-button
+          >
+        </el-form-item>
+      </div>
+    </el-form>
+  </div>
+</template>
+
+<script>
+import { getList, updateVehicle, queryVehicleEnergyType, queryVehiclePlateColor, queryVehicleType } from '@/api/member/car'
+import { VDLCardOCRAndUpload, deleteFile } from "@/api/index.js";
+export default {
+  data () {
+    return {
+      form: {
+        vehicleId: "",
+        vehicleNumber: "",
+        vehicleColor: "",
+        vehicleSize: "",
+        qualityType: "",
+        tonnage: "",
+        hzdQuality: "",
+        vehicleType: "",
+        vehicleNumberType: "",
+        master: "",
+        vehicleCode: "",
+        axleAmount: "",
+        nature: "",
+        energyType: "",
+        licenseNumber: "",
+        licenseAward: "",
+        licenseLoginTime: "",
+        licenseAwardTime: "",
+        licenseExpirationTime: "",
+        dlysNumber: "",
+        dlysExpirationTime: "",
+        yhName: "",
+        yhType: "",
+        businessCertificate: "",
+        belongingTo: "",
+        auditStatus: "",
+        notGoCause: "",
+        //行驶证正本
+        drivingFront: "",
+        //行驶证副本
+        drivingReverse: "",
+        //最新年检信息
+        annualRecord: "",
+        //道路运输证正页
+        dlysFront: "",
+        //道路运输证副页
+        dlysReverse: "",
+        //人车合照
+        rchz: "",
+      },
+      energyType_Data: [],
+      vehicleColor_Data: [],
+      vehicleType_Data: [],
+      //图片数据
+      urls: [],
+      //上传列表
+      fileList: [],
+      //等待删除的图片
+      imgURL: [],
+      //位置数据
+      imgKey: {
+        value: "",
+        key: ""
+      },
+      rules: {
+        xxx: [
+          { required: true, message: '不能为空' }
+        ]
+      }
+    }
+  },
+  mounted () {
+    this.form.vehicleId = this.$route.query.vehicleId;
+    this.queryVehicleEnergyType();
+    this.queryVehiclePlateColor();
+    this.queryVehicleType();
+    this.queryDriverById();
+  },
+  methods: {
+    //自定义上传
+    uploadSectionFile (params) {
+      var file = params.file;
+      var isLt2M = file.size / 1024 / 1024 < 6;
+      if (!isLt2M) {
+        this.$message.error('上传图片大小不能超过 6MB!');
+        return;
+      }
+      var formData = new FormData();
+      formData.append('file', file);
+      VDLCardOCRAndUpload(formData).then((res) => {
+        if (res.code == 200) {
+          //添加需要提交数据后删除的图片地址
+          this.imgURL.push(this.urls[this.imgKey.key].url);
+          //替换图片数据
+          this.urls[this.imgKey.key].url = res.data.fileUrl;
+          this.form[this.imgKey.value] = res.data.fileUrl;
+          if (this.imgKey.value == "drivingFront") {
+            this.form.master = data.drivingFront.info_Positive.owner;//车辆所有人
+            this.form.vehicleNumber = data.drivingFront.info_Positive.carNumber;//车牌号
+            this.form.licenseAwardTime = data.drivingFront.info_Positive.issue_date;//行驶证发证日期
+            this.form.licenseLoginTime = data.drivingFront.info_Positive.register_date;//行驶证注册日期
+          } else if (this.imgKey.value == "drivingReverse") {
+            this.form.vehicleSize = data.drivingReverse.info_negative.overall_dimension;//外廓尺寸
+            this.form.hzdQuality = data.drivingReverse.info_negative.load_weight;//核定载质量
+            this.form.tonnage = data.drivingReverse.info_negative.curb_weight;//整备质量
+          }
+        }
+      });
+    },
+    //添加图片定位
+    uploadIMG (key) {
+      this.imgKey.value = this.urls[key].value;
+      this.imgKey.key = key;
+    },
+    //添加需要删除的图片
+    disappearIMG (key) {
+      this.imgURL.push(this.urls[key].url);
+      this.urls.splice(key, 1);
+    },
+    //切换图片
+    getImg (key) {
+      this.$refs.slideCarousel.setActiveItem(key)
+    },
+    //详情
+    queryDriverById () {
+      getList({ vehicleId: this.form.vehicleId }).then((res) => {
+        if (res.code == 200) {
+          this.form.vehicleNumber = res.rows[0].vehicleNumber
+          this.form.vehicleColor = res.rows[0].vehicleColor
+          this.form.vehicleSize = res.rows[0].vehicleSize
+          this.form.qualityType = res.rows[0].qualityType
+          this.form.tonnage = res.rows[0].tonnage
+          this.form.hzdQuality = res.rows[0].hzdQuality
+          this.form.vehicleType = res.rows[0].vehicleType
+          this.form.vehicleNumberType = res.rows[0].vehicleNumberType
+          this.form.master = res.rows[0].master
+          this.form.vehicleCode = res.rows[0].vehicleCode
+          this.form.axleAmount = res.rows[0].axleAmount
+          this.form.nature = res.rows[0].nature
+          this.form.energyType = res.rows[0].energyType
+          this.form.licenseNumber = res.rows[0].licenseNumber
+          this.form.licenseAward = res.rows[0].licenseAward
+          this.form.licenseLoginTime = res.rows[0].licenseLoginTime
+          this.form.licenseAwardTime = res.rows[0].licenseAwardTime
+          this.form.licenseExpirationTime = res.rows[0].licenseExpirationTime
+          this.form.dlysNumber = res.rows[0].dlysNumber
+          this.form.dlysExpirationTime = res.rows[0].dlysExpirationTime
+          this.form.yhName = res.rows[0].yhName
+          this.form.yhType = res.rows[0].yhType
+          this.form.businessCertificate = res.rows[0].businessCertificate
+          this.form.belongingTo = res.rows[0].belongingTo
+          this.form.auditStatus = res.rows[0].auditStatus
+          this.form.notGoCause = res.rows[0].notGoCause
+          //图片数据
+          this.form.drivingFront = res.rows[0].drivingFront
+          this.form.drivingReverse = res.rows[0].drivingReverse
+          this.form.annualRecord = res.rows[0].annualRecord
+          this.form.dlysFront = res.rows[0].dlysFront
+          this.form.dlysReverse = res.rows[0].dlysReverse
+          this.form.rchz = res.rows[0].rchz
+          //处理图片
+          if (this.form?.drivingFront) {
+            this.urls.push({
+              name: '行驶证正本',
+              value: 'drivingFront',
+              url: this.form.drivingFront
+            })
+          }
+          if (this.form?.drivingReverse) {
+            this.urls.push({
+              name: '行驶证副本',
+              value: 'drivingReverse',
+              url: this.form.drivingReverse
+            })
+          }
+          if (this.form?.annualRecord) {
+            this.urls.push({
+              name: '最新年检信息',
+              value: 'annualRecord',
+              url: this.form.annualRecord
+            })
+          }
+          if (this.form?.dlysFront) {
+            this.urls.push({
+              name: '道路运输证正页',
+              value: 'dlysFront',
+              url: this.form.dlysFront
+            })
+          }
+          if (this.form?.dlysReverse) {
+            this.urls.push({
+              name: '道路运输证副页',
+              value: 'dlysReverse',
+              url: this.form.dlysReverse
+            })
+          }
+          if (this.form?.rchz) {
+            this.urls.push({
+              name: '人车合照',
+              value: 'rchz',
+              url: this.form.rchz
+            })
+          }
+        }
+      });
+    },
+    //车辆能源类型分类
+    queryVehicleEnergyType () {
+      queryVehicleEnergyType().then((res) => {
+        if (res.code == 200) {
+          this.energyType_Data = res.data
+        }
+      })
+    },
+    //查询车辆车牌颜色分类
+    queryVehiclePlateColor () {
+      queryVehiclePlateColor().then((res) => {
+        if (res.code == 200) {
+          this.vehicleColor_Data = res.data
+        }
+      })
+    },
+    //查询车辆分类
+    queryVehicleType () {
+      queryVehicleType().then((res) => {
+        if (res.code == 200) {
+          this.vehicleType_Data = res.data
+        }
+      })
+    },
+    //修改保存
+    updateVehicle () {
+      if (this.form.auditStatus == 2 && this.form.notGoCause == "") {
+        this.$message({
+          message: '请填写审核意见',
+          type: 'warning',
+          duration: 2000
+        });
+        return
+      }
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          let data = {
+            vehicleId: this.form.vehicleId,
+            vehicleNumber: this.form.vehicleNumber,
+            vehicleColor: this.form.vehicleColor,
+            vehicleSize: this.form.vehicleSize,
+            qualityType: this.form.qualityType,
+            tonnage: this.form.tonnage,
+            hzdQuality: this.form.hzdQuality,
+            vehicleType: this.form.vehicleType,
+            vehicleNumberType: this.form.vehicleNumberType,
+            master: this.form.master,
+            vehicleCode: this.form.vehicleCode,
+            axleAmount: this.form.axleAmount,
+            nature: this.form.nature,
+            energyType: this.form.energyType,
+            licenseNumber: this.form.licenseNumber,
+            licenseAward: this.form.licenseAward,
+            licenseLoginTime: this.form.licenseLoginTime,
+            licenseAwardTime: this.form.licenseAwardTime,
+            licenseExpirationTime: this.form.licenseExpirationTime,
+            dlysNumber: this.form.dlysNumber,
+            dlysExpirationTime: this.form.dlysExpirationTime,
+            yhName: this.form.yhName,
+            yhType: this.form.yhType,
+            businessCertificate: this.form.businessCertificate,
+            belongingTo: this.form.belongingTo,
+            auditStatus: this.form.auditStatus,
+            notGoCause: this.form.notGoCause,
+            //图片数据
+            drivingFront: this.form.drivingFront,
+            drivingReverse: this.form.drivingReverse,
+            annualRecord: this.form.annualRecord,
+            dlysFront: this.form.dlysFront,
+            dlysReverse: this.form.dlysReverse,
+            rchz: this.form.rchz,
+          }
+          updateVehicle(data).then((res) => {
+            if (res.code == 200) {
+              if (this.imgURL != "") {
+                this.deleteIMG();
+              }
+              this.$message({
+                message: '保存成功',
+                type: 'success',
+                duration: 3000
+              });
+              this.$router.push({ path: "/member/car/index" })
+            }
+          });
+        }
+      });
+    },
+    //递归异步删除图片
+    deleteIMG () {
+      this.imgURL.forEach((data) => {
+        deleteFile({ filePath: data })
+      })
+    }
+
+
+  }
+}
+</script>
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+.liemg {
+  margin-left: 40px;
+  margin-right: 40px;
+}
+.xianshu {
+  flex: 1;
+  margin-right: 40rpx;
+}
+.imgBox {
+  width: 220px;
+  height: 500px;
+  overflow: auto;
+}
+.imgs {
+  width: 200px;
+  height: 200px;
+}
+.imgdiv {
+  display: flex;
+  width: 100%;
+}
+.textmiaos {
+  width: 100%;
+  height: 20px;
+  text-align: center;
+  font-size: 16px;
+  color: rgb(71, 71, 71);
+  line-height: 20px;
+}
+.annscc {
+  display: flex;
+  width: 100%;
+}
+.youshang {
+  width: 200px;
+  height: 200px;
+  position: relative;
+  cursor: pointer;
+}
+.biatwcss {
+  width: 100%;
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  text-align: center;
+  height: 30px;
+  line-height: 30px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.3);
+}
+</style>

@@ -1,0 +1,383 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex transposition justify-end">
+      <el-button type="primary" @click="goAdd">新建</el-button>
+      <el-button class="mr5" type="warning">导出</el-button>
+      <el-date-picker
+        class="mr5"
+        v-model="startTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="选择创建起始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        v-model="endTime"
+        type="date"
+        placeholder="选择创建结束日期"
+      >
+      </el-date-picker>
+      <el-input
+        class="search mr5"
+        v-model="name"
+        placeholder="请输入姓名"
+        clearable
+      ></el-input>
+      <el-input
+        class="search mr5"
+        v-model="phone"
+        placeholder="请输入电话"
+        clearable
+      ></el-input>
+      <el-button type="primary" @click="query">查询</el-button>
+      <el-button type="danger" @click="empty">清空</el-button>
+    </div>
+    <div class="mb20 flex transposition justify-end">
+      <el-select
+        size="small mr5"
+        v-model="auditStatus"
+        placeholder="请选择审核状态"
+      >
+        <el-option
+          v-for="item in auditStatusData"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        >
+        </el-option>
+      </el-select>
+      <el-select
+        size="small mr5"
+        v-model="drivingState"
+        placeholder="请选择驾驶证状态"
+      >
+        <el-option
+          v-for="item in drivingStateData"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        >
+        </el-option>
+      </el-select>
+      <el-select
+        size="small mr5"
+        v-model="idCardState"
+        placeholder="请选择身份证状态"
+      >
+        <el-option
+          v-for="item in idCardStateData"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        >
+        </el-option>
+      </el-select>
+      <el-select
+        size="small mr5"
+        v-model="certificateState"
+        placeholder="请选择从业资格证状态"
+      >
+        <el-option
+          v-for="item in certificateStateData"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        >
+        </el-option>
+      </el-select>
+    </div>
+
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column prop="id" label="序号" type="index"></el-table-column>
+      <el-table-column prop="name" label="司机姓名"></el-table-column>
+      <el-table-column prop="phone" label="手机号"></el-table-column>
+      <el-table-column prop="idCardNumber" label="身份证号"></el-table-column>
+      <el-table-column prop="auditStatus" label="审核状态" width="100px">
+        <template slot-scope="data">
+          <span v-if="data.row.auditStatus == 0">待审核</span>
+          <span v-else-if="data.row.auditStatus == 1">审核中</span>
+          <span v-else-if="data.row.auditStatus == 2">审核通过</span>
+          <span v-else-if="data.row.auditStatus == 3">审核不通过</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="idCardState" label="身份证状态">
+        <template slot-scope="data">
+          <span v-if="data.row.auditStatus == 0">正常</span>
+          <span v-else-if="data.row.auditStatus == 1">即将过期</span>
+          <span v-else-if="data.row.auditStatus == 2">已过期</span>
+          <span v-else-if="data.row.auditStatus == 3">审核失败</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="drivingState" label="驾驶证状态">
+        <template slot-scope="data">
+          <span v-if="data.row.drivingState == 0">正常</span>
+          <span v-else-if="data.row.drivingState == 1">即将过期</span>
+          <span v-else-if="data.row.drivingState == 2">已过期</span>
+          <span v-else-if="data.row.drivingState == 3">审核失败</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="certificateState" label="道路运输从业资格证状态">
+        <template slot-scope="data">
+          <span v-if="data.row.certificateState == 0">正常</span>
+          <span v-else-if="data.row.certificateState == 1">即将过期</span>
+          <span v-else-if="data.row.certificateState == 2">已过期</span>
+          <span v-else-if="data.row.certificateState == 3">审核失败</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="idCardPerson" label="身份证头像页" width="100px">
+        <template slot-scope="data">
+          <el-image
+            style="width: 100px; height: 100px"
+            :src="data.row.idCardPerson"
+            fit="fit"
+          ></el-image>
+        </template>
+      </el-table-column>
+      <el-table-column prop="idCardBadge" label="身份证国徽面" width="100px">
+        <template slot-scope="data">
+          <el-image
+            style="width: 100px; height: 100px"
+            :src="data.row.idCardBadge"
+            fit="fit"
+          ></el-image>
+        </template>
+      </el-table-column>
+      <el-table-column prop="drivingNumber" label="驾驶证号"></el-table-column>
+      <el-table-column prop="drivingPerson" label="驾驶证正页" width="100px">
+        <template slot-scope="data">
+          <el-image
+            style="width: 100px; height: 100px"
+            :src="data.row.drivingPerson"
+            fit="fit"
+          ></el-image>
+        </template>
+      </el-table-column>
+      <el-table-column prop="drivingBadge" label="驾驶证副页" width="100px">
+        <template slot-scope="data">
+          <el-image
+            style="width: 100px; height: 100px"
+            :src="data.row.drivingBadge"
+            fit="fit"
+          ></el-image>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="cyCertificate"
+        label="驾驶员从业资格证"
+        width="100px"
+      >
+        <template slot-scope="data">
+          <el-image
+            style="width: 100px; height: 100px"
+            :src="data.row.cyCertificate"
+            fit="fit"
+          ></el-image>
+        </template>
+      </el-table-column>
+      <el-table-column prop="vehicleNumber" label="关联车辆"></el-table-column>
+      <el-table-column prop="driverId" label="关联收款人"></el-table-column>
+      <el-table-column prop="date" label="信用分"></el-table-column>
+      <el-table-column prop="auditType" label="审核方式"></el-table-column>
+      <el-table-column prop="createBy" label="创建人"></el-table-column>
+      <el-table-column prop="createTime" label="创建时间"></el-table-column>
+      <el-table-column prop="date" label="操作" fixed="right" width="200px">
+        <template slot-scope="data">
+          <span
+            class="operate mr10"
+            style="color: #409eff"
+            @click="goEdit(data.row)"
+            >编辑/审核</span
+          >
+          <span
+            class="operate mr10"
+            style="color: #67c23a"
+            @click="datail(data.row)"
+            >详情</span
+          >
+          <span
+            class="operate"
+            style="color: #f56c6c"
+            @click="deleteDriver(data.row)"
+            >删除</span
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageNum"
+        :limit="pageSize"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+  </div>
+</template>
+
+<script>
+import { getList, deleteDriver, queryDrivers } from "@/api/member/driver";
+import { phoneCheck } from "@/utils/check.js";
+import Pagination from "@/components/Pagination/index"
+export default {
+  components: {
+    Pagination,
+  },
+  data () {
+    return {
+      tableData: [],
+      time: [],
+      auditStatus: "",
+      auditStatusData: [{
+        value: 0,
+        label: "待审核",
+      }, {
+        value: 1,
+        label: "审核中 ",
+      }, {
+        value: 2,
+        label: "审核通过",
+      }, {
+        value: 3,
+        label: "审核不通过",
+      }],
+      drivingState: "",
+      drivingStateData: [{
+        value: 0,
+        label: "正常",
+      }, {
+        value: 1,
+        label: "即将过期",
+      }, {
+        value: 2,
+        label: "已过期",
+      }, {
+        value: 3,
+        label: "审核失败",
+      }],
+      idCardState: "",
+      idCardStateData: [{
+        value: 0,
+        label: "正常",
+      }, {
+        value: 1,
+        label: "即将过期",
+      }, {
+        value: 2,
+        label: "已过期",
+      }, {
+        value: 3,
+        label: "审核失败",
+      }],
+      certificateState: "",
+      certificateStateData: [
+        {
+          value: 0,
+          label: "正常",
+        }, {
+          value: 1,
+          label: "即将过期",
+        }, {
+          value: 2,
+          label: "已过期",
+        }, {
+          value: 3,
+          label: "审核失败",
+        }
+      ],
+      name: "",
+      phone: "",
+      startTime: "",
+      endTime: "",
+      //页码
+      pageSize: 10,
+      //数量
+      pageNum: 1,
+      //总数据量
+      total: 0,
+    }
+  },
+  created () {
+    this.getList();
+  },
+  components: {
+    Pagination
+  },
+  methods: {
+    //列表
+    getList () {
+      let data = {
+        auditStatus: this.auditStatus,
+        drivingState: this.drivingState,
+        idCardState: this.idCardState,
+        certificateState: this.certificateState,
+        name: this.name,
+        phone: this.phone,
+        startTime: this.startTime,
+        endTime: this.endTime
+      }
+      getList(data, { pageSize: this.pageSize, pageNum: this.pageNum }).then(res => {
+        this.tableData = res.rows;
+        this.total = res.total
+      })
+    },
+    //添加
+    goAdd () {
+      this.$router.push({ path: "/member/driver/add" })
+    },
+    //编辑/审核
+    goEdit (row) {
+      this.$router.push({ path: "/member/driver/edit", query: { chauffeurId: row.chauffeurId } })
+    },
+    //详情
+    datail (row) {
+      this.$router.push({ path: "/member/driver/datail", query: { chauffeurId: row.chauffeurId } })
+    },
+    //删除
+    deleteDriver (row) {
+      deleteDriver({ chauffeurId: row.chauffeurId }).then((res) => {
+        if (res.code == 200) {
+          this.$message({
+            message: '删除成功',
+            type: 'success',
+            duration: 3000
+          });
+          this.getList();
+        }
+      });
+    },
+    //清空
+    empty () {
+      this.auditStatus = "";
+      this.drivingState = "";
+      this.idCardState = "";
+      this.certificateState = "";
+      this.name = "";
+      this.phone = "";
+      this.startTime = "";
+      this.endTime = "";
+      this.pageSize = 10;
+      this.pageNum = 1;
+      this.getList();
+    },
+
+    //查询
+    query () {
+      this.pageNum = 1;
+      this.getList();
+    },
+
+    //分页
+    pagination (val) {
+      this.pageSize = val.limit;
+      this.pageNum = val.page;
+      this.getList();
+    }
+  }
+}
+</script>
+
+<style scoped>
+</style>
+

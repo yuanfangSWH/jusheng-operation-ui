@@ -1,0 +1,275 @@
+<template>
+  <div class="app-container">
+   <!-- 头部搜索 -->
+    <el-row class="el-row-border">
+      <el-col class="el-col-left">
+        <el-form ref="form" label-width="100px" class="search-header">
+          <el-form-item label="车牌号" class="carnumber" size="medium">
+            <el-input></el-input>
+          </el-form-item>
+          <el-form-item label="司机手机号" size="medium">
+            <el-input></el-input>
+          </el-form-item>
+          <el-form-item class="carnumber" label="资料审核状态">
+            <el-select
+              size="small mr10"
+              value=""
+              placeholder="请选择"
+              clearable
+            >
+              <el-option value="0" label="待审核"></el-option>
+              <el-option value="1" label="审核中"></el-option>
+              <el-option value="2" label="审核通过"></el-option>
+              <el-option value="3" label="审核不通过"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </el-col>
+      <el-col class="el-col-right">
+        <el-row>
+          <!-- 计划提货时间 -->
+          <el-select size="small mr10" placeholder="计划提货时间">
+            <el-option value="" label="计划提货时间"></el-option>
+            <el-option value="" label="实际提货时间"></el-option>
+            <el-option
+              value="planAttrivalTime"
+              label="计划到货时间"
+            ></el-option>
+            <el-option value="" label="实际到货时间"></el-option>
+            <el-option value="" label="创建时间"></el-option>
+            <el-option value="1" label="签收时间"></el-option>
+            <el-option value="1" label="付款申请时间"></el-option>
+          </el-select>
+          <!-- 起止时间 -->
+          <el-date-picker
+            class="mr10 el-date-picker"
+            size="small"
+            type="daterange"
+            range-separator="至"
+            value-format="yyyy-MM-dd"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+          >
+          </el-date-picker>
+        </el-row>
+        <el-row>
+          <!-- 运单状态 -->
+          <el-select size="small mr10" placeholder="运单状态" class="mar_r">
+            <el-option value="1" label="已提交"></el-option>
+            <el-option value="2" label="已分配承运人"></el-option>
+            <el-option value="3" label="已接单"></el-option>
+            <el-option value="4" label="提货中"></el-option>
+            <el-option value="5" label="发车中"></el-option>
+            <el-option value="6" label="已到达"></el-option>
+            <el-option value="7" label="卸货中"></el-option>
+            <el-option value="8" label="已签收"></el-option>
+            <el-option value="9" label="已作废"></el-option>
+          </el-select>
+          <!-- 支付状态 -->
+          <el-select
+            size="small mr10"
+            value=""
+            placeholder="支付状态"
+          >
+            <!-- <el-option value="" label="请选择"></el-option> -->
+            <el-option value="0" label="已结清"></el-option>
+            <el-option value="1" label="未结清"></el-option>
+          </el-select>
+        </el-row>
+        <el-row>
+            <el-button type="primary" class="clearBtn" size="mini">清空</el-button>
+            <el-button type="primary" class="searchBtn" size="mini">查询</el-button>
+        </el-row>
+      </el-col>
+    </el-row>
+
+    <!-- 表格区域 -->
+    <el-table
+      :data="tableData"
+      style="width: 100%"
+      :cell-style="TableCellStyle"
+      :row-style="TableRowstyle"
+      stripe
+      >
+      <el-table-column type="index" label="序号"></el-table-column>
+       <el-table-column label="操作" >
+        <template slot-scope="data">
+          <span class="operate mr10" @click="goInfo">审核</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="payApplyCode" label="付款申请编号"></el-table-column>
+      <el-table-column prop="auditStatus" label="付款审核状态" ></el-table-column>
+      <el-table-column prop="chauffeurMoney" label="结算运费" ></el-table-column>
+      <!-- ---含税运费------2021.7.15后端说先不要这个 -->
+      <!-- <el-table-column prop="date" label="含税运费" ></el-table-column> -->
+
+      <!-- 样式更改一下颜色,  字体应改为红色 -->
+      <el-table-column prop="anotherPayeeMoney" label="第二收款人收款金额" class="red"></el-table-column>
+      <el-table-column prop="chauffeurMoney" label="支付司机金额" ></el-table-column>
+      <!-- ----分割线---- -->
+      <el-table-column prop="payType" label="支付类型" >
+        <template slot-scope="data">
+          <span v-if="data.row.payType == 0">预付款</span>
+          <span v-if="data.row.payType == 1">到付款</span>
+          <span v-if="data.row.payType == 2">回单尾款</span>
+          <span v-if="data.row.payType == 3">定金</span>
+          <span v-if="data.row.payType == 4">起航费</span>
+          <span v-if="data.row.payType == 5">抵港费</span>
+          <span v-if="data.row.payType == 6">尾款</span>
+          <span v-if="data.row.payType == 7">港建费</span>
+          <span v-if="data.row.payType == 8">其他</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="internalAudit" label="支付状态" >
+        <template slot-scope="data">
+          <span v-if="data.row.internalAudit == 0">平台审核中</span>
+          <span v-if="data.row.internalAudit == 1">平台审核不通过</span>
+          <span v-if="data.row.internalAudit == 2">打款中</span>
+          <span v-if="data.row.internalAudit == 3">打款成功</span>
+          <span v-if="data.row.internalAudit == 4">打款失败</span>
+          <span v-if="data.row.internalAudit == 5">财务退回</span>
+          <span v-if="data.row.internalAudit == 6">已线下打款</span>
+          <span v-if="data.row.internalAudit == 7">交易关闭</span>
+        </template>
+      </el-table-column>
+      <!-- 申请付款时间就是创建时间，这个阶段还没有打款 -->
+      <el-table-column prop="carriageCreateTime" label="付款申请时间" ></el-table-column>
+      <el-table-column prop="carriageCode" label="运单号" ></el-table-column>
+      <el-table-column prop="carriageState" label="运单状态" >
+        <template slot-scope="data">
+           <span v-if="data.row.carriageState == 0">草稿</span>
+          <span v-if="data.row.carriageState == 1">已提交</span>
+          <span v-if="data.row.carriageState == 2">已分配承运人</span>
+          <span v-if="data.row.carriageState == 3">已接单</span>
+          <span v-if="data.row.carriageState == 4">提货中</span>
+          <span v-if="data.row.carriageState == 5">发车中</span>
+          <span v-if="data.row.carriageState == 6">已到达</span>
+          <span v-if="data.row.carriageState == 7">卸货中</span>
+          <span v-if="data.row.carriageState == 8">已签收</span>
+          <span v-if="data.row.carriageState == 9">已作废</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="shipperFullName" label="托运人全称"></el-table-column>
+      <el-table-column prop="goodsName" label="货物名称" ></el-table-column>
+      <!-- 回参是：第二收款人姓名 -->
+      <!-- 没有返回值 -->
+      <el-table-column prop="kaihuName" label="第二收款人" ></el-table-column>
+      <el-table-column prop="accountBank" label="承运司机账户" ></el-table-column>
+      <!-- 字段是司机姓名 -->
+      <el-table-column prop="payeeName" label="司机"></el-table-column>
+      <!-- 车船号没有字段,后端让用车牌号 -->
+      <el-table-column prop="vehicleNumber" label="车船号"></el-table-column>
+      <!-- 没反应 -->
+      <el-table-column prop="planPickTime" label="计划装货时间" ></el-table-column>
+      <el-table-column prop="arriveTime" label="实际提货时间" ></el-table-column>
+      <el-table-column prop="planArrivalTime" label="计划到货时间" ></el-table-column>
+      <el-table-column prop="demountTime" label="实际到货时间" ></el-table-column>
+      <!-- 后台说合同先不要 -->
+      <!-- <el-table-column prop="date" label="承运人合同状态" ></el-table-column>
+      <el-table-column prop="date" label="托运人合同状态" ></el-table-column> -->
+      <!-- 以上没有字段,等待后台确认 -->
+      <el-table-column prop="carriageCreateTime" label="运单创建时间" ></el-table-column>
+      <el-table-column prop="auditTime" label="审核时间" ></el-table-column>
+      <el-table-column prop="remake" label="备注" ></el-table-column>
+    </el-table>
+  </div>
+</template>
+
+<script>
+import { getList } from "../../../api/business/payment";
+export default {
+  data(){
+    return {
+      tableData:[],
+      time:[]
+    }
+  },
+  created () {
+    this.getList()
+  },
+  methods: {
+    // 付款申请列表
+    getList(){
+      getList().then(res => {
+        console.log(res)
+        this.tableData = res.rows
+      })
+    },
+    goInfo(){
+      // 点击审核跳转
+      this.$router.push({
+        name:"info",
+        // 传值未完成
+        params: {data:123456},
+        // this.tableData
+      })
+    },
+
+
+
+
+
+    //改变单元格背景颜色
+    TableCellstyle({ row, column, rowIndex, columnIndex}){
+      if(columnIndex === 3){
+        return "background-color: '#666'"
+      }
+    },
+
+    // 改变行背景颜色
+    TableRowstyle({row, rowIndex}){
+      if(rowIndex === 2){
+        return "background-color: rgba(255,0,0,0.4)"
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+.search {
+    transition: all 3s linear;
+  }
+
+  .el-date-picker{
+    width: 300px;
+  }
+
+.el-row-border {
+  border: 1px solid #ccc;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.el-col-left {
+  width: 40%;
+}
+
+.el-col-right {
+  width: 60%;
+}
+
+.mar_r {
+  margin-right: 100px;
+}
+
+.searchBtn {
+  position: absolute;
+  bottom: 0;
+  right: 30px;
+}
+
+.clearBtn{
+  position: absolute;
+  bottom: 0;
+  right: 120px;
+}
+
+.red{
+  color: red !important;
+}
+
+</style>
+

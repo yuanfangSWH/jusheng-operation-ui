@@ -1,0 +1,20 @@
+import request from "@/utils/request";
+
+//列表
+export function getList() {
+  return request({
+    url: "/yunli/yunliDriver/list",
+    method: "get",
+    data: {}
+  });
+}
+
+//身份证ocr
+export function getIdCard(file) {
+  return request({
+    url: "/yunli/yunliDriver/ocrIdCard",
+    method: "get",
+    headers:{"Content-Type":"multipart/form-data"},
+    data: { file:file }
+  });
+}

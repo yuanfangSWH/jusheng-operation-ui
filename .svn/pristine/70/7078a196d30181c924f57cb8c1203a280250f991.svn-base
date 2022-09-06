@@ -1,0 +1,63 @@
+import request from "@/utils/request";
+
+// 查询
+export function getListII(params){
+    return request({
+      url: "/operation/shipperUser/queryShipperUser",
+      method: "get",
+      params: params
+    })
+  }
+
+// 条件查询列表
+export function getList(data) {
+  return request({
+    url: "operation/shipperUser/queryShippers",
+    method: "post",
+    data: data
+  });
+}
+
+//删除托运人信息
+export function deleteShipper(data) {
+    return request({
+        url: 'operation/shipperUser/deleteShipper',
+        method: 'post',
+        data: data
+    })
+  }
+
+//添加托运人
+export function saveShipperUser(data) {
+    return request({
+        url: 'operation/shipperUser/saveShipperUser',
+        method: 'post',
+        data: data
+    })
+  }
+
+//查询托运人详情
+export function queryShipperById(data) {
+    return request({
+        url: 'operation/shipperUser/queryShipperById',
+        method: 'post',
+        data: data
+    })
+  }
+
+//修改托运人保存
+export function updateShipper(data) {
+    return request({
+        url: 'operation/shipperUser/updateShipper',
+        method: 'post',
+        data: data
+    })
+  }
+  //查询业务管理公司
+export function queryAdminCompany(params) {
+    return request({
+        url: 'operation/shipperUser/queryAdminCompany',
+        method: 'get',
+        params: params
+    })
+  }

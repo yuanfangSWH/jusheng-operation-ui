@@ -1,0 +1,331 @@
+<template>
+  <div class="app-container">
+    <el-form ref="form" :model="form" label-width="150px" inline>
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">基础信息</span>
+        </el-divider>
+      </div>
+      <el-row>
+        <el-col :span="6">
+          <el-form-item label="运单编号">
+            {{ form.carriageId }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="运单状态">
+            <span v-if="form.carriageState == 0">草稿</span>
+            <span v-if="form.carriageState == 1">已提交</span>
+            <span v-if="form.carriageState == 2">已分配承运人</span>
+            <span v-if="form.carriageState == 3">已接单</span>
+            <span v-if="form.carriageState == 4">提货中</span>
+            <span v-if="form.carriageState == 5">发车中</span>
+            <span v-if="form.carriageState == 6">已到达</span>
+            <span v-if="form.carriageState == 7">卸货中</span>
+            <span v-if="form.carriageState == 8">已签收</span>
+            <span v-if="form.carriageState == 9">已作废</span>
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="签收时间">
+            {{ form.signForTime }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="是否开票">
+            <span v-if="form.ifInvoice == 0">否</span>
+            <span v-if="form.ifInvoice == 1">是</span>
+          </el-form-item></el-col
+        >
+      </el-row>
+      <el-row>
+        <el-col :span="6"
+          ><el-form-item label="关联单号">
+            {{ form.relevanceCode }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="开单时间">
+            {{ form.billingTime }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6">
+          <el-form-item label="计划提货时间">
+            {{ form.planPickTime }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="计划到货时间">
+            {{ form.planArrivalTime }}
+          </el-form-item></el-col
+        >
+      </el-row>
+      <el-row>
+        <el-col :span="6"
+          ><el-form-item label="托运人">
+            {{ form.shipperFullName }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="运输类型">
+            <span v-if="form.transportType == 0">陆运</span>
+            <span v-if="form.transportType == 1">水运</span>
+          </el-form-item></el-col
+        >
+        <el-col :span="6"></el-col>
+        <el-col :span="6"></el-col>
+      </el-row>
+
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">发货方</span>
+        </el-divider>
+      </div>
+      <el-row>
+        <el-col :span="6">
+          <el-form-item label="发货联系人" label-width="200px">
+            {{ form.deliverContacts }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="发货联系人电话" label-width="200px">
+            {{ form.deliverContactsPhone }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="发货地区" label-width="200px">
+            {{ form.deliverContactsProvince }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6">
+          <el-form-item label="发货街道-门牌号" label-width="200px">
+            {{ form.deliverContactsAddress }}
+          </el-form-item></el-col
+        >
+      </el-row>
+
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">收货方</span>
+        </el-divider>
+      </div>
+      <el-row>
+        <el-col :span="6"
+          ><el-form-item label="收货联系人" label-width="200px">
+            {{ form.takeContacts }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="收货联系人电话" label-width="200px">
+            {{ form.takeContactsPhone }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6">
+          <el-form-item label="收货地区" label-width="200px">
+            {{ form.takeContactsProvince }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="收货街道-门牌号" label-width="200px">
+            {{ form.takeContactsAddress }}
+          </el-form-item></el-col
+        >
+      </el-row>
+
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">货物信息</span>
+        </el-divider>
+      </div>
+      <el-row>
+        <el-col :span="6"
+          ><el-form-item label="货物名称">
+            {{ form.goodsName }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6">
+          <el-form-item label="货物类型">
+            {{ form.goodsType }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="计划装货量">
+            {{ form.planWeight }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="货值(元)">
+            {{ form.goodsValue }}
+          </el-form-item></el-col
+        >
+      </el-row>
+      <el-row>
+        <el-col :span="6">
+          <el-form-item label="合理亏吨">
+            {{ form.rationalLossWeight }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="结算重量">
+            <span v-if="form.settleWeight == 1">按实际收发量最小结算</span>
+            <span v-if="form.settleWeight == 2">按实际收发量最大结算</span>
+            <span v-if="form.settleWeight == 3">按实际发货量结算</span>
+            <span v-if="form.settleWeight == 4">按实际收货量结算</span>
+          </el-form-item></el-col
+        >
+        <el-col :span="6"></el-col>
+        <el-col :span="6"></el-col>
+      </el-row>
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">交易信息</span>
+        </el-divider>
+      </div>
+      <el-row>
+        <el-col :span="6"
+          ><el-form-item label="单价">
+            {{ form.unitPrice }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6">
+          <el-form-item label="付款方式">
+            {{ form.payMethod }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="亏吨单价">
+            {{ form.lossWeightNumber }}
+            (<span v-if="form.lossWeightNumberUnit == 1">%/车</span>
+            <span v-if="form.lossWeightNumberUnit == 2">吨/车</span>)
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="实装数量">
+            {{ form.realityInstallNumber }}
+            (<span v-if="form.realityInstallNumberUnit == 0">吨</span>
+            <span v-if="form.realityInstallNumberUnit == 1">方</span>
+            <span v-if="form.realityInstallNumberUnit == 2">件</span>
+            <span v-if="form.realityInstallNumberUnit == 3">整车</span>)
+          </el-form-item></el-col
+        >
+      </el-row>
+      <el-row>
+        <el-col :span="6"
+          ><el-form-item label="实收数量">
+            {{ form.realityArriveNumber }}
+            (<span v-if="form.realityArriveNumber_unit == 0">吨</span>
+            <span v-if="form.realityArriveNumber_unit == 1">方</span>
+            <span v-if="form.realityArriveNumber_unit == 2">件</span>
+            <span v-if="form.realityArriveNumber_unit == 3">整车</span>)
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="结算运费">
+            {{ form.freightSum }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6">
+          <el-form-item label="货运险方案">
+            <span v-if="form.insuranceType == 1">不投保</span>
+            <span v-if="form.insuranceType == 2">综合险</span>
+            <span v-if="form.insuranceType == 3">基本险</span>
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><div>
+            <el-form-item label="是否为长期货源"> </el-form-item>
+            <el-form-item label="总运费：">
+              <span
+                >{{ form.freightSum }}元（服务费：{{
+                  form.serviceCharge
+                }}元；保险费：0元）</span
+              >
+            </el-form-item>
+          </div></el-col
+        >
+      </el-row>
+      <el-row>
+        <el-col :span="6"
+          ><el-form-item label="承运司机">
+            {{ form.name }}/{{ form.phone }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="承运车辆">
+            {{ form.vehicleNumber }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"></el-col>
+        <el-col :span="6"
+          ><el-form-item label="运费收款人">
+            {{ form.freightGathering }}
+          </el-form-item></el-col
+        >
+      </el-row>
+
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">其它</span>
+        </el-divider>
+      </div>
+
+      <el-row>
+        <el-col :span="6">
+          <el-form-item label="车型要求">
+            {{ form.trucksType }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6">
+          <el-form-item label="车长要求">
+            {{ form.masterRequire }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6"
+          ><el-form-item label="货源码">
+            {{ form.supplyGoodsNumber }}
+          </el-form-item></el-col
+        >
+        <el-col :span="6">
+          <el-form-item label="备注信息">
+            {{ form.remake }}
+          </el-form-item></el-col
+        >
+      </el-row>
+
+      <div class="flex justify-center">
+        <el-button
+          @click="
+            () => {
+              this.$router.go(-1);
+            }
+          "
+          >返回</el-button
+        >
+      </div>
+    </el-form>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    form: Object
+  },
+  data () {
+    return {
+    }
+  },
+
+  methods: {
+
+  }
+}
+</script>
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+</style>

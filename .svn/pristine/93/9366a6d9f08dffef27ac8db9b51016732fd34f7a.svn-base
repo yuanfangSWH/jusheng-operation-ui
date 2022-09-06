@@ -1,0 +1,11 @@
+import request from "@/utils/request"
+
+// 销项发票审核
+// 条件查询发票申请列表
+export function getList(data){
+    return request({
+        url: "/operation/invoiceAudit/queryInvoices",
+        method: "post",
+        data: {}
+    })
+}

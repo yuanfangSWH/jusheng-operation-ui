@@ -1,0 +1,281 @@
+<template>
+  <div class="app-container">
+  
+    <!-- tab页签区域 -->
+    <el-tabs v-model="activeName" @tab-click="handleClick">
+      <!-- 基础信息面板 -->
+      <el-tab-pane label="基础信息" name="jichu">
+        <el-form
+          ref="form"
+          :model="form"
+          :rules="rules"
+          label-width="150px"
+          inline
+          :data="tableData"
+        >
+        <!-- 基础信息 -->
+          <div class="mb20">
+            <el-divider content-position="left">
+              <span class="weight">基础信息</span>
+            </el-divider>
+          </div>
+          <el-form-item label="公司名称" prop="companyName">
+            <el-input v-model="queryInfo.companyName"></el-input>
+          </el-form-item>
+          <el-form-item label="公司简称" prop="companyShortName">
+            <el-input v-model="queryInfo.companyShortName"></el-input>
+          </el-form-item>
+          <el-form-item label="法定代表人" prop="legalPersonName">
+            <el-input v-model="queryInfo.legalPersonName"></el-input>
+          </el-form-item>
+          <el-form-item label="成立时间">
+            <el-input v-model="queryInfo.setUpTime"></el-input>
+          </el-form-item>
+          <el-form-item label="注册资本">
+            <el-input v-model="queryInfo.registerMoney"></el-input>
+          </el-form-item>
+          <el-form-item label="主营业务">
+            <el-input v-model="queryInfo.mainBusiness"></el-input>
+          </el-form-item>
+          <el-form-item label="客户联系人" prop="clientContacts">
+            <el-input v-model="queryInfo.clientContacts"></el-input>
+          </el-form-item>
+          <el-form-item label="客户联系电话" prop="clientContactsPhone">
+            <el-input v-model="queryInfo.clientContactsPhone"></el-input>
+          </el-form-item>
+          <el-form-item label="联系地址">
+            <el-input v-model="queryInfo.contactAddress"></el-input>
+          </el-form-item>
+          <el-form-item label="客户开发人" prop="clientDeveloper">
+            <el-input v-model="queryInfo.clientDeveloper"></el-input>
+          </el-form-item>
+          <!-- 合同信息 -->
+          <div class="mb20">
+            <el-divider content-position="left">
+              <span class="weight">合同信息</span>
+            </el-divider>
+          </div>
+          <el-form-item label="合同编号" >
+            <el-input v-model="queryInfo.contractNumber"></el-input>
+          </el-form-item>
+          <el-form-item label="合同类型">
+            <el-input v-model="queryInfo.contractType"></el-input>
+          </el-form-item>
+          <el-form-item label="结算方式">
+            <el-select
+          size="small mr5"
+          value=""
+          class="select"
+          v-model="queryInfo.closeType"
+
+        >
+          <el-option value="0" label="即时结算"></el-option>
+          <el-option value="1" label="预付结算"></el-option>
+          <el-option value="2" label="其他账期"></el-option>
+        </el-select>
+          </el-form-item>
+          <el-form-item label="开票时间节点">
+            <el-input v-model="queryInfo.makeOutTimeNodes"></el-input>
+          </el-form-item>
+          <el-form-item label="保证金（元）">
+            <el-input v-model="queryInfo.earnestMoney"></el-input>
+          </el-form-item>
+          <el-form-item label="归档时间">
+            <el-input v-model="queryInfo.pigeonholeTime"></el-input>
+          </el-form-item>
+          <el-form-item label="账期（天）">
+            <el-input v-model="queryInfo.billDate"></el-input>
+          </el-form-item>
+          <el-form-item label="合同开始时间">
+            <el-input v-model="queryInfo.contractStartTime"></el-input>
+          </el-form-item>
+          <el-form-item label="合同结束时间">
+            <el-input v-model="queryInfo.contractEndTime"></el-input>
+          </el-form-item>
+          <!-- 开票信息 -->
+          <div class="mb20">
+            <el-divider content-position="left">
+              <span class="weight">开票信息</span>
+            </el-divider>
+          </div>
+          <el-form-item label="开户银行">
+            <el-input v-model="queryInfo.kaihuBank"></el-input>
+          </el-form-item>
+          <el-form-item label="银行账户">
+            <el-input v-model="queryInfo.accountBank"></el-input>
+          </el-form-item>
+          <el-form-item label="开票单位地址">
+            <el-input v-model="queryInfo.name"></el-input>
+          </el-form-item>
+          <el-form-item label="统一社会信用代码">
+            <el-input v-model="queryInfo.cods"></el-input>
+          </el-form-item>
+          <el-form-item label="邮寄地址">
+            <el-input v-model="queryInfo.mailAddress"></el-input>
+          </el-form-item>
+          <el-form-item label="收件人">
+            <el-input v-model="queryInfo.recipients"></el-input>
+          </el-form-item>
+          <el-form-item label="联系电话">
+            <el-input v-model="queryInfo.recipientsPhone"></el-input>
+          </el-form-item>
+          <!-- 其他信息 -->
+          <div class="mb20">
+            <el-divider content-position="left">
+              <span class="weight">其它信息</span>
+            </el-divider>
+          </div>
+          <el-form-item label="备注">
+            <el-input v-model="form.name" type="textarea" :rows="5"></el-input>
+          </el-form-item>
+          <div>
+            <el-form-item label="">
+              <el-button type="primary" @click="submitForm('form')"
+                >提交</el-button>
+            </el-form-item>            
+          </div>
+        </el-form>
+      </el-tab-pane>
+      <!-- 附件信息面板 字段未对-->
+      <el-tab-pane label="附件信息" name="fujian">
+        <div class="mb20">
+          <el-button>上传附件</el-button>
+        </div>
+        <!-- ---------------------- -->
+          <el-table style="width: 100%">
+            <el-table-column
+              prop="date"
+              label="操作"
+            >
+              <template>
+                <div>
+                  <el-button>查看</el-button>
+                  <el-button>操作</el-button>
+                </div>               
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="date"
+              label="文件名"
+            ></el-table-column>
+            <el-table-column
+              prop="date"
+              label="文件类型"
+            ></el-table-column>
+            <el-table-column
+              prop="date"
+              label="描述信息"
+            ></el-table-column>
+            <el-table-column
+              prop="date"
+              label="操作人"
+            ></el-table-column>
+            <el-table-column
+              prop="date"
+              label="操作时间"
+            ></el-table-column>
+          </el-table>
+        <!-- ---------------------------->
+      </el-tab-pane>
+    </el-tabs>
+  </div>
+</template>
+
+<script>
+import { commonFile } from "../../../../api/member/car";
+
+export default {
+  data() {
+    // let checkCompany = (rule, value, callback) => {
+    //   if (!value) {
+    //     return callback(new Error("不能为空"));
+    //   }
+
+    //   setTimeout(() => {      
+    //     if (!Number.isInteger(value)) {
+    //       console.log(value);
+    //       callback(new Error("请输入数字值"));
+    //     } else {
+    //       callback();
+    //     }
+    //   }, 1000);
+    // };
+
+    return {
+      // tableData:[],
+      tableData: [],
+
+      // 被激活的tab标签的名称
+      activeName: "jichu", //给个默认值
+      form: {},
+
+      // 新建客户参数
+      queryInfo:{
+        // 基础信息
+        companyName: "", //公司名称
+        companyShortName: "", //公司简称
+        legalPersonName: "", //法定代表人
+        setUpTime: "", //成立时间
+        registerMoney: "", //注册资本
+        mainBusiness: "", //主营业务
+        clientNontacts: "", //客户联系人
+        clientContactsPhone: "", //客户联系电话
+        contactAddress: "", //联系地址
+        clientDeveloper: "", //客户开发人
+        // 合同信息
+        contractNumber: "", //合同编号
+        contractType: "", //合同类型
+        closeType: "", //结算方式
+        makeOutTimeNodes: "", //开票时间节点
+        earnestMoney: "", //保证金
+        pigeonholeTime: "", //归档时间
+        billDate: "", //账期
+        contractStartTime: "", //合同开始时间
+        contractEndTime: "", //合同结束时间
+        //开票信息
+        kaihuBank: "", //开户银行
+        accountBank: "", //银行账户
+        makeOutUnitAddress: "", //开票单位地址
+        cods: "", //统一社会信用代码
+        mailAddress: "", //邮寄地址
+        recipients: "", //收件人
+        recipientsPhone: "", // 联系电话
+
+      }
+    };
+  },
+  mounted() {
+    this.tableData = this.$route.params;
+  },
+  methods: {
+    submitForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          alert("submit!");
+        } else {
+          console.log("error submit!!");
+          return false;
+        }
+      });
+    },
+
+    // tab标签点击事件的处理函数
+    handleClick(e) {
+      console.log(e);
+    },
+  },
+};
+</script>
+
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+
+.mb20 {
+  margin-bottom: 40px;
+}
+</style>

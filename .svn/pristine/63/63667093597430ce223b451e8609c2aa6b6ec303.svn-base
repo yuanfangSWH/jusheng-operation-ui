@@ -1,0 +1,178 @@
+<template>
+  <div class="app-container">
+    <div class="flex justify-between mb20">
+      <div class="flex">
+        <div style="margin-right: 30px">
+          <span class="mr10">运单编号：{{ form.carriageId }}</span>
+          <span></span>
+        </div>
+        <div style="margin-right: 30px">
+          <span class="mr10">司机：{{ form.chauffeur }}</span>
+          <span></span>
+        </div>
+        <div style="margin-right: 30px">
+          <span class="mr10">车辆：{{ form.vehicleNumber }}</span>
+          <span></span>
+        </div>
+      </div>
+      <div>
+        <el-button type="primary" @click="vehiclePositioning"
+          >位置查询</el-button
+        >
+      </div>
+    </div>
+    <div class="flex justify-between mb20">
+      <div class="flex">
+        <div style="margin-right: 30px">
+          <span class="mr10"
+            >运单起运时间、地点：{{ form.departureTime }}、{{
+              form.deliverContactsProvince + form.deliverContactsAddress
+            }}</span
+          >
+          <span></span>
+        </div>
+      </div>
+    </div>
+    <div class="flex justify-between mb20">
+      <div class="flex">
+        <div style="margin-right: 30px">
+          <span class="mr10"
+            >运单到达时间、地点：{{ form.timeOfArrival }}、{{
+              form.takeContactsProvince + form.takeContactsAddress
+            }}</span
+          >
+          <span></span>
+        </div>
+      </div>
+    </div>
+    <div class="kairq">
+      <el-date-picker
+        class="mr5"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd 00:00:00"
+        v-model="startTime"
+        type="date"
+        placeholder="选择车辆位置开始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd 23:59:00"
+        v-model="endTime"
+        type="date"
+        placeholder="选择车辆位置结束日期"
+      >
+      </el-date-picker>
+      <el-button type="primary" @click="carriageTracesByTime">查询</el-button>
+    </div>
+    <div class="amap-wrapper">
+      <amap ref="myMap" :center="center" :zoom="zoom" @complete="mapLoading">
+        <amap-marker ref="myMarker" :position="position" />
+        <amap-text
+          :position="position"
+          :text="text"
+          :dom-style="{
+            color: '#f00',
+          }"
+        />
+        <amap-polyline :stroke-weight="8" :path="path" />
+      </amap>
+    </div>
+  </div>
+</template>
+
+<script>
+
+import { carriageTraces, vehiclePositioning, carriageTracesByTime } from '@/api/transform/waybill'
+import Amap from '@amap/amap-vue/lib/amap';
+import AmapMarker from '@amap/amap-vue/lib/marker';
+import AmapText from '@amap/amap-vue/lib/text';
+import AmapPolyline from '@amap/amap-vue/lib/polyline';
+
+export default {
+  components: {
+    Amap,
+    AmapMarker,
+    AmapText,
+    AmapPolyline
+  },
+  props: {
+    form: Object
+  },
+  data () {
+    return {
+      text: "货车目前位置",
+      //地图坐标
+      center: [0, 0],
+      //地图缩放等级
+      zoom: 12,
+      //标记地址
+      position: [0, 0],
+      //折线地址
+      path: [],
+      //异步请求得到的位置数据
+      locationData: {},
+      startTime: "",
+      endTime: ""
+    }
+  },
+  methods: {
+    //时间查询
+    carriageTracesByTime () {
+      carriageTracesByTime({ carriageId: this.$store.state.waybill.carriageId, startTime: this.startTime, endTime: this.endTime }).then((res) => {
+        if (res.code == 200) {
+          this.locationData = res.data.carriageLocationInfo;
+          this.center = [this.locationData.location[0].longitude, this.locationData.location[0].latitude];
+          this.position = [this.locationData.location[0].longitude, this.locationData.location[0].latitude];
+          //坐标数组
+          var cd = this.locationData.location.length;
+          for (let i of this.locationData.location) {
+            cd--;
+            this.path.push([this.locationData.location[cd].longitude, this.locationData.location[cd].latitude])
+          }
+        }
+      });
+    },
+    //地图初始化
+    mapLoading () {
+      //初始化地图坐标位置
+      carriageTraces({ carriageId: this.$store.state.waybill.carriageId }).then((res) => {
+        if (res.code == 200) {
+          this.locationData = res.data.carriageLocationInfo;
+          this.center = [this.locationData.location[0].longitude, this.locationData.location[0].latitude];
+          this.position = [this.locationData.location[0].longitude, this.locationData.location[0].latitude];
+          //坐标数组
+          var cd = this.locationData.location.length;
+          for (let i of this.locationData.location) {
+            cd--;
+            this.path.push([this.locationData.location[cd].longitude, this.locationData.location[cd].latitude])
+          }
+        }
+      });
+    },
+
+    //位置查询
+    vehiclePositioning () {
+      vehiclePositioning({ vehicleNumber: this.form.vehicleNumber }).then((res) => {
+        if (res.code == 200) {
+          this.text = "货车最新位置"
+          this.center = [res.data.longitude, res.data.latitude]
+          this.position = this.center
+          this.path.push(this.center)
+        }
+      });
+    }
+  }
+}
+</script>
+
+<style scoped>
+.amap-wrapper {
+  width: 100%;
+  height: 700px;
+}
+.kairq {
+  margin-bottom: 10px;
+}
+</style>

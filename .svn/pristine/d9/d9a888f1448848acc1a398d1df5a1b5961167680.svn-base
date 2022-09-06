@@ -1,0 +1,367 @@
+<template>
+  <div class="app-container">
+    <div class="mb20 flex justify-end">
+      <el-date-picker
+        class="mr5"
+        v-model="query.startTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="选择更新起始日期"
+      >
+      </el-date-picker>
+      <el-date-picker
+        class="mr5"
+        v-model="query.lastTradingTime"
+        format="yyyy 年 MM 月 dd 日"
+        value-format="yyyy-MM-dd"
+        type="date"
+        placeholder="选择更新结束日期"
+      >
+      </el-date-picker>
+
+      <el-select
+        size="small mr10"
+        value=""
+        placeholder="角色"
+        v-model="query.type"
+      >
+        <el-option value="1" label="托运人"></el-option>
+        <el-option value="2" label="承运司机"></el-option>
+      </el-select>
+
+      <el-select
+        size="small mr10"
+        value=""
+        placeholder="审核状态"
+        v-model="query.auditStatus"
+      >
+        <el-option value="1" label="审核中"></el-option>
+        <el-option value="2" label="审核通过"></el-option>
+        <el-option value="3" label="审核不通过"></el-option>
+      </el-select>
+
+      <!-- 手机号或者名称2选1 -->
+      <el-select size="small mr5" v-model="user" placeholder="请选择">
+        <el-option
+          v-for="item in userData"
+          :key="item.value"
+          :value="item.value"
+          :label="item.label"
+        ></el-option>
+      </el-select>
+      <el-input class="search mr5" v-model="userInput" size="small"></el-input>
+      <el-button size="small" type="primary" plain @click="getList">查询</el-button>
+      <el-button size="small" type="primary" plain @click="clearBtn">清空</el-button>
+    </div>
+
+    <div class="mb20">
+      <div>
+        <el-button size="small" type="warning" plain @click="derive">导出</el-button>
+      </div>
+    </div>
+
+    <el-table :data="tableData" style="width: 100%" @selection-change="change">
+      <el-table-column type="selection"></el-table-column>
+      <el-table-column type="index" label="序号"></el-table-column>
+      <el-table-column prop="userPhone" label="用户手机号"></el-table-column>
+      <el-table-column prop="userName" label="用户名称"></el-table-column>
+      <el-table-column prop="type" label="角色"></el-table-column>
+      <el-table-column prop="totalMoney" label="账户总额"></el-table-column>
+      <el-table-column prop="usableMoney" label="可用余额"></el-table-column>
+      <el-table-column prop="freezeMoney" label="冻结金额"></el-table-column>
+      <!-- 字段是开户行 -->
+      <el-table-column prop="accountBank" label="提现银行卡"></el-table-column>
+      <el-table-column
+        prop="lastTradingTime"
+        label="最后更新时间"
+      ></el-table-column>
+      <el-table-column label="操作" fixed="right" width="300px">
+        <template slot-scope="scope">
+          <span class="operate mr10" @click="goInvoice(scope.row)">交易记录</span>
+          <span class="operate mr10" @click="getRecharge(scope.row)">充值</span>
+          <span class="operate mr10" @click="getDeduction(scope.row)">扣款</span>
+          <span class="operate mr10" @click="getBankCark(scope.row)">银行卡管理</span>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!-- 银行卡管理弹框 -->
+    <el-dialog
+      title="银行卡管理"
+      :visible.sync="dialogVisible"
+      width="50%"
+      center
+    >
+      <el-form ref="form" :model="form" :rules="rules" label-width="150px">
+        <p>银行卡信息(绑定成功后，指派给该承运人的运单，均使用此银行卡结算)</p>
+        <el-form-item label="银行卡号" prop="companyName">
+          <el-input v-model="queryCard.bankCardNumber"></el-input>
+        </el-form-item>
+        <el-form-item label="持卡人姓名" prop="cardholderName">
+          <el-input v-model="queryCard.cardholderName"></el-input>
+        </el-form-item>
+        <el-form-item label="持卡人身份证号" prop="cardholderIDNumber">
+          <el-input v-model="queryCard.cardholderIDNumber"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="cardBtn"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
+
+    <!-- 扣款弹框 -->
+    <el-dialog
+      title="账户扣款"
+      :visible.sync="dialogVisible1"
+      width="50%"
+      center
+    >
+      <el-form ref="form" :model="form" :rules="rules" label-width="150px">
+        <el-form-item label="扣款用户" prop="userId">
+          <template>
+            <span>{{queryToDown.userId}}</span>
+          </template>
+        </el-form-item>
+        <el-form-item label="可用余额" prop="usableMoney">
+          <template>
+            <span>{{queryToDown.usableMoney}}</span>
+          </template>
+        </el-form-item>
+        <el-form-item label="扣款金额" prop="amountOfDeductions">
+          <el-input v-model="queryToDown.amountOfDeductions"></el-input>
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input
+            v-model="queryToDown.remark"
+            type="textarea"
+            :rows="8"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible1 = false">取 消</el-button>
+        <el-button type="primary" @click="toDown"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
+
+    <!-- 充值弹框 -->
+    <el-dialog
+      title="账户充值"
+      :visible.sync="dialogVisible2"
+      width="50%"
+      center
+    >
+      <el-form ref="form" :model="form" label-width="150px">
+        <el-form-item label="充值用户" prop="userId">
+           <template>
+             <span>{{queryRecharge.userId}}</span>
+           </template>
+        </el-form-item>
+        <el-form-item label="可用余额" prop="usableMoney">
+          <template>
+            <span>{{queryRecharge.usableMoney}}</span>
+          </template>
+        </el-form-item>
+        <el-form-item label="充值金额">
+          <el-input v-model="queryRecharge.topUpAmount"></el-input>
+        </el-form-item>
+        <el-form-item label="备注" prop="companyName">
+          <el-input
+            v-model="queryRecharge.remark"
+            type="textarea"
+            :rows="8"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2 = false">取 消</el-button>
+        <el-button type="primary" @click="toUp"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import { getList, clientAccountTopUp, clientDeductions, queryBankCardInfo } from "../../../api/finance/wallet";
+
+export default {
+  data() {
+    return {
+      tableData: [],
+      form: [],
+      rules: [],
+      dialogVisible: false,
+      dialogVisible1: false,
+      dialogVisible2: false,
+      // 查询参数
+      query: {
+        startTime: "", //更新开始时间
+        lastTradingTime: "", //更新结束时间
+        type: "", //角色
+        auditStatus: "", //审核状态
+      },
+
+      user: "1", //下拉框
+      userData: [
+        { value: "1", label: "用户名称" },
+        { value: "2", label: "用户手机号" },
+      ],
+      userText: "userPhone", //下拉框选中的值
+      userInput: "", //输入框
+
+      //充值接口参数
+      queryRecharge:{
+        remark: "", //备注
+        topUpAmount: "", //充值金额
+        userId: "", //托运人userId
+        usableMoney: "", //余额
+      },
+
+      // 扣款接口参数
+      queryToDown:{
+        amountOfDeductions: "", //扣款金额
+        remark: "", //备注
+        userId: "", //托运人userId
+      },
+
+      // 银行卡管理接口参数
+      queryCard:{
+        bankCardNumber: "",//银行卡号
+        cardholderIDNumber: "", //持卡人身份证号
+        cardholderName: "", //持卡人姓名
+        chauffeurId: "", //司机的id
+      }
+
+    };
+  },
+
+  watch: {
+    //数据监听
+    user: function (val) {
+      switch (Number(val)) {
+        case 1:
+          this.userText = "userPhone";
+          break;
+        case 2:
+          this.userText = "userName";
+          break;
+      }
+    },
+  },
+
+  created() {
+    this.getList();
+  },
+
+  methods: {
+    // 交易记录
+    goInvoice(row) {
+      console.log(row)
+      // this.$router.push("/finance/record/index");
+    },
+
+    /**充值 */
+    getRecharge(row) {
+      this.dialogVisible2 = true;
+      this.queryRecharge.userId = row.userId;
+      this.queryRecharge.usableMoney = row.usableMoney;
+    },
+    // 充值对话框确定按钮
+    toUp(){
+      console.log(this.queryRecharge.toUpAmount)
+      clientAccountTopUp(this.queryRecharge).then(res => {
+        this.getList()
+        this.queryRecharge = {//充值接口参数
+        remark: "", //备注
+        topUpAmount: "", //充值金额
+        userId: "", //托运人userId
+        usableMoney: "", //余额
+      },
+        
+        this.dialogVisible2 = false;
+      })
+    },
+
+    /**扣款 */
+    getDeduction(row) {
+      this.dialogVisible1 = true;
+      this.queryToDown.userId = row.userId;
+      this.queryToDown.usableMoney = row.usableMoney;
+    },
+    /**扣款对话框确定按钮 */
+    toDown(){
+      clientDeductions(this.queryToDown).then(res => {
+        if(res.code == !200){
+          this.$message.error('扣款失败')
+        }
+        this.$message.success('扣款成功')
+        this.dialogVisible1 = false;
+        this.getList()
+      })
+    },
+ 
+    /**银行卡管理 */
+    getBankCark(row) {
+      this.queryCard.chauffeurId = row.userId
+      console.log(row)
+      this.dialogVisible = true;
+    },
+    /**银行卡管理确定按钮*/
+    cardBtn(){
+      queryBankCardInfo(this.queryCard).then(res => {
+        if(res.code !== 200){
+          this.$message.error('银行卡管理失败')
+        }
+        this.$message.success('银行卡管理成功')
+        this.dialogVisible = false;
+        this.getList()
+       
+      })
+    },
+
+    // 获取用户的钱包信息
+    getList() {
+      // let data =this.query;//data引用了query的内存地址
+      let data = JSON.parse(JSON.stringify(this.query)); //深拷贝 通过转换 直接拷贝query赋值给data
+      data[this.userText] = this.userInput; //把输入框里的值赋给选中状态的值
+      getList(data).then((res) => {
+        this.tableData = res.rows;
+      });
+    },
+
+    // 清空按钮
+    clearBtn() {
+      this.query = {
+        query: {
+          startTime: "", //更新开始时间
+          lastTradingTime: "", //更新结束时间
+          type: "", //角色
+          // 手机号拼接输入框
+          userPhone: "",
+          auditStatus: "", //审核状态
+        },
+      };
+      this.getList();
+    },
+
+    /** 导出按钮操作 没接口*/
+   
+    // 当选项发生时会触发该事件
+    change(row) {
+      console.log(row);
+    },
+  },
+};
+</script>
+
+<style scoped>
+</style>
+

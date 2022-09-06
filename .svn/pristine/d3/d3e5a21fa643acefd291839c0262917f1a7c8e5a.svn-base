@@ -1,0 +1,745 @@
+<template>
+  <div class="app-container">
+    <div class="mb20">
+      <el-button type="primary" class="mr10" @click="attachmentTK"
+        >上传附件</el-button
+      >
+      <el-button type="success" class="mr10" @click="startTK">发车</el-button>
+      <el-button type="warning" @click="closedTK">签收</el-button>
+    </div>
+    <el-table :data="tableData" style="width: 100%">
+      <el-table-column type="selection"></el-table-column>
+      <el-table-column prop="fileType" label="文件类型"></el-table-column>
+      <el-table-column prop="remark" label="描述信息"></el-table-column>
+      <el-table-column prop="createBy" label="操作人"></el-table-column>
+      <el-table-column prop="createTime" label="操作时间"></el-table-column>
+      <el-table-column prop="date" label="操作">
+        <template slot-scope="data">
+          <span class="operate mr10" @click="detailsIMG(data.row)">查看</span>
+          <span class="operate mr10" @click="deleteCarriageAttachment(data.row)"
+            >删除</span
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="paging_css">
+      <Pagination
+        :total="total"
+        :page="pageNum"
+        :limit="pageSize"
+        @pagination="pagination"
+      ></Pagination>
+    </div>
+    <el-dialog
+      title="上传附件"
+      :visible.sync="dialogVisible"
+      width="50%"
+      center
+    >
+      <el-form ref="form" :model="form" :rules="rules" label-width="150px">
+        <el-form-item label="文件类型" prop="fileType">
+          <el-select
+            clearable
+            class="mr5"
+            v-model="form.fileType"
+            placeholder="选择类型"
+          >
+            <el-option label="发车上报" :value="1"></el-option>
+            <el-option label="在途上报" :value="2"></el-option>
+            <el-option label="签收上报" :value="3"></el-option>
+            <el-option label="合同" :value="4"></el-option>
+            <el-option label="其它" :value="5"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="描述信息" prop="remark">
+          <el-input
+            type="textarea"
+            :autosize="{ minRows: 2, maxRows: 4 }"
+            placeholder="请输入描述信息"
+            v-model="form.remark"
+          >
+          </el-input>
+        </el-form-item>
+        <el-form-item label="上传附件">
+          <uploadIMGD
+            ref="uploadIMGD"
+            @pictureIMG="pictureIMG"
+            componentText="添加附件"
+          ></uploadIMGD>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveCarriageAttachment"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
+    <!--  发车-->
+    <el-dialog
+      title="发车上报"
+      :visible.sync="dialogVisible1"
+      width="50%"
+      center
+    >
+      <p style="color: #f56c6c">
+        非司机操作，系统将启动对运单的审核流程，请确认后谨慎操作
+      </p>
+      <el-card class="box-card mb20">
+        <div slot="header" class="clearfix">
+          <span
+            >{{ settlementData.payeeName }}
+            {{ settlementData.vehicleNumber }}</span
+          >
+        </div>
+        <div class="flex justify-around align-center">
+          <div class="text-center">
+            <h2>{{ settlementData.deliverContactsProvince }}</h2>
+            <p>装货点</p>
+          </div>
+          <div class="text-center">
+            <p>{{ settlementData.goodsName }}</p>
+            <img src="@/assets/images/jiant01.png" />
+            <p>
+              {{ settlementData.realityInstallNumber }}/<span
+                v-if="settlementData.realityInstallNumberUnit == 0"
+                >吨</span
+              ><span v-if="settlementData.realityInstallNumberUnit == 1"
+                >方</span
+              ><span v-if="settlementData.realityInstallNumberUnit == 2"
+                >件</span
+              ><span v-if="settlementData.realityInstallNumberUnit == 3"
+                >整车</span
+              >
+            </p>
+          </div>
+          <div class="text-center">
+            <h2>{{ settlementData.takeContactsProvince }}</h2>
+            <p>卸货点</p>
+          </div>
+        </div>
+      </el-card>
+      <el-form ref="form1" :model="form1" :rules="rules1" label-width="150px">
+        <el-form-item label="装货数量" prop="realityInstallNumber">
+          <el-input
+            type="Number"
+            v-model="form1.realityInstallNumber"
+            clearable
+          ></el-input>
+          <el-select
+            clearable
+            class="mr10"
+            v-model="form1.realityInstallNumberUnit"
+            placeholder="选择单位"
+          >
+            <el-option :value="0" label="吨"></el-option>
+            <el-option :value="1" label="方"></el-option>
+            <el-option :value="2" label="件"></el-option>
+            <el-option :value="3" label="整车"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="运费（元）" prop="settleAccounts">
+          <el-input
+            type="Number"
+            v-model="form1.settleAccounts"
+            clearable
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="装货时间" prop="arriveTime">
+          <el-date-picker
+            class="mr5"
+            format="yyyy 年 MM 月 dd 日"
+            value-format="yyyy-MM-dd"
+            v-model="form1.arriveTime"
+            type="date"
+            placeholder="选择装货时间"
+          >
+          </el-date-picker>
+        </el-form-item>
+
+        <div>
+          <el-form-item label="装货单" prop="goodsDocuments">
+            <uploadIMGD
+              ref="uploadIMGD1"
+              @pictureIMG="goodsDocuments"
+              componentText="添加凭证"
+            ></uploadIMGD>
+          </el-form-item>
+        </div>
+
+        <div>
+          <el-form-item label="其它单据" prop="otherDocuments">
+            <uploadIMGD
+              ref="uploadIMGD2"
+              @pictureIMG="otherDocuments"
+              componentText="添加凭证"
+            ></uploadIMGD>
+          </el-form-item>
+        </div>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible2 = false">取 消</el-button>
+        <el-button type="primary" @click="depart">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!--  签收 公路-->
+    <el-dialog
+      title="签收确认"
+      :visible.sync="dialogVisible2"
+      width="60%"
+      center
+    >
+      <p style="color: #f56c6c">
+        非司机操作，系统将启动对运单的审核流程，请确认后谨慎操作
+      </p>
+      <el-card class="box-card mb20">
+        <div slot="header" class="clearfix">
+          <span
+            >{{ settlementData.payeeName }}
+            {{ settlementData.vehicleNumber }}</span
+          >
+        </div>
+        <div class="flex justify-around align-center">
+          <div class="text-center">
+            <h2>{{ settlementData.deliverContactsProvince }}</h2>
+            <p>装货点</p>
+          </div>
+          <div class="text-center">
+            <p>{{ settlementData.goodsName }}</p>
+            <img src="@/assets/images/jiant01.png" />
+            <p>
+              {{ settlementData.realityInstallNumber }}/<span
+                v-if="settlementData.realityInstallNumberUnit == 0"
+                >吨</span
+              ><span v-if="settlementData.realityInstallNumberUnit == 1"
+                >方</span
+              ><span v-if="settlementData.realityInstallNumberUnit == 2"
+                >件</span
+              ><span v-if="settlementData.realityInstallNumberUnit == 3"
+                >整车</span
+              >
+            </p>
+          </div>
+          <div class="text-center">
+            <h2>{{ settlementData.takeContactsProvince }}</h2>
+            <p>卸货点</p>
+          </div>
+        </div>
+      </el-card>
+      <el-form ref="form2" :model="form2" :rules="rules2" label-width="150px">
+        <el-row>
+          <el-col :sapn="12">
+            <el-form-item label="装货信息" prop="goodsDocuments">
+              <uploadIMGD
+                ref="uploadIMGD3"
+                @pictureIMG="goodsDocuments"
+                componentText="添加装货信息"
+              ></uploadIMGD>
+            </el-form-item>
+          </el-col>
+          <el-col :sapn="12">
+            <el-form-item label="实装数量" prop="realityInstallNumber">
+              <el-input
+                type="Number"
+                v-model="form2.realityInstallNumber"
+                clearable
+              ></el-input>
+              <el-select
+                clearable
+                class="mr10"
+                v-model="form2.realityInstallNumberUnit"
+                placeholder="选择单位"
+              >
+                <el-option :value="0" label="吨"></el-option>
+                <el-option :value="1" label="方"></el-option>
+                <el-option :value="2" label="件"></el-option>
+                <el-option :value="3" label="整车"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="装货时间" prop="arriveTime">
+              <el-date-picker
+                class="mr5"
+                format="yyyy 年 MM 月 dd 日"
+                value-format="yyyy-MM-dd"
+                v-model="form2.arriveTime"
+                type="date"
+                placeholder="选择装货时间"
+              >
+              </el-date-picker>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :sapn="12">
+            <el-form-item label="卸货信息" prop="unloadDocuments">
+              <uploadIMGD
+                ref="uploadIMGD4"
+                @pictureIMG="unloadDocuments"
+                componentText="添加卸货信息"
+              ></uploadIMGD>
+            </el-form-item>
+          </el-col>
+          <el-col :sapn="12">
+            <el-form-item label="实收数量" prop="realityArriveNumber">
+              <el-input
+                type="Number"
+                v-model="form2.realityArriveNumber"
+                clearable
+              ></el-input>
+
+              <el-select
+                clearable
+                class="mr10"
+                v-model="form2.realityArriveNumberUnit"
+                placeholder="选择单位"
+              >
+                <el-option :value="0" label="吨"></el-option>
+                <el-option :value="1" label="方"></el-option>
+                <el-option :value="2" label="件"></el-option>
+                <el-option :value="3" label="整车"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="卸货时间" prop="demountTime">
+              <el-date-picker
+                class="mr5"
+                format="yyyy 年 MM 月 dd 日"
+                value-format="yyyy-MM-dd"
+                v-model="form2.demountTime"
+                type="date"
+                placeholder="选择装货时间"
+              >
+              </el-date-picker>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <div>
+          <el-form-item label="其它单据" prop="otherDocuments">
+            <uploadIMGD
+              ref="uploadIMGD5"
+              @pictureIMG="otherDocuments"
+              componentText="添加其它单据"
+            ></uploadIMGD>
+          </el-form-item>
+        </div>
+
+        <div class="mb20">
+          <el-divider content-position="left">
+            <span class="weight">结算信息</span>
+          </el-divider>
+        </div>
+        <el-form-item label="单价" prop="unitPrice">
+          <el-input
+            type="Number"
+            v-model="form2.unitPrice"
+            clearable
+          ></el-input>
+
+          <el-select
+            clearable
+            class="mr10"
+            v-model="form2.unitPriceUnit"
+            placeholder="选择单位"
+          >
+            <el-option :value="0" label="元"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="结算重量" prop="settleWeight">
+          <el-select
+            clearable
+            size="small mr10"
+            v-model="form2.settleWeight"
+            placeholder="选择结算重量"
+          >
+            <el-option :value="1" label="按实际收发量最小结算"></el-option>
+            <el-option :value="2" label="按实际发货量最大结算"></el-option>
+            <el-option :value="3" label="按实际发货量结算"></el-option>
+            <el-option :value="4" label="按实际收货量结算"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="合理亏吨" prop="rationalLossWeight">
+          <el-input
+            type="Number"
+            v-model="form2.rationalLossWeight"
+            clearable
+          ></el-input>
+
+          <el-select
+            clearable
+            class="mr10"
+            v-model="form2.rationalLossWeightUnit"
+            placeholder="选择单位"
+          >
+            <el-option :value="1" label="%"></el-option>
+            <el-option :value="2" label="吨"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="亏吨单价" prop="lossWeightNumber">
+          <el-input
+            type="Number"
+            v-model="form2.lossWeightNumber"
+            clearable
+          ></el-input>
+
+          <el-select
+            clearable
+            class="mr10"
+            v-model="form2.lossWeightNumberUnit"
+            placeholder="选择单位"
+          >
+            <el-option :value="1" label="%"></el-option>
+            <el-option :value="2" label="吨"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="结算运费（元）" prop="settleAccounts">
+          <el-input
+            type="Number"
+            v-model="form2.settleAccounts"
+            clearable
+          ></el-input>
+        </el-form-item>
+
+        <el-row>
+          <el-col :span="8">
+            <el-form-item label="签收人" prop="signUser">
+              <el-input v-model="form2.signUser" clearable></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="签收说明" prop="signRemark">
+              <el-input
+                type="textarea"
+                :autosize="{ minRows: 2, maxRows: 4 }"
+                placeholder="请输入签收说明"
+                v-model="form2.signRemark"
+              >
+              </el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible1 = false">取 消</el-button>
+        <el-button type="primary" @click="unload">确认签收</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- 查看 -->
+    <el-dialog :visible.sync="dialogIMG" :append-to-body="true">
+      <img width="100%" :src="dialogImageUrl" alt="" />
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+
+import { queryCarriageAttachment, saveCarriageAttachment, deleteCarriageAttachment, depart, unload, queryCarriageSettlement } from '@/api/transform/waybill'
+import { deleteFile } from "@/api/index.js";
+import Pagination from "@/components/Pagination";
+import uploadIMGD from "@/components/uploadIMGD/index"
+export default {
+  components: {
+    Pagination,
+    uploadIMGD
+  },
+  data () {
+    return {
+      form: {
+        fileType: 1
+      },
+      form1: {
+        realityInstallNumber: "",
+        realityInstallNumberUnit: 0,
+        settleAccounts: "",
+        arriveTime: "",
+        goodsDocuments: "",
+        otherDocuments: ""
+      },
+      form2: {
+        //装货信息
+        goodsDocuments: "",
+        realityInstallNumber: "",
+        realityInstallNumberUnit: 0,
+        arriveTime: "",
+        //卸货信息
+        unloadDocuments: "",
+        realityArriveNumber: "100",
+        realityArriveNumberUnit: 0,
+        demountTime: "",
+        //其它单据
+        otherDocuments: "",
+        unitPrice: "",
+        unitPriceUnit: 0,
+        settleWeight: 1,
+        rationalLossWeight: "",
+        rationalLossWeightUnit: 1,
+        lossWeightNumber: "",
+        lossWeightNumberUnit: 1,
+        settleAccounts: "",
+        signUser: "",
+        signRemark: "",
+      },
+      rules: {
+        xxx: [
+          { required: true, message: '不能为空' }
+        ]
+      },
+      rules1: {
+        xxx: [
+          { required: true, message: '不能为空' }
+        ]
+      },
+      rules2: {
+        xxx: [
+          { required: true, message: '不能为空' }
+        ]
+      },
+      dialogVisible: false,
+      dialogVisible1: false,
+      dialogVisible2: false,
+      tableData: [],
+      //页码
+      pageSize: 10,
+      //数量
+      pageNum: 1,
+      //总数据量
+      total: 0,
+      //要上传的附件
+      attachmentIMG: "",
+      dialogIMG: false,
+      dialogImageUrl: "",
+      settlementData: {}
+    }
+  },
+  mounted () {
+    this.queryCarriageAttachment();
+    this.queryCarriageSettlement();
+  },
+  methods: {
+    //查看运单的结算信息(信息回显)
+    queryCarriageSettlement () {
+      queryCarriageSettlement({ carriageId: this.$store.state.waybill.carriageId }).then(res => {
+        if (res.code == 200) {
+          this.settlementData = res.data
+        }
+      })
+    },
+    //签收弹框
+    closedTK () {
+      this.dialogVisible2 = true
+      setTimeout(() => {
+        //初始化图片上传组件
+        this.$refs.uploadIMGD3.originalData();
+        this.$refs.uploadIMGD4.originalData();
+        this.$refs.uploadIMGD5.originalData();
+      })
+    },
+    //装货信息
+    goodsDocuments (data) {
+      if (data.length > 1) {
+        this.form2.goodsDocuments = String(data)
+      } else if (data.length == 1) {
+        this.form2.goodsDocuments = String(data[0])
+      } else if (data.length == 0) {
+        this.form2.goodsDocuments = ""
+      }
+    },
+    //卸货信息
+    unloadDocuments (data) {
+      if (data.length > 1) {
+        this.form2.unloadDocuments = String(data)
+      } else if (data.length == 1) {
+        this.form2.unloadDocuments = String(data[0])
+      } else if (data.length == 0) {
+        this.form2.unloadDocuments = ""
+      }
+    },
+    //其他单据
+    otherDocuments (data) {
+      if (data.length > 1) {
+        this.form2.otherDocuments = String(data)
+      } else if (data.length == 1) {
+        this.form2.otherDocuments = String(data[0])
+      } else if (data.length == 0) {
+        this.form2.otherDocuments = ""
+      }
+    },
+    //签收
+    unload () {
+      this.$refs.form2.validate((valid) => {
+        if (valid) {
+          let data = this.form2;
+          data['carriageId'] = this.$store.state.waybill.carriageId;
+          unload(data).then(res => {
+            if (res.code == 200) {
+              this.$refs.form2.resetFields();
+              this.dialogVisible2 = false
+              this.$message({
+                message: '签收成功',
+                type: 'success',
+                duration: 3000
+              });
+            }
+          })
+        }
+      })
+    },
+    //发车
+    depart () {
+      this.$refs.form1.validate((valid) => {
+        if (valid) {
+          let data = {
+            carriageId: this.$store.state.waybill.carriageId,
+            realityInstallNumber: Number(this.form1.realityInstallNumber),
+            realityInstallNumberUnit: this.form1.realityInstallNumberUnit,
+            settleAccounts: Number(this.form1.settleAccounts),
+            arriveTime: this.form1.arriveTime,
+            goodsDocuments: this.form1.goodsDocuments,
+            otherDocuments: this.form1.otherDocuments
+          }
+          depart(data).then(res => {
+            if (res.code == 200) {
+              this.$refs.form1.resetFields();
+              this.dialogVisible1 = false
+              this.$message({
+                message: '发车成功',
+                type: 'success',
+                duration: 3000
+              });
+            }
+          })
+        }
+      })
+    },
+    //装货单
+    goodsDocuments (data) {
+      if (data.length > 1) {
+        this.form1.goodsDocuments = String(data)
+      } else if (data.length == 1) {
+        this.form1.goodsDocuments = String(data[0])
+      } else if (data.length == 0) {
+        this.form1.goodsDocuments = ""
+      }
+    },
+    //其他单据
+    otherDocuments (data) {
+      if (data.length > 1) {
+        this.form1.otherDocuments = String(data)
+      } else if (data.length == 1) {
+        this.form1.otherDocuments = String(data[0])
+      } else if (data.length == 0) {
+        this.form1.otherDocuments = ""
+      }
+    },
+    //发车弹框
+    startTK () {
+      this.dialogVisible1 = true
+      setTimeout(() => {
+        //初始化图片上传组件
+        this.$refs.uploadIMGD1.originalData();
+        this.$refs.uploadIMGD2.originalData();
+      })
+    },
+    //查看
+    detailsIMG (data) {
+      this.dialogIMG = true;
+      this.dialogImageUrl = data.fileUrl;
+    },
+    //删除附件
+    deleteCarriageAttachment (data) {
+      this.$confirm('确定将该附件删除吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteCarriageAttachment({ carriageAccessoryId: data.carriageAccessoryId }).then(res => {
+          if (res.code == 200) {
+            this.$message({
+              message: '删除成功',
+              type: 'success',
+              duration: 3000
+            });
+            this.queryCarriageAttachment();
+          }
+        })
+      })
+    },
+    //附件弹框
+    attachmentTK () {
+      this.attachmentIMG = "";
+      this.dialogVisible = true;
+      setTimeout(() => {
+        //初始化图片上传组件
+        this.$refs.uploadIMGD.originalData();
+      })
+    },
+    //上传附件
+    saveCarriageAttachment () {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          let data = {
+            carriageId: this.$store.state.waybill.carriageId,
+            fileType: this.form.fileType,
+            remark: this.form.remark,
+            file: this.attachmentIMG
+          }
+          saveCarriageAttachment(data).then((res) => {
+            if (res.code == 200) {
+              this.queryCarriageAttachment();
+              this.$refs.form.resetFields();
+              this.$message({
+                message: '上传附件成功',
+                type: 'success',
+                duration: 3000
+              });
+              this.dialogVisible = false;
+            }
+          })
+        }
+      })
+    },
+    // 附件列表
+    queryCarriageAttachment () {
+      let data = {
+        carriageId: this.$store.state.waybill.carriageId
+      }
+      queryCarriageAttachment(data, { pageSize: this.pageSize, pageNum: this.pageNum }).then(res => {
+        if (res.code == 200) {
+          this.tableData = res.rows
+          this.total = res.total
+        }
+      })
+    },
+    //图片返回
+    pictureIMG (data) {
+      if (data.length > 1) {
+        this.attachmentIMG = String(data)
+      } else if (data.length == 1) {
+        this.attachmentIMG = String(data[0])
+      } else if (data.length == 0) {
+        this.attachmentIMG = ""
+      }
+    },
+    //分页
+    pagination (val) {
+      this.pageSize = val.limit;
+      this.pageNum = val.page;
+      this.getList();
+    }
+  }
+}
+</script>
+
+<style scoped>
+.el-divider--vertical {
+  width: 5px;
+  height: 1.5em;
+  background-color: #1890ff;
+}
+</style>

@@ -1,0 +1,115 @@
+<template>
+  <div class="app-container">
+    <div class="flex justify-between mb20">
+      <div class="flex">
+        <div style="margin-right: 30px">
+          <span class="mr10">运单编号：{{ form.carriageId }}</span>
+          <span></span>
+        </div>
+        <div style="margin-right: 30px">
+          <span class="mr10">司机：{{ form.chauffeur }}</span>
+          <span></span>
+        </div>
+        <div style="margin-right: 30px">
+          <span class="mr10">车辆：{{ form.vehicleNumber }}</span>
+          <span></span>
+        </div>
+      </div>
+      <div>
+        <el-button type="primary" @click="vehiclePositioning"
+          >位置查询</el-button
+        >
+      </div>
+    </div>
+    <div class="amap-wrapper">
+      <amap ref="myMap" :center="center" :zoom="zoom" @complete="mapLoading">
+        <amap-marker ref="myMarker" :position="position" />
+        <amap-text
+          :position="position"
+          :text="text"
+          :dom-style="{
+            color: '#f00',
+          }"
+        />
+        <amap-polyline :stroke-weight="8" :path="path" />
+      </amap>
+    </div>
+  </div>
+</template>
+
+<script>
+
+import { carriageTraces, vehiclePositioning } from '@/api/transform/waybill'
+import Amap from '@amap/amap-vue/lib/amap';
+import AmapMarker from '@amap/amap-vue/lib/marker';
+import AmapText from '@amap/amap-vue/lib/text';
+import AmapPolyline from '@amap/amap-vue/lib/polyline';
+
+export default {
+  components: {
+    Amap,
+    AmapMarker,
+    AmapText,
+    AmapPolyline
+  },
+  props: {
+    form: Object
+  },
+  data () {
+    return {
+      text: "货车目前位置",
+      //地图坐标
+      center: [121.499217, 31.238242],
+      //地图缩放等级
+      zoom: 12,
+      //标记地址
+      position: [121.499217, 31.238242],
+      //折线地址
+      path: [[121.450294, 31.292679], [121.461623, 31.260695], [121.46952, 31.22415], [121.499217, 31.238242]],
+      //异步请求得到的位置数据
+      locationData: {}
+    }
+  },
+  methods: {
+    //地图初始化
+    mapLoading () {
+      //初始化地图坐标位置
+      //   carriageTraces({ carriageId: 789 }).then((res) => {
+      //     if (res.code == 200) {
+      //       this.locationData = res.data.carriageLocationInfo;
+      //       this.center = [this.locationData.location[0].longitude, this.locationData.location[0].latitude];
+      //       this.position = [this.locationData.location[0].longitude, this.locationData.location[0].latitude];
+      //       //坐标数组
+      //       var cd = this.locationData.location.length;
+      //       //   for (let i of this.locationData.location) {
+      //       //     cd--;
+      //       //     this.path.push([this.locationData.location[cd].longitude, this.locationData.location[cd].latitude])
+      //       //   }
+      //     }
+      //   });
+    },
+
+    //位置查询
+    vehiclePositioning () {
+      this.center = [121.5181, 31.243232]
+      this.position = [121.5181, 31.243232]
+      this.text = "货车最新位置"
+      return;
+      vehiclePositioning({ vehicleNumber: 789 }).then((res) => {
+        if (res.code == 200) {
+          this.center = [res.data.longitude, res.data.latitude]
+          this.position = this.center
+          this.path.push(this.center)
+        }
+      });
+    }
+  }
+}
+</script>
+
+<style scoped>
+.amap-wrapper {
+  width: 100%;
+  height: 700px;
+}
+</style>

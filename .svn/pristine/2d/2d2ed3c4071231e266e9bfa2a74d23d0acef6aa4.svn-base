@@ -1,0 +1,462 @@
+<template>
+  <div class="app-container">
+    <el-form ref="form" :model="form" :rules="rules" label-width="150px" inline>
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">重点信息</span>
+        </el-divider>
+      </div>
+      <el-form-item label="用户名" prop="userName">
+        <el-input v-model="form.userName" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="密码" prop="password">
+        <el-input v-model="form.password" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="登录手机号" prop="phonenumber">
+        <el-input v-model="form.phonenumber" disabled clearable></el-input>
+      </el-form-item>
+      <el-form-item label="身份信息">
+        <el-radio-group v-model="form.identity" @change="wenrou">
+          <el-radio :label="1">企业</el-radio>
+          <el-radio :label="0">个人/经纪人</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <div v-show="form.identity == 0">
+        <div class="mb20">
+          <el-divider content-position="left">
+            <span class="weight">基础信息</span>
+          </el-divider>
+        </div>
+        <el-form-item label="姓名" prop="shipperFullName">
+          <el-input v-model="form.shipperFullName" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="手机号" prop="phonenumber">
+          <el-input v-model="form.phonenumber" clearable></el-input>
+        </el-form-item>
+      </div>
+      <div v-show="form.identity == 1">
+        <div class="mb20">
+          <el-divider content-position="left">
+            <span class="weight">基础信息</span>
+          </el-divider>
+        </div>
+        <el-form-item label="托运人全称" prop="shipperFullName">
+          <el-input v-model="form.shipperFullName" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="联系人姓名" prop="contactName">
+          <el-input v-model="form.contactName" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="联系人手机号" prop="contactPhone">
+          <el-input v-model="form.contactPhone" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="托运人简称" prop="shipperShortName">
+          <el-input v-model="form.shipperShortName" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="法人代表姓名" prop="legalPersonName">
+          <el-input v-model="form.legalPersonName" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="管理员手机号" prop="adminPhone">
+          <el-input
+            v-model="form.adminPhone"
+            @input="adminPhoneGET"
+            clearable
+          ></el-input>
+        </el-form-item>
+
+        <div class="mb20">
+          <el-divider content-position="left">
+            <span class="weight">商务信息</span>
+          </el-divider>
+        </div>
+        <div>
+          <el-form-item label="合作产品" prop="collaborateProduct">
+            <el-checkbox-group v-model="form.collaborateProduct">
+              <el-checkbox :label="0">公路运输</el-checkbox>
+              <el-checkbox :label="1">水路运输</el-checkbox>
+              <el-checkbox :label="2" disabled>集装箱运输</el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </div>
+        <el-form-item label="管理费率" prop="rate">
+          <el-input v-model="form.rate" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="业务管理公司" prop="adminCompany">
+          <el-select
+            clearable
+            v-model="form.adminCompany"
+            placeholder="请选择公司"
+          >
+            <el-option
+              v-for="item in adminCompanyData"
+              :key="item.adminCompany"
+              :label="item.companyName"
+              :value="item.adminCompany"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+
+        <div class="mb20">
+          <el-divider content-position="left">
+            <span class="weight">需求配置</span>
+          </el-divider>
+        </div>
+        <div class="radio">
+          <div>
+            <el-form-item label="是否必须确认发货" prop="ifMustDeliver">
+              <el-radio-group v-model="form.ifMustDeliver">
+                <el-radio :label="1">是</el-radio>
+                <el-radio :label="0">否</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </div>
+          <div>
+            <el-form-item label="是否必须确认到达" prop="ifMustArrive">
+              <el-radio-group v-model="form.ifMustArrive">
+                <el-radio :label="1">是</el-radio>
+                <el-radio :label="0">否</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </div>
+          <div>
+            <el-form-item label="是否必须签收核算" prop="ifMustSign">
+              <el-radio-group v-model="form.ifMustSign">
+                <el-radio :label="1">是</el-radio>
+                <el-radio :label="0">否</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </div>
+          <div>
+            <el-form-item label="允许运力接单条件" prop="capacityCondition">
+              <el-radio-group v-model="form.capacityCondition">
+                <el-radio :label="1">审核通过</el-radio>
+                <el-radio :label="2">审核未通过</el-radio>
+                <el-radio :label="0">审核中</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </div>
+          <div>
+            <el-form-item label="允许申请开票条件" prop="invoiceCondition">
+              <el-radio-group v-model="form.invoiceCondition">
+                <el-radio :label="1">未付清开票</el-radio>
+                <el-radio :label="0">付清后开票</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </div>
+          <div>
+            <el-form-item label="是否开通TMS功能" prop="tmsCondition">
+              <el-radio-group v-model="form.tmsCondition">
+                <el-radio :label="1">是</el-radio>
+                <el-radio :label="0">否</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </div>
+          <div>
+            <el-form-item label="付款审核方式" prop="auditWay">
+              <el-radio-group v-model="form.auditWay">
+                <el-radio :label="0">人工审核</el-radio>
+                <el-radio :label="1">自动审核</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </div>
+        </div>
+      </div>
+      <div class="mb20">
+        <el-divider content-position="left">
+          <span class="weight">附件信息</span>
+        </el-divider>
+      </div>
+      <div class="flex" style="">
+        <div class="fil" v-show="form.identity == 1">
+          <el-form-item prop="businessLicense">
+            <div class="biaoti">企业营业执照</div>
+            <uploadIMG
+              ref="uploadIMGD"
+              @pictureIMG="pictureIMG"
+              @pictureDelete="pictureDelete"
+              componentText="添加企业营业执照"
+              fieldText="businessLicense"
+            ></uploadIMG>
+          </el-form-item>
+        </div>
+        <div class="fil">
+          <el-form-item label="" prop="idCardPerson">
+            <div class="biaoti" v-show="form.identity == 1">
+              法人/负责人身份证人像面
+            </div>
+            <div class="biaoti" v-show="form.identity == 0">
+              经纪人身份证人像面
+            </div>
+            <uploadIMG
+              ref="uploadIMGD1"
+              @pictureIMG="pictureIMG"
+              @pictureDelete="pictureDelete"
+              componentText="添加身份证人像面"
+              fieldText="idCardPerson"
+            ></uploadIMG>
+          </el-form-item>
+        </div>
+        <div class="fil">
+          <el-form-item label="" prop="idCardBadge">
+            <div class="biaoti" v-show="form.identity == 1">
+              法人/负责人身份证国徽面
+            </div>
+            <div class="biaoti" v-show="form.identity == 0">
+              经纪人身份证国徽面
+            </div>
+            <uploadIMG
+              ref="uploadIMGD2"
+              @pictureIMG="pictureIMG"
+              @pictureDelete="pictureDelete"
+              componentText="添加身份证国徽面"
+              fieldText="idCardBadge"
+            ></uploadIMG>
+          </el-form-item>
+        </div>
+        <div class="fil" v-show="form.identity == 1">
+          <el-form-item label="" prop="companyPicture">
+            <div class="biaoti">公司现场照片</div>
+            <uploadIMG
+              ref="uploadIMGD3"
+              @pictureIMG="pictureIMG"
+              @pictureDelete="pictureDelete"
+              componentText="添加公司现场照片"
+              fieldText="companyPicture"
+            ></uploadIMG>
+          </el-form-item>
+        </div>
+        <div class="fil">
+          <el-form-item label="" prop="frameContract">
+            <div class="biaoti">框架合同</div>
+            <uploadIMG
+              ref="uploadIMGD4"
+              @pictureIMG="pictureIMG"
+              @pictureDelete="pictureDelete"
+              componentText="添加框架合同"
+              fieldText="frameContract"
+            ></uploadIMG>
+          </el-form-item>
+        </div>
+      </div>
+      <div v-show="form.identity == 1">
+        <div class="mb20">
+          <el-divider content-position="left">
+            <span class="weight">开票信息</span>
+          </el-divider>
+        </div>
+        <el-form-item label="发票抬头" prop="invoiceTitle">
+          <el-input v-model="form.invoiceTitle" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="注册地址" prop="registerAddress">
+          <el-input v-model="form.registerAddress" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="纳税人识别号" prop="nashuiIdNumber">
+          <el-input v-model="form.nashuiIdNumber" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="注册电话" prop="redisterPhone">
+          <el-input v-model="form.redisterPhone" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="开户行" prop="kaihuBank">
+          <el-input v-model="form.kaihuBank" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="开户账号" prop="accountBank">
+          <el-input v-model="form.accountBank" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="发票收件人" prop="invoiceCollectName">
+          <el-input v-model="form.invoiceCollectName" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="收件人电话" prop="invoiceCollectPhone">
+          <el-input v-model="form.invoiceCollectPhone" clearable></el-input>
+        </el-form-item>
+        <el-form-item label="发票收件地址" prop="invoiceCollectAddress">
+          <el-input v-model="form.invoiceCollectAddress" clearable></el-input>
+        </el-form-item>
+      </div>
+    </el-form>
+    <div class="flex justify-center">
+      <el-button
+        @click="
+          () => {
+            this.$router.go(-1);
+          }
+        "
+        >返回</el-button
+      >
+      <el-button type="primary" @click="saveShipperUser()">保存提交</el-button>
+    </div>
+  </div>
+</template>
+
+<script>
+import uploadIMG from '@/components/uploadIMG/index'
+import { saveShipperUser, queryAdminCompany } from "@/api/member/shipper.js";
+import { phoneCheck } from "@/utils/check.js";
+
+export default {
+  components: {
+    uploadIMG
+  },
+  data () {
+    return {
+      adminCompanyData: [],
+      form: {
+        userName: "",
+        password: "",
+        phonenumber: "",
+        identity: 1,
+        shipperFullName: "",
+        contactName: "",
+        contactPhone: "",
+        shipperShortName: "",
+        legalPersonName: "",
+        adminPhone: "",
+        collaborateProduct: [],
+        rate: "",
+        adminCompany: "",
+        ifMustDeliver: "",
+        ifMustArrive: "",
+        ifMustSign: "",
+        capacityCondition: "",
+        invoiceCondition: "",
+        tmsCondition: "",
+        auditWay: 0,
+        invoiceTitle: "",
+        registerAddress: "",
+        nashuiIdNumber: "",
+        redisterPhone: "",
+        kaihuBank: "",
+        accountBank: "",
+        invoiceCollectName: "",
+        invoiceCollectPhone: "",
+        invoiceCollectAddress: "",
+        //图片数据
+        businessLicense: "",
+        idCardPerson: "",
+        idCardBadge: "",
+        companyPicture: "",
+        frameContract: "",
+      },
+      rules: {
+        xxx: [
+          { required: true, message: '不能为空' }
+        ]
+      }
+    }
+  },
+  mounted () {
+    this.queryAdminCompany();
+  },
+  methods: {
+    wenrou () {
+      this.$refs.form.resetFields();
+      this.$refs.uploadIMGD.originalData();
+      this.$refs.uploadIMGD1.originalData();
+      this.$refs.uploadIMGD2.originalData();
+      this.$refs.uploadIMGD3.originalData();
+      this.$refs.uploadIMGD4.originalData();
+    },
+    adminPhoneGET (val) {
+      this.form.phonenumber = val
+    },
+    //查询业务公司
+    queryAdminCompany () {
+      queryAdminCompany().then((res) => {
+        this.adminCompanyData = res;
+      });
+    },
+    //添加保存
+    saveShipperUser () {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          let data = {
+            userName: this.form.userName,
+            password: this.form.password,
+            phonenumber: this.form.phonenumber,
+            identity: this.form.identity,
+            shipperFullName: this.form.shipperFullName,
+            contactName: this.form.contactName,
+            contactPhone: this.form.contactPhone,
+            shipperShortName: this.form.shipperShortName,
+            legalPersonName: this.form.legalPersonName,
+            adminPhone: this.form.adminPhone,
+            collaborateProduct: String(this.form.collaborateProduct),
+            rate: this.form.rate,
+            adminCompany: this.form.adminCompany,
+            ifMustDeliver: this.form.ifMustDeliver,
+            ifMustArrive: this.form.ifMustArrive,
+            ifMustSign: this.form.ifMustSign,
+            capacityCondition: this.form.capacityCondition,
+            invoiceCondition: this.form.invoiceCondition,
+            tmsCondition: this.form.tmsCondition,
+            auditWay: this.form.auditWay,
+            invoiceTitle: this.form.invoiceTitle,
+            registerAddress: this.form.registerAddress,
+            nashuiIdNumber: this.form.nashuiIdNumber,
+            redisterPhone: this.form.redisterPhone,
+            kaihuBank: this.form.kaihuBank,
+            accountBank: this.form.accountBank,
+            invoiceCollectName: this.form.invoiceCollectName,
+            invoiceCollectPhone: this.form.invoiceCollectPhone,
+            invoiceCollectAddress: this.form.invoiceCollectAddress,
+            businessLicense: this.form.businessLicense,
+            idCardPerson: this.form.idCardPerson,
+            idCardBadge: this.form.idCardBadge,
+            companyPicture: this.form.companyPicture,
+            frameContract: this.form.frameContract
+          }
+          saveShipperUser(data).then((res) => {
+            if (res.code == 200) {
+              this.$message({
+                message: '添加成功',
+                type: 'success',
+                duration: 3000
+              });
+              this.$refs.form.resetFields();
+              this.$router.push({ path: "/member/shipper/index" })
+            }
+          });
+        }
+      });
+    },
+    //添加图片
+    pictureIMG (data) {
+      if (data?.businessLicense) {
+        this.businessLicense = data.businessLicense;
+      } else if (data?.idCardPerson) {
+        this.idCardPerson = data.idCardPerson;
+      } else if (data?.idCardBadge) {
+        this.idCardBadge = data.idCardBadge;
+      } else if (data?.companyPicture) {
+        this.companyPicture = data.companyPicture;
+      } else if (data?.frameContract) {
+        this.frameContract = data.frameContract;
+      }
+    },
+    //删除图片
+    pictureDelete (data) {
+      this[data] = "";
+    }
+  }
+}
+</script>
+
+<style scoped>
+.radio {
+  padding-left: 50px;
+}
+.biaoti {
+  font-size: 16px;
+  color: rgb(87, 87, 87);
+  text-align: center;
+  width: 100%;
+}
+.fil {
+  margin-right: 20px;
+}
+.pianli {
+  margin-top: 120px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+</style>
